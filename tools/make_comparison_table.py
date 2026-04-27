@@ -5,9 +5,9 @@ Build thesis/report comparison tables from an aggregated run CSV.
 Usage
 -----
 python tools/make_comparison_table.py \
-  --in results_summary.csv \
-  --out-csv comparison_table.csv \
-  --out-md comparison_table.md
+  --in results/aggregates/results_summary.csv \
+  --out-csv results/aggregates/comparison_table.csv \
+  --out-md results/aggregates/comparison_table.md
 
 Input
 -----

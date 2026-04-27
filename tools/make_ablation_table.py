@@ -5,9 +5,9 @@ Build thesis/report ablation tables from an aggregated run CSV.
 Usage
 -----
 python tools/make_ablation_table.py \
-  --in results_summary.csv \
-  --out-csv ablation_table.csv \
-  --out-md ablation_table.md
+  --in results/aggregates/results_summary.csv \
+  --out-csv results/aggregates/ablation_table.csv \
+  --out-md results/aggregates/ablation_table.md
 
 Input
 -----

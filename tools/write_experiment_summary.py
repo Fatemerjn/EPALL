@@ -4,9 +4,9 @@ Write a concise Markdown experiment summary from aggregated CSV outputs.
 
 Usage:
   python tools/write_experiment_summary.py \
-    --results results_summary.csv \
+    --results results/aggregates/results_summary.csv \
     --overlap overlap_summary.csv \
-    --out experiment_summary.md
+    --out results/aggregates/experiment_summary.md
 
 The output is intended as a thesis/report draft: compact tables plus conservative,
 editable observations. It does not claim statistical significance.

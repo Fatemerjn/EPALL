@@ -4,7 +4,7 @@ Aggregate experiment run metrics into one CSV table.
 
 Usage
 -----
-python tools/aggregate_results.py --root runs --out results_summary.csv
+python tools/aggregate_results.py --root runs --out results/aggregates/results_summary.csv
 
 Expected input structure
 ------------------------
