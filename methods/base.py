@@ -22,6 +22,7 @@ class Base(nn.Module):
             model_kwargs.update(
                 {
                     "adapter_bottleneck": args.adapter_bottleneck,
+                    "adapter_shared_bottleneck": args.adapter_shared_bottleneck,
                     "adapter_location": args.adapter_location,
                 }
             )

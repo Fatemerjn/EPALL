@@ -89,6 +89,30 @@ parser.add_argument('--debug_unlearning', default=False, action='store_true', he
 parser.add_argument('--dump_overlap', default=False, action='store_true', help='dump overlap matrix CSV')
 parser.add_argument('--adapter_bottleneck', default=16, type=int, help='adapter bottleneck size for pall_adapter')
 parser.add_argument(
+    '--adapter_shared_bottleneck',
+    default=0,
+    type=int,
+    help='optional shared adapter bottleneck size for pall_adapter; 0 disables shared overlap module',
+)
+parser.add_argument(
+    '--adapter_shared_forget_ratio',
+    default=0.0,
+    type=float,
+    help='fraction of shared_adapter params selected as forget candidates for pall_adapter forgetting',
+)
+parser.add_argument(
+    '--adapter_shared_protect_ratio',
+    default=0.0,
+    type=float,
+    help='fraction of shared_adapter params protected for active tasks during pall_adapter forgetting',
+)
+parser.add_argument(
+    '--adapter_shared_forget_lr',
+    default=None,
+    type=float,
+    help='optional lr override for shared_adapter forgetting update in pall_adapter',
+)
+parser.add_argument(
     '--adapter_train_classifier',
     default=False,
     action='store_true',
@@ -130,6 +154,18 @@ def validate_experiment_args(arg_namespace):
         parser.error("--num_workers must be >= 0.")
     if arg_namespace.method == "pall_adapter" and arg_namespace.adapter_bottleneck <= 0:
         parser.error("--adapter_bottleneck must be > 0 for pall_adapter.")
+    if arg_namespace.method == "pall_adapter" and arg_namespace.adapter_shared_bottleneck < 0:
+        parser.error("--adapter_shared_bottleneck must be >= 0 for pall_adapter.")
+    if arg_namespace.method == "pall_adapter":
+        if not (0.0 <= arg_namespace.adapter_shared_forget_ratio <= 1.0):
+            parser.error("--adapter_shared_forget_ratio must be in [0, 1] for pall_adapter.")
+        if not (0.0 <= arg_namespace.adapter_shared_protect_ratio <= 1.0):
+            parser.error("--adapter_shared_protect_ratio must be in [0, 1] for pall_adapter.")
+        if (
+            arg_namespace.adapter_shared_forget_lr is not None
+            and arg_namespace.adapter_shared_forget_lr <= 0.0
+        ):
+            parser.error("--adapter_shared_forget_lr must be > 0 when provided for pall_adapter.")
 
 
 def set_seed(seed, deterministic=False):
@@ -225,6 +261,7 @@ def extract_model_param_stats(model):
         "total_params": int(total_params),
         "num_trainable_params": int(trainable_params),
         "num_adapter_params": 0,
+        "shared_adapter_params": 0,
         "trainable_param_ratio": float(trainable_params / total_params) if total_params else 0.0,
     }
 
@@ -485,6 +522,38 @@ def normalize_unlearning_event(event, availability=None):
                 to_optional_float(overlap.get("s_share_crit_ratio")) if availability.get("overlap", True) else None
             ),
         },
+        "shared_adapter": {
+            "adapter_shared_forget_ratio": (
+                to_optional_float(event.get("adapter_shared_forget_ratio"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "adapter_shared_protect_ratio": (
+                to_optional_float(event.get("adapter_shared_protect_ratio"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_adapter_params": (
+                to_optional_int(event.get("shared_adapter_params"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_forget_candidates": (
+                to_optional_int(event.get("shared_forget_candidates"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_protected_params": (
+                to_optional_int(event.get("shared_protected_params"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_s_share_crit": (
+                to_optional_int(event.get("shared_s_share_crit"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+        },
     }
 
 
@@ -606,6 +675,12 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 },
                 "protection": info.get("protection", {}),
                 "finetune_diag": finetune_diag,
+                "adapter_shared_forget_ratio": info.get("adapter_shared_forget_ratio"),
+                "adapter_shared_protect_ratio": info.get("adapter_shared_protect_ratio"),
+                "shared_adapter_params": info.get("shared_adapter_params"),
+                "shared_forget_candidates": info.get("shared_forget_candidates"),
+                "shared_protected_params": info.get("shared_protected_params"),
+                "shared_s_share_crit": info.get("shared_s_share_crit"),
             }
             normalized_event = normalize_unlearning_event(
                 event,
@@ -616,6 +691,17 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                     "overlap": any(
                         key in info
                         for key in ("s_t", "s_share", "s_share_crit", "s_share_ratio", "s_share_crit_ratio")
+                    ),
+                    "shared_adapter": any(
+                        key in info
+                        for key in (
+                            "adapter_shared_forget_ratio",
+                            "adapter_shared_protect_ratio",
+                            "shared_adapter_params",
+                            "shared_forget_candidates",
+                            "shared_protected_params",
+                            "shared_s_share_crit",
+                        )
                     ),
                 },
             )
@@ -730,10 +816,11 @@ def write_summary(path, summary, normalized_results):
         f"seed: {summary['seed']} (deterministic={summary['deterministic']})",
         f"tasks: {summary['n_tasks']} | forget_requests: {summary['n_forget']}",
         (
-            "model_params: total {total} trainable {trainable} adapter {adapter} trainable_ratio {ratio}".format(
+            "model_params: total {total} trainable {trainable} adapter {adapter} shared_adapter {shared} trainable_ratio {ratio}".format(
                 total=format_optional_int(summary.get("total_params")),
                 trainable=format_optional_int(summary.get("num_trainable_params")),
                 adapter=format_optional_int(summary.get("num_adapter_params")),
+                shared=format_optional_int(summary.get("shared_adapter_params")),
                 ratio=format_optional_float(summary.get("trainable_param_ratio")),
             )
         ),
@@ -908,6 +995,10 @@ def write_run_report(path, run_dir, config, metrics_state):
         config_rows.extend(
             [
                 ("adapter_bottleneck", config.get("adapter_bottleneck")),
+                ("adapter_shared_bottleneck", config.get("adapter_shared_bottleneck")),
+                ("adapter_shared_forget_ratio", config.get("adapter_shared_forget_ratio")),
+                ("adapter_shared_protect_ratio", config.get("adapter_shared_protect_ratio")),
+                ("adapter_shared_forget_lr", config.get("adapter_shared_forget_lr")),
                 ("adapter_location", config.get("adapter_location")),
                 ("adapter_train_classifier", config.get("adapter_train_classifier")),
             ]
@@ -932,6 +1023,7 @@ def write_run_report(path, run_dir, config, metrics_state):
             f"| total_params | {format_optional_int(model_stats.get('total_params'))} |",
             f"| num_trainable_params | {format_optional_int(model_stats.get('num_trainable_params'))} |",
             f"| num_adapter_params | {format_optional_int(model_stats.get('num_adapter_params'))} |",
+            f"| shared_adapter_params | {format_optional_int(model_stats.get('shared_adapter_params'))} |",
             f"| trainable_param_ratio | {format_optional_float(model_stats.get('trainable_param_ratio'))} |",
             "",
             "## Final Metrics",
@@ -1337,10 +1429,11 @@ def main():
         write_json(metrics_path, metrics_state)
         log_event(
             logger,
-            "[INFO] model params: total={total} trainable={trainable} adapter={adapter} ratio={ratio}".format(
+            "[INFO] model params: total={total} trainable={trainable} adapter={adapter} shared_adapter={shared} ratio={ratio}".format(
                 total=format_optional_int(model_stats.get("total_params")),
                 trainable=format_optional_int(model_stats.get("num_trainable_params")),
                 adapter=format_optional_int(model_stats.get("num_adapter_params")),
+                shared=format_optional_int(model_stats.get("shared_adapter_params")),
                 ratio=format_optional_float(model_stats.get("trainable_param_ratio")),
             ),
         )
@@ -1410,6 +1503,7 @@ def main():
         summary["total_params"] = model_stats.get("total_params")
         summary["num_trainable_params"] = model_stats.get("num_trainable_params")
         summary["num_adapter_params"] = model_stats.get("num_adapter_params")
+        summary["shared_adapter_params"] = model_stats.get("shared_adapter_params")
         summary["trainable_param_ratio"] = model_stats.get("trainable_param_ratio")
     normalized_results = metrics_state.get("normalized_results", {})
     normalized_events = normalized_results.get("unlearning_events", [])

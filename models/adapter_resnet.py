@@ -24,6 +24,22 @@ class TaskBottleneckAdapter(nn.Module):
         return x + self.up(self.act(self.down(x)))
 
 
+class SharedBottleneckAdapter(nn.Module):
+    def __init__(self, dim, bottleneck):
+        super(SharedBottleneckAdapter, self).__init__()
+        self.down = nn.Linear(dim, bottleneck, bias=False)
+        self.act = nn.ReLU(inplace=True)
+        self.up = nn.Linear(bottleneck, dim, bias=False)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        nn.init.kaiming_uniform_(self.down.weight, a=math.sqrt(5))
+        nn.init.zeros_(self.up.weight)
+
+    def forward(self, x):
+        return x + self.up(self.act(self.down(x)))
+
+
 class AdapterResNet(BaseModel):
     def __init__(
         self,
@@ -33,6 +49,7 @@ class AdapterResNet(BaseModel):
         nf,
         n_tasks,
         adapter_bottleneck=16,
+        adapter_shared_bottleneck=0,
         adapter_location="residual",
         norm_params=False,
     ):
@@ -47,6 +64,7 @@ class AdapterResNet(BaseModel):
         self.n_tasks = n_tasks
         self.norm_params = norm_params
         self.adapter_bottleneck = adapter_bottleneck
+        self.adapter_shared_bottleneck = adapter_shared_bottleneck
         self.adapter_location = adapter_location
 
         self.conv1 = conv3x3(3, nf * 1)
@@ -58,6 +76,9 @@ class AdapterResNet(BaseModel):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         self.feature_dim = nf * 8 * block.expansion
+        self.shared_adapter = None
+        if adapter_shared_bottleneck > 0:
+            self.shared_adapter = SharedBottleneckAdapter(self.feature_dim, adapter_shared_bottleneck)
         self.adapters = nn.ModuleList(
             [TaskBottleneckAdapter(self.feature_dim, adapter_bottleneck) for _ in range(n_tasks)]
         )
@@ -83,6 +104,8 @@ class AdapterResNet(BaseModel):
     def forward(self, x, task=-1, mask=None, mode="train", returnt="out"):
         del mask, mode
         feature = self.extract_backbone_features(x)
+        if self.shared_adapter is not None:
+            feature = self.shared_adapter(feature)
         if 0 <= task < self.n_tasks:
             feature = self.adapters[task](feature)
 
@@ -99,6 +122,9 @@ class AdapterResNet(BaseModel):
     def freeze_backbone(self, train_classifier=False):
         for param in self.parameters():
             param.requires_grad = False
+        if self.shared_adapter is not None:
+            for param in self.shared_adapter.parameters():
+                param.requires_grad = True
         for param in self.adapters.parameters():
             param.requires_grad = True
         if train_classifier:
@@ -135,6 +161,14 @@ class AdapterResNet(BaseModel):
         params = self.adapter_parameters(task_id)
         return sum(param.numel() for param in params)
 
+    def count_shared_adapter_params(self):
+        if self.shared_adapter is None:
+            return 0, 0
+        total_params = 0
+        for param in self.shared_adapter.parameters():
+            total_params += param.numel()
+        return total_params, total_params
+
 
 def adapter_resnet18(
     num_classes,
@@ -143,6 +177,7 @@ def adapter_resnet18(
     n_tasks=1,
     sparsity=None,
     adapter_bottleneck=16,
+    adapter_shared_bottleneck=0,
     adapter_location="residual",
 ):
     del sparsity
@@ -153,6 +188,7 @@ def adapter_resnet18(
         nf,
         n_tasks=n_tasks,
         adapter_bottleneck=adapter_bottleneck,
+        adapter_shared_bottleneck=adapter_shared_bottleneck,
         adapter_location=adapter_location,
         norm_params=norm_params,
     )
@@ -165,6 +201,7 @@ def adapter_resnet34(
     n_tasks=1,
     sparsity=None,
     adapter_bottleneck=16,
+    adapter_shared_bottleneck=0,
     adapter_location="residual",
 ):
     del sparsity
@@ -175,6 +212,7 @@ def adapter_resnet34(
         nf,
         n_tasks=n_tasks,
         adapter_bottleneck=adapter_bottleneck,
+        adapter_shared_bottleneck=adapter_shared_bottleneck,
         adapter_location=adapter_location,
         norm_params=norm_params,
     )
@@ -187,6 +225,7 @@ def adapter_resnet50(
     n_tasks=1,
     sparsity=None,
     adapter_bottleneck=16,
+    adapter_shared_bottleneck=0,
     adapter_location="residual",
 ):
     del sparsity
@@ -197,6 +236,7 @@ def adapter_resnet50(
         nf,
         n_tasks=n_tasks,
         adapter_bottleneck=adapter_bottleneck,
+        adapter_shared_bottleneck=adapter_shared_bottleneck,
         adapter_location=adapter_location,
         norm_params=norm_params,
     )
