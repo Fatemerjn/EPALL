@@ -248,11 +248,18 @@ def derive_unlearning_score(metrics: Dict[str, Any], final_unlearning: Dict[str,
     return float(fu - 0.5 * worst_drop - 0.5 * updated_param_ratio)
 
 
-def extract_run_row(metrics_path: Path, group_by_config: bool = False) -> Optional[Dict[str, Any]]:
+def extract_run_row(
+    metrics_path: Path,
+    group_by_config: bool = False,
+    include_tags: Optional[set[str]] = None,
+) -> Optional[Dict[str, Any]]:
     metrics = load_json(metrics_path)
     if metrics is None:
         return None
     config = load_json(metrics_path.with_name("config.json")) or {}
+    experiment_tag = config_group_value(config, "experiment_tag")
+    if include_tags is not None and experiment_tag not in include_tags:
+        return None
 
     final_unlearning = get_final_unlearning(metrics)
     raw_last_event = get_last_unlearning_event(metrics)
@@ -296,6 +303,7 @@ def extract_run_row(metrics_path: Path, group_by_config: bool = False) -> Option
         "run_path": str(metrics_path.parent),
         "dataset": str(dataset),
         "method": str(method),
+        "experiment_tag": experiment_tag,
         "seed": first_non_none(
             metrics.get("seed"),
             nested_get(metrics, "summary", "seed"),
@@ -521,6 +529,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Group by dataset/method plus experiment_tag and key adapter configuration values.",
     )
+    parser.add_argument(
+        "--include-tags",
+        nargs="+",
+        default=None,
+        help="Only include runs whose config.json experiment_tag matches one of these values.",
+    )
     parser.add_argument("--decimals", type=int, default=4, help="Decimal precision for numeric outputs.")
     return parser.parse_args()
 
@@ -532,16 +546,31 @@ def main() -> int:
         return 1
 
     run_rows = []
+    total_metrics_files = 0
+    skipped_by_tag = 0
+    include_tags = set(args.include_tags) if args.include_tags else None
     for metrics_path in find_metrics_files(args.root):
-        row = extract_run_row(metrics_path, group_by_config=args.group_by_config)
+        total_metrics_files += 1
+        row = extract_run_row(
+            metrics_path,
+            group_by_config=args.group_by_config,
+            include_tags=include_tags,
+        )
         if row is not None:
             run_rows.append(row)
+        elif include_tags is not None:
+            config = load_json(metrics_path.with_name("config.json")) or {}
+            experiment_tag = config_group_value(config, "experiment_tag")
+            if experiment_tag not in include_tags:
+                skipped_by_tag += 1
 
     table = build_table(run_rows, group_by_config=args.group_by_config)
     write_csv_table(args.out_csv, table, args.decimals, group_by_config=args.group_by_config)
     write_markdown_table(args.out_md, table, args.decimals, group_by_config=args.group_by_config)
 
-    print(f"[INFO] Scanned metrics files: {len(run_rows)}")
+    print(f"[INFO] Scanned metrics files: {total_metrics_files}")
+    print(f"[INFO] Runs included: {len(run_rows)}")
+    print(f"[INFO] Runs skipped by tag filter: {skipped_by_tag}")
     print(f"[INFO] Wrote CSV table: {args.out_csv}")
     print(f"[INFO] Wrote Markdown table: {args.out_md}")
     print(f"[INFO] Groups summarized: {len(table)}")
