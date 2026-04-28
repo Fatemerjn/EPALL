@@ -151,6 +151,10 @@ class AdapterResNet(BaseModel):
             return self.adapters.parameters()
         return self.adapters[task_id].parameters()
 
+    def count_task_adapter_params(self, task_id=None):
+        params = self.adapter_parameters(task_id)
+        return sum(param.numel() for param in params)
+
     def count_total_params(self):
         return sum(param.numel() for param in self.parameters())
 
@@ -158,8 +162,7 @@ class AdapterResNet(BaseModel):
         return sum(param.numel() for param in self.parameters() if param.requires_grad)
 
     def count_adapter_params(self, task_id=None):
-        params = self.adapter_parameters(task_id)
-        return sum(param.numel() for param in params)
+        return self.count_task_adapter_params(task_id)
 
     def count_shared_adapter_params(self):
         if self.shared_adapter is None:
@@ -168,6 +171,11 @@ class AdapterResNet(BaseModel):
         for param in self.shared_adapter.parameters():
             total_params += param.numel()
         return total_params, total_params
+
+    def count_total_adapter_params(self):
+        task_adapter_params = self.count_task_adapter_params()
+        shared_adapter_params, _ = self.count_shared_adapter_params()
+        return int(task_adapter_params + shared_adapter_params)
 
 
 def adapter_resnet18(

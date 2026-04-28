@@ -33,13 +33,22 @@ class PALLAdapter(Base):
     def _build_param_stats(self):
         total_params = self.net.count_total_params()
         trainable_params = self.net.count_trainable_params()
-        adapter_params = self.net.count_adapter_params()
+        task_adapter_params = (
+            self.net.count_task_adapter_params() if hasattr(self.net, "count_task_adapter_params") else self.net.count_adapter_params()
+        )
         shared_adapter_params, total_shared_adapter_params = self.net.count_shared_adapter_params()
+        adapter_params = (
+            self.net.count_total_adapter_params() if hasattr(self.net, "count_total_adapter_params") else task_adapter_params + shared_adapter_params
+        )
+        shared_adapter_ratio = float(shared_adapter_params / adapter_params) if adapter_params else 0.0
         return {
             "total_params": int(total_params),
             "num_trainable_params": int(trainable_params),
-            "num_adapter_params": int(adapter_params),
+            "num_adapter_params": int(task_adapter_params),
+            "task_adapter_params": int(task_adapter_params),
+            "adapter_params": int(adapter_params),
             "shared_adapter_params": int(shared_adapter_params),
+            "shared_adapter_ratio": shared_adapter_ratio,
             "classifier_param_count": int(sum(param.numel() for _, param in self._classifier_param_items())),
             "trainable_param_ratio": float(trainable_params / total_params) if total_params else 0.0,
             "adapter_mode": "per_task",
@@ -47,21 +56,24 @@ class PALLAdapter(Base):
             "adapter_shared_bottleneck": int(self.args.adapter_shared_bottleneck),
             "adapter_location": self.args.adapter_location,
             "adapter_train_classifier": bool(self.args.adapter_train_classifier),
-            "shared_adapter_enabled": bool(self.args.adapter_shared_bottleneck > 0),
+            "shared_adapter_enabled": bool(getattr(self.net, "shared_adapter", None) is not None),
             "total_shared_adapter_params": int(total_shared_adapter_params),
         }
 
     def _log_param_stats(self):
         stats = self.param_stats
         self.log_progress(
-            "adapter init: total_params={total} trainable_params={trainable} adapter_params={adapter} "
-            "shared_adapter_params={shared_adapter} classifier_param_count={classifier} "
+            "adapter init: total_params={total} trainable_params={trainable} task_adapter_params={task_adapter} "
+            "shared_adapter_params={shared_adapter} shared_adapter_ratio={shared_ratio:.6f} "
+            "adapter_params_total={adapter_total} classifier_param_count={classifier} "
             "trainable_ratio={ratio:.6f} adapter_location={location} "
             "train_classifier={train_classifier}".format(
                 total=stats["total_params"],
                 trainable=stats["num_trainable_params"],
-                adapter=stats["num_adapter_params"],
+                task_adapter=stats["task_adapter_params"],
                 shared_adapter=stats["shared_adapter_params"],
+                shared_ratio=stats["shared_adapter_ratio"],
+                adapter_total=stats["adapter_params"],
                 classifier=stats["classifier_param_count"],
                 ratio=stats["trainable_param_ratio"],
                 location=stats["adapter_location"],
@@ -73,6 +85,16 @@ class PALLAdapter(Base):
                 "shared adapter enabled: bottleneck={bottleneck} shared_params={shared}".format(
                     bottleneck=stats["adapter_shared_bottleneck"],
                     shared=stats["shared_adapter_params"],
+                )
+            )
+        else:
+            self.log_progress(
+                "shared adapter disabled: shared_adapter_params={shared} task_adapter_params={task_adapter} "
+                "shared_adapter_ratio={shared_ratio:.6f} adapter_shared_bottleneck={bottleneck}".format(
+                    shared=stats["shared_adapter_params"],
+                    task_adapter=stats["task_adapter_params"],
+                    shared_ratio=stats["shared_adapter_ratio"],
+                    bottleneck=stats["adapter_shared_bottleneck"],
                 )
             )
 
@@ -409,6 +431,14 @@ class PALLAdapter(Base):
             total_overlap_scope = max(reset_param_count, total_shared_params, 1)
         share_ratio = shared_param_count / total_overlap_scope if total_overlap_scope else 0.0
         s_share_crit_ratio = shared_overlap_critical / shared_param_count if shared_param_count else 0.0
+        if shared_param_count <= 0:
+            self.log_progress(
+                "shared overlap inactive: shared_adapter_params=0 task_adapter_params={task_adapter} "
+                "shared_adapter_ratio=0.000000 adapter_shared_bottleneck={bottleneck}".format(
+                    task_adapter=self.net.count_adapter_params(),
+                    bottleneck=self.args.adapter_shared_bottleneck,
+                )
+            )
 
         info = {
             "s_t": int(total_overlap_scope),

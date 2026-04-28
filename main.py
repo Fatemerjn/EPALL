@@ -328,6 +328,7 @@ def extract_model_param_stats(model):
             "shared_adapter_params": int(shared_adapter_params),
             "task_adapter_params": int(task_adapter_params),
             "adapter_param_ratio": adapter_param_ratio,
+            "shared_adapter_ratio": float(shared_adapter_params / adapter_params) if adapter_params else 0.0,
             "updated_param_ratio": None,
         }
         model_stats["num_adapter_params"] = int(task_adapter_params)
@@ -335,6 +336,7 @@ def extract_model_param_stats(model):
         model_stats["task_adapter_params"] = int(task_adapter_params)
         model_stats["adapter_params"] = int(adapter_params)
         model_stats["adapter_param_ratio"] = adapter_param_ratio
+        model_stats["shared_adapter_ratio"] = float(shared_adapter_params / adapter_params) if adapter_params else 0.0
     else:
         model_stats["num_adapter_params"] = int(_coerce_int_or_none(model_stats.get("num_adapter_params")) or 0)
         model_stats["shared_adapter_params"] = int(_coerce_int_or_none(model_stats.get("shared_adapter_params")) or 0)
@@ -1711,11 +1713,13 @@ def main():
         write_json(metrics_path, metrics_state)
         log_event(
             logger,
-            "[INFO] model params: total={total} trainable={trainable} adapter={adapter} shared_adapter={shared} ratio={ratio}".format(
+            "[INFO] model params: total={total} trainable={trainable} task_adapter={task_adapter} "
+            "shared_adapter={shared} shared_adapter_ratio={shared_ratio} trainable_ratio={ratio}".format(
                 total=format_optional_int(model_stats.get("total_params")),
                 trainable=format_optional_int(model_stats.get("num_trainable_params")),
-                adapter=format_optional_int(model_stats.get("num_adapter_params")),
+                task_adapter=format_optional_int(model_stats.get("task_adapter_params", model_stats.get("num_adapter_params"))),
                 shared=format_optional_int(model_stats.get("shared_adapter_params")),
+                shared_ratio=format_optional_float(model_stats.get("shared_adapter_ratio")),
                 ratio=format_optional_float(model_stats.get("trainable_param_ratio")),
             ),
         )
