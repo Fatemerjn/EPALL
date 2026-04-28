@@ -18,3 +18,8 @@ checkpoints/
 *.pth
 
 data/
+
+# experiment outputs
+comparison_*.csv
+comparison_*.md
+results_*.csv
