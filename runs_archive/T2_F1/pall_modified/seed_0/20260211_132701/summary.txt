@@ -1,9 +1,0 @@
-run_dir: runs/cifar10/T2_F1/pall_modified/seed_0/20260211_132701
-dataset: cifar10
-method: pall_modified (modified)
-seed: 0 (deterministic=True)
-tasks: 2 | forget_requests: 1
-final_avg_accuracy: 0.7140
-
-unlearning_events:
-step 0 task 1 avg_before 0.7140 avg_after_reset 0.7140 avg_after_retrain 0.7140 Fu 0.0000 WorstDrop 0.0000 Au 0.5320 t_reset 0.00s t_retrain 0.00s share_ratio 0.1998 crit_ratio 1.0000
