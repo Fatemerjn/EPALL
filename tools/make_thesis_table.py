@@ -43,6 +43,17 @@ OUTPUT_COLUMNS = [
     "adapter_param_ratio_mean",
 ]
 
+CONFIG_GROUP_COLUMNS = [
+    "experiment_tag",
+    "adapter_shared_bottleneck",
+    "adapter_shared_forget_ratio",
+    "adapter_shared_protect_ratio",
+    "adapter_shared_forget_lr",
+    "adapter_shared_protect_strength",
+    "retrain_steps",
+    "adapter_train_classifier",
+]
+
 SEED_AGG_METRICS = [
     "final_avg_accuracy",
     "average_forgetting",
@@ -105,6 +116,13 @@ def to_float(value: Any) -> Optional[float]:
 
 def find_metrics_files(root: Path) -> Iterable[Path]:
     yield from sorted(root.rglob("metrics.json"))
+
+
+def config_group_value(config: Dict[str, Any], key: str) -> str:
+    value = config.get(key)
+    if value is None:
+        return ""
+    return str(value)
 
 
 def get_last_unlearning_event(metrics: Dict[str, Any]) -> Dict[str, Any]:
@@ -230,10 +248,11 @@ def derive_unlearning_score(metrics: Dict[str, Any], final_unlearning: Dict[str,
     return float(fu - 0.5 * worst_drop - 0.5 * updated_param_ratio)
 
 
-def extract_run_row(metrics_path: Path) -> Optional[Dict[str, Any]]:
+def extract_run_row(metrics_path: Path, group_by_config: bool = False) -> Optional[Dict[str, Any]]:
     metrics = load_json(metrics_path)
     if metrics is None:
         return None
+    config = load_json(metrics_path.with_name("config.json")) or {}
 
     final_unlearning = get_final_unlearning(metrics)
     raw_last_event = get_last_unlearning_event(metrics)
@@ -273,7 +292,7 @@ def extract_run_row(metrics_path: Path) -> Optional[Dict[str, Any]]:
         if t_reset is not None or t_retrain is not None:
             t_forget_total = float((t_reset or 0.0) + (t_retrain or 0.0))
 
-    return {
+    row = {
         "run_path": str(metrics_path.parent),
         "dataset": str(dataset),
         "method": str(method),
@@ -328,6 +347,10 @@ def extract_run_row(metrics_path: Path) -> Optional[Dict[str, Any]]:
         "updated_param_ratio": derive_updated_param_ratio(metrics, final_unlearning),
         "adapter_param_ratio": derive_adapter_param_ratio(metrics),
     }
+    if group_by_config:
+        for key in CONFIG_GROUP_COLUMNS:
+            row[key] = config_group_value(config, key)
+    return row
 
 
 def mean_or_none(values: List[float]) -> Optional[float]:
@@ -396,22 +419,32 @@ def aggregate_group(rows: List[Dict[str, Any]]) -> Dict[str, Optional[float]]:
     }
 
 
-def build_table(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    grouped: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
+def group_key(row: Dict[str, Any], group_by_config: bool) -> Tuple[str, ...]:
+    base = [row["dataset"], row["method"]]
+    if group_by_config:
+        for key in CONFIG_GROUP_COLUMNS:
+            base.append(str(row.get(key, "")))
+    return tuple(base)
+
+
+def build_table(rows: List[Dict[str, Any]], group_by_config: bool = False) -> List[Dict[str, Any]]:
+    grouped: Dict[Tuple[str, ...], List[Dict[str, Any]]] = {}
     for row in rows:
-        key = (row["dataset"], row["method"])
+        key = group_key(row, group_by_config)
         grouped.setdefault(key, []).append(row)
 
     table: List[Dict[str, Any]] = []
-    for dataset, method in sorted(grouped.keys(), key=lambda item: (item[0], item[1])):
-        aggregate = aggregate_group(grouped[(dataset, method)])
-        table.append(
-            {
-                "dataset": dataset,
-                "method": method,
-                **aggregate,
-            }
-        )
+    for key in sorted(grouped.keys()):
+        aggregate = aggregate_group(grouped[key])
+        out_row: Dict[str, Any] = {
+            "dataset": key[0],
+            "method": key[1],
+            **aggregate,
+        }
+        if group_by_config:
+            for column, value in zip(CONFIG_GROUP_COLUMNS, key[2:]):
+                out_row[column] = value
+        table.append(out_row)
     return table
 
 
@@ -422,39 +455,47 @@ def format_number(value: Any, decimals: int) -> str:
     return f"{number:.{decimals}f}"
 
 
-def write_csv_table(path: Path, rows: List[Dict[str, Any]], decimals: int) -> None:
+def output_columns(group_by_config: bool) -> List[str]:
+    if not group_by_config:
+        return list(OUTPUT_COLUMNS)
+    return ["dataset", "method", *CONFIG_GROUP_COLUMNS, *OUTPUT_COLUMNS[2:]]
+
+
+def write_csv_table(path: Path, rows: List[Dict[str, Any]], decimals: int, group_by_config: bool = False) -> None:
+    columns = output_columns(group_by_config)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=OUTPUT_COLUMNS)
+        writer = csv.DictWriter(handle, fieldnames=columns)
         writer.writeheader()
         for row in rows:
             writer.writerow(
                 {
                     column: row.get(column)
-                    if column in ("dataset", "method")
+                    if column in ("dataset", "method") or column in CONFIG_GROUP_COLUMNS
                     else format_number(row.get(column), decimals)
-                    for column in OUTPUT_COLUMNS
+                    for column in columns
                 }
             )
 
 
 def markdown_cell(column: str, value: Any, decimals: int) -> str:
-    if column in ("dataset", "method"):
+    if column in ("dataset", "method") or column in CONFIG_GROUP_COLUMNS:
         return str(value)
     formatted = format_number(value, decimals)
     return formatted if formatted else "NA"
 
 
-def write_markdown_table(path: Path, rows: List[Dict[str, Any]], decimals: int) -> None:
+def write_markdown_table(path: Path, rows: List[Dict[str, Any]], decimals: int, group_by_config: bool = False) -> None:
+    columns = output_columns(group_by_config)
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
-        "| " + " | ".join(OUTPUT_COLUMNS) + " |",
-        "| " + " | ".join(["---"] * len(OUTPUT_COLUMNS)) + " |",
+        "| " + " | ".join(columns) + " |",
+        "| " + " | ".join(["---"] * len(columns)) + " |",
     ]
     for row in rows:
         lines.append(
             "| "
-            + " | ".join(markdown_cell(column, row.get(column, ""), decimals) for column in OUTPUT_COLUMNS)
+            + " | ".join(markdown_cell(column, row.get(column, ""), decimals) for column in columns)
             + " |"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -475,6 +516,11 @@ def parse_args() -> argparse.Namespace:
         default=Path("results/aggregates/thesis_table.md"),
         help="Output Markdown file path.",
     )
+    parser.add_argument(
+        "--group-by-config",
+        action="store_true",
+        help="Group by dataset/method plus experiment_tag and key adapter configuration values.",
+    )
     parser.add_argument("--decimals", type=int, default=4, help="Decimal precision for numeric outputs.")
     return parser.parse_args()
 
@@ -487,13 +533,13 @@ def main() -> int:
 
     run_rows = []
     for metrics_path in find_metrics_files(args.root):
-        row = extract_run_row(metrics_path)
+        row = extract_run_row(metrics_path, group_by_config=args.group_by_config)
         if row is not None:
             run_rows.append(row)
 
-    table = build_table(run_rows)
-    write_csv_table(args.out_csv, table, args.decimals)
-    write_markdown_table(args.out_md, table, args.decimals)
+    table = build_table(run_rows, group_by_config=args.group_by_config)
+    write_csv_table(args.out_csv, table, args.decimals, group_by_config=args.group_by_config)
+    write_markdown_table(args.out_md, table, args.decimals, group_by_config=args.group_by_config)
 
     print(f"[INFO] Scanned metrics files: {len(run_rows)}")
     print(f"[INFO] Wrote CSV table: {args.out_csv}")
