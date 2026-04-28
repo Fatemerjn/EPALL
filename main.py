@@ -254,21 +254,94 @@ def serialize_config(arg_namespace, run_dir, timestamp):
     return config
 
 
+def _coerce_int_or_none(value):
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _coerce_float_or_none(value):
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def extract_model_param_stats(model):
     stats = getattr(model, "param_stats", None)
-    if stats is not None:
-        return json_safe(stats)
+    if not isinstance(stats, dict):
+        stats = {}
     net = getattr(model, "net", None)
     if net is None:
         return None
-    total_params = sum(param.numel() for param in net.parameters())
-    trainable_params = sum(param.numel() for param in net.parameters() if param.requires_grad)
+    total_params = _coerce_int_or_none(stats.get("total_params"))
+    if total_params is None:
+        total_params = sum(param.numel() for param in net.parameters())
+
+    trainable_params = _coerce_int_or_none(stats.get("num_trainable_params"))
+    if trainable_params is None:
+        trainable_params = sum(param.numel() for param in net.parameters() if param.requires_grad)
+
+    model_stats = dict(stats)
+    model_stats["total_params"] = int(total_params)
+    model_stats["num_trainable_params"] = int(trainable_params)
+    model_stats["trainable_param_ratio"] = float(trainable_params / total_params) if total_params else 0.0
+
+    has_adapters = hasattr(net, "count_adapter_params") or any(
+        key in model_stats
+        for key in ("num_adapter_params", "task_adapter_params", "shared_adapter_params", "adapter_params")
+    )
+    adapter_stats = None
+    if has_adapters:
+        task_adapter_params = _coerce_int_or_none(model_stats.get("task_adapter_params"))
+        if task_adapter_params is None:
+            task_adapter_params = _coerce_int_or_none(model_stats.get("num_adapter_params"))
+        if task_adapter_params is None and hasattr(net, "count_adapter_params"):
+            task_adapter_params = int(net.count_adapter_params())
+        if task_adapter_params is None:
+            task_adapter_params = 0
+
+        shared_adapter_params = _coerce_int_or_none(model_stats.get("shared_adapter_params"))
+        if shared_adapter_params is None and hasattr(net, "count_shared_adapter_params"):
+            shared_adapter_counts = net.count_shared_adapter_params()
+            if isinstance(shared_adapter_counts, tuple):
+                shared_adapter_params = int(shared_adapter_counts[0])
+            else:
+                shared_adapter_params = int(shared_adapter_counts)
+        if shared_adapter_params is None:
+            shared_adapter_params = 0
+
+        adapter_params = _coerce_int_or_none(model_stats.get("adapter_params"))
+        if adapter_params is None:
+            adapter_params = int(task_adapter_params + shared_adapter_params)
+
+        adapter_param_ratio = float(adapter_params / total_params) if total_params else 0.0
+        adapter_stats = {
+            "total_model_params": int(total_params),
+            "trainable_params": int(trainable_params),
+            "adapter_params": int(adapter_params),
+            "shared_adapter_params": int(shared_adapter_params),
+            "task_adapter_params": int(task_adapter_params),
+            "adapter_param_ratio": adapter_param_ratio,
+            "updated_param_ratio": None,
+        }
+        model_stats["num_adapter_params"] = int(task_adapter_params)
+        model_stats["shared_adapter_params"] = int(shared_adapter_params)
+        model_stats["task_adapter_params"] = int(task_adapter_params)
+        model_stats["adapter_params"] = int(adapter_params)
+        model_stats["adapter_param_ratio"] = adapter_param_ratio
+    else:
+        model_stats["num_adapter_params"] = int(_coerce_int_or_none(model_stats.get("num_adapter_params")) or 0)
+        model_stats["shared_adapter_params"] = int(_coerce_int_or_none(model_stats.get("shared_adapter_params")) or 0)
+
     return {
-        "total_params": int(total_params),
-        "num_trainable_params": int(trainable_params),
-        "num_adapter_params": 0,
-        "shared_adapter_params": 0,
-        "trainable_param_ratio": float(trainable_params / total_params) if total_params else 0.0,
+        "model_stats": json_safe(model_stats),
+        "adapter_stats": json_safe(adapter_stats) if adapter_stats is not None else None,
     }
 
 
@@ -989,12 +1062,98 @@ def summarize_overlap_csv(path):
     }
 
 
+def compute_unlearning_score(fu, worst_drop, updated_param_ratio, lambda_1=0.5, lambda_2=0.5):
+    fu_val = to_optional_float(fu) if fu is not None else None
+    worst_drop_val = to_optional_float(worst_drop) if worst_drop is not None else None
+    updated_ratio_val = to_optional_float(updated_param_ratio) if updated_param_ratio is not None else None
+    if fu_val is None or worst_drop_val is None or updated_ratio_val is None:
+        return None
+    return float(fu_val - lambda_1 * worst_drop_val - lambda_2 * updated_ratio_val)
+
+
+def extend_markdown_table(lines, title, rows):
+    lines.extend(["", title, "| Metric | Value |", "| --- | --- |"])
+    if not rows:
+        lines.append("| status | NA |")
+        return
+    for key, value in rows:
+        lines.append(f"| {key} | {value} |")
+
+
+def describe_forgetting_success(fu, au, chance_acc):
+    fu_val = to_optional_float(fu) if fu is not None else None
+    au_val = to_optional_float(au) if au is not None else None
+    if fu_val is None and au_val is None:
+        return "Insufficient data: Fu and deleted-task accuracy are unavailable."
+    if chance_acc is None:
+        low_deleted_acc = au_val is not None and au_val <= 0.10
+        chance_text = "NA"
+    else:
+        low_deleted_acc = au_val is not None and au_val <= chance_acc + 0.05
+        chance_text = f"{chance_acc:.4f}"
+
+    if fu_val is not None and fu_val >= 0.01 and low_deleted_acc:
+        return (
+            "Likely yes: Fu is positive and deleted-task accuracy is low "
+            f"(Au={format_optional_float(au_val)}, chance≈{chance_text})."
+        )
+    if low_deleted_acc:
+        return (
+            "Mixed evidence: deleted-task accuracy is low "
+            f"(Au={format_optional_float(au_val)}, chance≈{chance_text}), but Fu is not clearly high."
+        )
+    if fu_val is not None and fu_val >= 0.01:
+        return (
+            "Mixed evidence: Fu is positive, but deleted-task accuracy remains elevated "
+            f"(Au={format_optional_float(au_val)}, chance≈{chance_text})."
+        )
+    return (
+        "Unclear or weak: neither high Fu nor low deleted-task accuracy is present "
+        f"(Fu={format_optional_float(fu_val)}, Au={format_optional_float(au_val)}, chance≈{chance_text})."
+    )
+
+
+def describe_preservation(worst_drop):
+    worst_drop_val = to_optional_float(worst_drop) if worst_drop is not None else None
+    if worst_drop_val is None:
+        return "Insufficient data: WorstDrop is unavailable."
+    if worst_drop_val <= 0.05:
+        return f"Likely yes: WorstDrop is low at {worst_drop_val:.4f}."
+    if worst_drop_val <= 0.10:
+        return f"Mixed evidence: WorstDrop is moderate at {worst_drop_val:.4f}."
+    return f"Likely no: WorstDrop is high at {worst_drop_val:.4f}, suggesting notable collateral damage."
+
+
+def describe_efficiency(updated_param_ratio, t_forget_total):
+    ratio_val = to_optional_float(updated_param_ratio) if updated_param_ratio is not None else None
+    time_val = to_optional_float(t_forget_total) if t_forget_total is not None else None
+    if ratio_val is None and time_val is None:
+        return "Insufficient data: updated_param_ratio and forget time are unavailable."
+    if ratio_val is None:
+        return f"Partial evidence: forget time is {format_optional_float(time_val)}s, but updated_param_ratio is unavailable."
+    if ratio_val <= 0.01:
+        return (
+            "Likely yes: only a small fraction of parameters were updated "
+            f"(updated_param_ratio={ratio_val:.4f}, t_forget_total={format_optional_float(time_val)}s)."
+        )
+    if ratio_val <= 0.05:
+        return (
+            "Moderate efficiency: parameter updates remain limited "
+            f"(updated_param_ratio={ratio_val:.4f}, t_forget_total={format_optional_float(time_val)}s)."
+        )
+    return (
+        "Likely no: the method updates a relatively large fraction of parameters "
+        f"(updated_param_ratio={ratio_val:.4f}, t_forget_total={format_optional_float(time_val)}s)."
+    )
+
+
 def write_run_report(path, run_dir, config, metrics_state):
     normalized_results = metrics_state.get("normalized_results", {})
     normalized_final = normalized_results.get("final", {}) if isinstance(normalized_results, dict) else {}
     summary = metrics_state.get("summary", {})
     forgetting = metrics_state.get("forgetting", {})
     model_stats = metrics_state.get("model", {}) if isinstance(metrics_state.get("model"), dict) else {}
+    adapter_stats = metrics_state.get("adapter_stats", {}) if isinstance(metrics_state.get("adapter_stats"), dict) else {}
 
     final_avg_acc = first_non_none(
         normalized_final.get("final_avg_accuracy"),
@@ -1037,6 +1196,27 @@ def write_run_report(path, run_dir, config, metrics_state):
     overlap_block = final_unlearning.get("overlap", {}) if isinstance(final_unlearning, dict) else {}
     overlap_csv_path = run_dir / "overlap.csv"
     overlap_csv_summary = summarize_overlap_csv(overlap_csv_path)
+    updated_param_ratio = first_non_none(
+        metrics_state.get("updated_param_ratio"),
+        normalized_final.get("updated_param_ratio"),
+        summary.get("updated_param_ratio"),
+        adapter_stats.get("updated_param_ratio"),
+    )
+    unlearning_score = first_non_none(
+        metrics_state.get("unlearning_score"),
+        normalized_final.get("unlearning_score"),
+        summary.get("unlearning_score"),
+    )
+    adapter_param_ratio = first_non_none(
+        metrics_state.get("adapter_param_ratio"),
+        normalized_final.get("adapter_param_ratio"),
+        summary.get("adapter_param_ratio"),
+        adapter_stats.get("adapter_param_ratio"),
+        model_stats.get("adapter_param_ratio"),
+    )
+    chance_acc = None
+    if config.get("class_per_task") not in (None, 0):
+        chance_acc = 1.0 / float(config.get("class_per_task"))
 
     config_rows = [
         ("dataset", config.get("dataset")),
@@ -1069,59 +1249,82 @@ def write_run_report(path, run_dir, config, metrics_state):
 
     lines = [
         "# Run Report",
-        "",
-        "## Config Summary",
-        "| Key | Value |",
-        "| --- | --- |",
     ]
-    for key, value in config_rows:
-        lines.append(f"| {key} | {format_optional_text(value)} |")
-
-    lines.extend(
+    extend_markdown_table(
+        lines,
+        "## Config",
+        [(key, format_optional_text(value)) for key, value in config_rows],
+    )
+    extend_markdown_table(
+        lines,
+        "## Final Performance",
         [
-            "",
-            "## Model Parameter Metrics",
-            "| Metric | Value |",
-            "| --- | --- |",
-            f"| total_params | {format_optional_int(model_stats.get('total_params'))} |",
-            f"| num_trainable_params | {format_optional_int(model_stats.get('num_trainable_params'))} |",
-            f"| num_adapter_params | {format_optional_int(model_stats.get('num_adapter_params'))} |",
-            f"| shared_adapter_params | {format_optional_int(model_stats.get('shared_adapter_params'))} |",
-            f"| trainable_param_ratio | {format_optional_float(model_stats.get('trainable_param_ratio'))} |",
-            "",
-            "## Final Metrics",
-            "| Metric | Value |",
-            "| --- | --- |",
-            f"| final_avg_accuracy | {format_optional_float(final_avg_acc)} |",
-            f"| average_forgetting | {format_optional_float(avg_forgetting)} |",
-            f"| num_unlearning_events | {format_optional_int(normalized_final.get('num_unlearning_events'))} |",
-            "",
-            "## Unlearning Metrics",
-            "| Metric | Value |",
-            "| --- | --- |",
-            f"| Fu | {format_optional_float(final_unlearning.get('Fu'))} |",
-            f"| WorstDrop | {format_optional_float(final_unlearning.get('WorstDrop'))} |",
-            f"| Au | {format_optional_float(final_unlearning.get('Au'))} |",
-            f"| t_reset | {format_optional_float(final_unlearning.get('t_reset'))} |",
-            f"| t_retrain | {format_optional_float(final_unlearning.get('t_retrain'))} |",
-            f"| t_forget_total | {format_optional_float(final_unlearning.get('t_forget_total'))} |",
-            f"| num_updated_params | {format_optional_int(final_unlearning.get('num_updated_params'))} |",
-            f"| s_share_ratio | {format_optional_float(overlap_block.get('s_share_ratio'))} |",
-            f"| s_share_crit_ratio | {format_optional_float(overlap_block.get('s_share_crit_ratio'))} |",
-        ]
+            ("final_avg_accuracy", format_optional_float(final_avg_acc)),
+            ("average_forgetting", format_optional_float(avg_forgetting)),
+            ("num_unlearning_events", format_optional_int(normalized_final.get("num_unlearning_events"))),
+            ("chance_accuracy", format_optional_float(chance_acc)),
+        ],
+    )
+    extend_markdown_table(
+        lines,
+        "## Unlearning Metrics",
+        [
+            ("Fu", format_optional_float(final_unlearning.get("Fu"))),
+            ("WorstDrop", format_optional_float(final_unlearning.get("WorstDrop"))),
+            ("Au", format_optional_float(final_unlearning.get("Au"))),
+            ("unlearning_score", format_optional_float(unlearning_score)),
+            ("t_reset", format_optional_float(final_unlearning.get("t_reset"))),
+            ("s_t", format_optional_int(overlap_block.get("s_t"))),
+            ("s_share", format_optional_int(overlap_block.get("s_share"))),
+            ("s_share_crit", format_optional_int(overlap_block.get("s_share_crit"))),
+            ("s_share_ratio", format_optional_float(overlap_block.get("s_share_ratio"))),
+            ("s_share_crit_ratio", format_optional_float(overlap_block.get("s_share_crit_ratio"))),
+        ],
+    )
+    extend_markdown_table(
+        lines,
+        "## Efficiency Metrics",
+        [
+            ("total_params", format_optional_int(model_stats.get("total_params"))),
+            ("num_trainable_params", format_optional_int(model_stats.get("num_trainable_params"))),
+            ("t_retrain", format_optional_float(final_unlearning.get("t_retrain"))),
+            ("t_forget_total", format_optional_float(final_unlearning.get("t_forget_total"))),
+            ("num_updated_params", format_optional_int(final_unlearning.get("num_updated_params"))),
+            ("updated_param_ratio", format_optional_float(updated_param_ratio)),
+            ("trainable_param_ratio", format_optional_float(model_stats.get("trainable_param_ratio"))),
+        ],
+    )
+    if adapter_stats:
+        extend_markdown_table(
+            lines,
+            "## Adapter Stats",
+            [
+                ("total_model_params", format_optional_int(adapter_stats.get("total_model_params"))),
+                ("trainable_params", format_optional_int(adapter_stats.get("trainable_params"))),
+                ("adapter_params", format_optional_int(adapter_stats.get("adapter_params"))),
+                ("shared_adapter_params", format_optional_int(adapter_stats.get("shared_adapter_params"))),
+                ("task_adapter_params", format_optional_int(adapter_stats.get("task_adapter_params"))),
+                ("adapter_param_ratio", format_optional_float(adapter_param_ratio)),
+                ("updated_param_ratio", format_optional_float(updated_param_ratio)),
+            ],
+        )
+
+    lines.extend(["", "## Automatic Interpretation"])
+    lines.append(
+        f"- Forgetting succeeded? {describe_forgetting_success(final_unlearning.get('Fu'), final_unlearning.get('Au'), chance_acc)}"
+    )
+    lines.append(
+        f"- Preserved other tasks? {describe_preservation(final_unlearning.get('WorstDrop'))}"
+    )
+    lines.append(
+        f"- Efficient method? {describe_efficiency(updated_param_ratio, final_unlearning.get('t_forget_total'))}"
     )
 
-    lines.extend(
-        [
-            "",
-            "## Overlap CSV Summary",
-            "| Metric | Value |",
-            "| --- | --- |",
-        ]
-    )
+    extend_markdown_table(lines, "## Overlap CSV Summary", [])
     if overlap_csv_summary is None:
-        lines.append("| overlap_csv | NA |")
+        lines[-1] = "| overlap_csv | NA |"
     else:
+        lines.pop()
         lines.append(f"| n_tasks_in_overlap | {format_optional_int(overlap_csv_summary.get('n_tasks_in_overlap'))} |")
         lines.append(f"| num_task_pairs | {format_optional_int(overlap_csv_summary.get('num_task_pairs'))} |")
         lines.append(f"| avg_overlap_offdiag | {format_optional_float(overlap_csv_summary.get('avg_overlap_offdiag'))} |")
@@ -1457,6 +1660,17 @@ def main():
         "loaded_request_schedule": schedule_info.get("loaded_request_schedule"),
         "requests": user_requests_with_active_tasks,
         "requests_without_forgotten": user_requests_without_forgotten,
+        "final_avg_accuracy": None,
+        "average_forgetting": None,
+        "Fu": None,
+        "WorstDrop": None,
+        "Au": None,
+        "t_retrain": None,
+        "t_forget_total": None,
+        "num_updated_params": None,
+        "updated_param_ratio": None,
+        "adapter_param_ratio": None,
+        "unlearning_score": None,
         "normalized_results": {
             "schema_version": "v1",
             "definition": {
@@ -1486,9 +1700,14 @@ def main():
     model = methods_dict[args.method](args).to(args.device)
     init_model = model.state_dict()
     model.load_state_dict(init_model)
-    model_stats = extract_model_param_stats(model)
-    if model_stats is not None:
+    model_param_blocks = extract_model_param_stats(model)
+    if model_param_blocks is not None:
+        model_stats = model_param_blocks.get("model_stats", {})
+        adapter_stats = model_param_blocks.get("adapter_stats")
         metrics_state["model"] = model_stats
+        if isinstance(adapter_stats, dict):
+            metrics_state["adapter_stats"] = adapter_stats
+            metrics_state["adapter_param_ratio"] = adapter_stats.get("adapter_param_ratio")
         write_json(metrics_path, metrics_state)
         log_event(
             logger,
@@ -1559,6 +1778,7 @@ def main():
         "n_tasks": args.n_tasks,
         "n_forget": args.n_forget,
         "final_avg_accuracy": final_avg,
+        "average_forgetting": forgetting_stats["final"],
         "final_avg_forgetting": forgetting_stats["final"],
     }
     model_stats = metrics_state.get("model", {})
@@ -1598,15 +1818,64 @@ def main():
             "num_updated_params": last_event.get("num_updated_params"),
             "overlap": last_event.get("overlap", final_unlearning["overlap"]),
         }
+    adapter_stats = metrics_state.get("adapter_stats", {})
+    adapter_param_ratio = None
+    updated_param_ratio = None
+    if isinstance(adapter_stats, dict) and adapter_stats:
+        adapter_param_ratio = _coerce_float_or_none(adapter_stats.get("adapter_param_ratio"))
+        total_model_params = _coerce_int_or_none(adapter_stats.get("total_model_params"))
+        num_updated_params = _coerce_int_or_none(final_unlearning.get("num_updated_params"))
+        if total_model_params and num_updated_params is not None:
+            updated_param_ratio = float(num_updated_params / total_model_params)
+        adapter_stats["updated_param_ratio"] = updated_param_ratio
+        metrics_state["adapter_stats"] = adapter_stats
+        summary["task_adapter_params"] = adapter_stats.get("task_adapter_params")
+        summary["adapter_params"] = adapter_stats.get("adapter_params")
+        summary["adapter_param_ratio"] = adapter_param_ratio
+        summary["updated_param_ratio"] = updated_param_ratio
+    unlearning_score = compute_unlearning_score(
+        final_unlearning.get("Fu"),
+        final_unlearning.get("WorstDrop"),
+        updated_param_ratio,
+        lambda_1=0.5,
+        lambda_2=0.5,
+    )
+    summary["Fu"] = final_unlearning.get("Fu")
+    summary["WorstDrop"] = final_unlearning.get("WorstDrop")
+    summary["Au"] = final_unlearning.get("Au")
+    summary["t_retrain"] = final_unlearning.get("t_retrain")
+    summary["t_forget_total"] = final_unlearning.get("t_forget_total")
+    summary["num_updated_params"] = final_unlearning.get("num_updated_params")
+    summary["unlearning_score"] = unlearning_score
     normalized_results["final"] = {
         "final_avg_accuracy": final_avg,
         "average_forgetting": forgetting_stats["final"],
         "final_avg_forgetting": forgetting_stats["final"],
+        "Fu": final_unlearning.get("Fu"),
+        "WorstDrop": final_unlearning.get("WorstDrop"),
+        "Au": final_unlearning.get("Au"),
+        "unlearning_score": unlearning_score,
+        "t_retrain": final_unlearning.get("t_retrain"),
+        "t_forget_total": final_unlearning.get("t_forget_total"),
+        "num_updated_params": final_unlearning.get("num_updated_params"),
+        "updated_param_ratio": updated_param_ratio,
+        "adapter_param_ratio": adapter_param_ratio,
         "num_unlearning_events": len(normalized_events),
         "final_unlearning": final_unlearning,
     }
     metrics_state["normalized_results"] = normalized_results
     metrics_state["forgetting"] = forgetting_stats
+    metrics_state["final_avg_accuracy"] = final_avg
+    metrics_state["average_forgetting"] = forgetting_stats["final"]
+    metrics_state["Fu"] = final_unlearning.get("Fu")
+    metrics_state["WorstDrop"] = final_unlearning.get("WorstDrop")
+    metrics_state["Au"] = final_unlearning.get("Au")
+    metrics_state["t_retrain"] = final_unlearning.get("t_retrain")
+    metrics_state["t_forget_total"] = final_unlearning.get("t_forget_total")
+    metrics_state["num_updated_params"] = final_unlearning.get("num_updated_params")
+    metrics_state["updated_param_ratio"] = updated_param_ratio
+    metrics_state["adapter_param_ratio"] = adapter_param_ratio
+    metrics_state["unlearning_score"] = unlearning_score
     metrics_state["summary"] = summary
     write_json(metrics_path, metrics_state)
     write_summary(run_dir / "summary.txt", summary, metrics_state.get("normalized_results"))
@@ -1615,6 +1884,7 @@ def main():
         log_event(logger, f"[INFO] wrote run report to {run_dir / 'report.md'}")
     except Exception as exc:
         log_event(logger, f"[WARN] failed to write run report: {exc}")
+    log_event(logger, f"[UNLEARNING_SCORE] value={format_optional_float(unlearning_score)}")
     log_event(logger, f"[INFO] total run time: {time.perf_counter() - run_start:.2f}s")
 
 
