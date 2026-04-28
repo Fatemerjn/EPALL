@@ -113,6 +113,12 @@ parser.add_argument(
     help='optional lr override for shared_adapter forgetting update in pall_adapter',
 )
 parser.add_argument(
+    '--adapter_shared_protect_strength',
+    default=None,
+    type=float,
+    help='optional soft protection strength for shared critical shared-adapter params in pall_adapter forgetting',
+)
+parser.add_argument(
     '--adapter_train_classifier',
     default=False,
     action='store_true',
@@ -533,8 +539,23 @@ def normalize_unlearning_event(event, availability=None):
                 if availability.get("shared_adapter", True)
                 else None
             ),
+            "shared_protect_strength": (
+                to_optional_float(event.get("shared_protect_strength"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
             "shared_adapter_params": (
                 to_optional_int(event.get("shared_adapter_params"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "classifier_param_count": (
+                to_optional_int(event.get("classifier_param_count"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "classifier_forget_param_count": (
+                to_optional_int(event.get("classifier_forget_param_count"))
                 if availability.get("shared_adapter", True)
                 else None
             ),
@@ -545,6 +566,31 @@ def normalize_unlearning_event(event, availability=None):
             ),
             "shared_protected_params": (
                 to_optional_int(event.get("shared_protected_params"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_active_critical": (
+                to_optional_int(event.get("shared_active_critical"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_overlap_critical": (
+                to_optional_int(event.get("shared_overlap_critical"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_effective_forget_params": (
+                to_optional_int(event.get("shared_effective_forget_params"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_full_update_params": (
+                to_optional_int(event.get("shared_full_update_params"))
+                if availability.get("shared_adapter", True)
+                else None
+            ),
+            "shared_soft_update_params": (
+                to_optional_int(event.get("shared_soft_update_params"))
                 if availability.get("shared_adapter", True)
                 else None
             ),
@@ -677,9 +723,17 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "finetune_diag": finetune_diag,
                 "adapter_shared_forget_ratio": info.get("adapter_shared_forget_ratio"),
                 "adapter_shared_protect_ratio": info.get("adapter_shared_protect_ratio"),
+                "shared_protect_strength": info.get("shared_protect_strength"),
                 "shared_adapter_params": info.get("shared_adapter_params"),
+                "classifier_param_count": info.get("classifier_param_count"),
+                "classifier_forget_param_count": info.get("classifier_forget_param_count"),
                 "shared_forget_candidates": info.get("shared_forget_candidates"),
                 "shared_protected_params": info.get("shared_protected_params"),
+                "shared_active_critical": info.get("shared_active_critical"),
+                "shared_overlap_critical": info.get("shared_overlap_critical"),
+                "shared_effective_forget_params": info.get("shared_effective_forget_params"),
+                "shared_full_update_params": info.get("shared_full_update_params"),
+                "shared_soft_update_params": info.get("shared_soft_update_params"),
                 "shared_s_share_crit": info.get("shared_s_share_crit"),
             }
             normalized_event = normalize_unlearning_event(
@@ -697,9 +751,17 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                         for key in (
                             "adapter_shared_forget_ratio",
                             "adapter_shared_protect_ratio",
+                            "shared_protect_strength",
                             "shared_adapter_params",
+                            "classifier_param_count",
+                            "classifier_forget_param_count",
                             "shared_forget_candidates",
                             "shared_protected_params",
+                            "shared_active_critical",
+                            "shared_overlap_critical",
+                            "shared_effective_forget_params",
+                            "shared_full_update_params",
+                            "shared_soft_update_params",
                             "shared_s_share_crit",
                         )
                     ),
@@ -999,6 +1061,7 @@ def write_run_report(path, run_dir, config, metrics_state):
                 ("adapter_shared_forget_ratio", config.get("adapter_shared_forget_ratio")),
                 ("adapter_shared_protect_ratio", config.get("adapter_shared_protect_ratio")),
                 ("adapter_shared_forget_lr", config.get("adapter_shared_forget_lr")),
+                ("adapter_shared_protect_strength", config.get("adapter_shared_protect_strength")),
                 ("adapter_location", config.get("adapter_location")),
                 ("adapter_train_classifier", config.get("adapter_train_classifier")),
             ]

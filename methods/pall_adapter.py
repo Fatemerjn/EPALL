@@ -40,6 +40,7 @@ class PALLAdapter(Base):
             "num_trainable_params": int(trainable_params),
             "num_adapter_params": int(adapter_params),
             "shared_adapter_params": int(shared_adapter_params),
+            "classifier_param_count": int(sum(param.numel() for _, param in self._classifier_param_items())),
             "trainable_param_ratio": float(trainable_params / total_params) if total_params else 0.0,
             "adapter_mode": "per_task",
             "adapter_bottleneck": int(self.args.adapter_bottleneck),
@@ -54,12 +55,14 @@ class PALLAdapter(Base):
         stats = self.param_stats
         self.log_progress(
             "adapter init: total_params={total} trainable_params={trainable} adapter_params={adapter} "
-            "shared_adapter_params={shared_adapter} trainable_ratio={ratio:.6f} adapter_location={location} "
+            "shared_adapter_params={shared_adapter} classifier_param_count={classifier} "
+            "trainable_ratio={ratio:.6f} adapter_location={location} "
             "train_classifier={train_classifier}".format(
                 total=stats["total_params"],
                 trainable=stats["num_trainable_params"],
                 adapter=stats["num_adapter_params"],
                 shared_adapter=stats["shared_adapter_params"],
+                classifier=stats["classifier_param_count"],
                 ratio=stats["trainable_param_ratio"],
                 location=stats["adapter_location"],
                 train_classifier=stats["adapter_train_classifier"],
@@ -83,21 +86,41 @@ class PALLAdapter(Base):
             return []
         return list(self.net.shared_adapter.named_parameters())
 
+    def _classifier_param_items(self):
+        return list(self.net.classifier.named_parameters())
+
     def _zero_shared_adapter_grads(self):
         for _, param in self._shared_adapter_param_items():
+            param.grad = None
+
+    def _zero_classifier_grads(self):
+        for _, param in self._classifier_param_items():
             param.grad = None
 
     def _zeros_like_shared_adapter(self):
         return {name: torch.zeros_like(param) for name, param in self._shared_adapter_param_items()}
 
-    def _compute_shared_importance(self, task_ids):
+    def _zeros_like_classifier(self):
+        return {name: torch.zeros_like(param) for name, param in self._classifier_param_items()}
+
+    def _compute_shared_importance(self, task_ids, include_classifier=False):
         param_items = self._shared_adapter_param_items()
-        if not param_items or not task_ids:
-            return self._zeros_like_shared_adapter(), self._zeros_like_shared_adapter(), 0
+        classifier_items = self._classifier_param_items() if include_classifier else []
+        if (not param_items and not classifier_items) or not task_ids:
+            return (
+                self._zeros_like_shared_adapter(),
+                self._zeros_like_shared_adapter(),
+                self._zeros_like_classifier(),
+                0,
+            )
 
         sampled = 0
         loss = 0.0
         batch_size = max(1, self.args.batch_size // max(1, len(task_ids)))
+        classifier_requires_grad = [param.requires_grad for _, param in classifier_items]
+        if include_classifier:
+            for _, param in classifier_items:
+                param.requires_grad = True
         for task_id in task_ids:
             if not hasattr(self.memory, "buffer") or task_id not in self.memory.buffer:
                 continue
@@ -106,19 +129,35 @@ class PALLAdapter(Base):
             sampled += 1
 
         if sampled == 0:
-            return self._zeros_like_shared_adapter(), self._zeros_like_shared_adapter(), 0
+            if include_classifier:
+                for (_, param), flag in zip(classifier_items, classifier_requires_grad):
+                    param.requires_grad = flag
+            return (
+                self._zeros_like_shared_adapter(),
+                self._zeros_like_shared_adapter(),
+                self._zeros_like_classifier(),
+                0,
+            )
 
         self._zero_shared_adapter_grads()
+        self._zero_classifier_grads()
         loss = loss / sampled
         loss.backward()
         grads = {}
         importance = {}
+        classifier_grads = {}
         for name, param in param_items:
             grad = param.grad.detach().clone() if param.grad is not None else torch.zeros_like(param)
             grads[name] = grad
             importance[name] = grad.abs()
+        for name, param in classifier_items:
+            classifier_grads[name] = param.grad.detach().clone() if param.grad is not None else torch.zeros_like(param)
         self._zero_shared_adapter_grads()
-        return importance, grads, sampled
+        self._zero_classifier_grads()
+        if include_classifier:
+            for (_, param), flag in zip(classifier_items, classifier_requires_grad):
+                param.requires_grad = flag
+        return importance, grads, classifier_grads, sampled
 
     def _topk_shared_masks(self, importance_map, ratio):
         if ratio <= 0.0 or not importance_map:
@@ -155,33 +194,67 @@ class PALLAdapter(Base):
             offset += numel
         return masks, count, total_params
 
-    def _combine_shared_masks(self, candidate_masks, protected_masks):
-        crit_masks = {}
-        candidate_count = 0
-        protected_count = 0
-        crit_count = 0
-        for name, candidate in candidate_masks.items():
-            protected = protected_masks.get(name)
-            if protected is None:
-                protected = torch.zeros_like(candidate, dtype=torch.bool)
-            crit = torch.logical_and(candidate, torch.logical_not(protected))
-            crit_masks[name] = crit
-            candidate_count += int(candidate.sum().item())
-            protected_count += int(protected.sum().item())
-            crit_count += int(crit.sum().item())
-        return crit_masks, candidate_count, protected_count, crit_count
+    def _intersect_shared_masks(self, forget_masks, active_masks):
+        overlap_masks = {}
+        forget_count = 0
+        active_count = 0
+        overlap_count = 0
+        for name, forget_mask in forget_masks.items():
+            active_mask = active_masks.get(name)
+            if active_mask is None:
+                active_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
+            overlap = torch.logical_and(forget_mask, active_mask)
+            overlap_masks[name] = overlap
+            forget_count += int(forget_mask.sum().item())
+            active_count += int(active_mask.sum().item())
+            overlap_count += int(overlap.sum().item())
+        return overlap_masks, forget_count, active_count, overlap_count
 
-    def _apply_shared_forgetting_update(self, grad_map, crit_masks, lr):
+    def _resolve_shared_protect_strength(self, overlap_count, forget_count):
+        if self.args.adapter_shared_protect_strength is None:
+            if forget_count <= 0:
+                return 0.0
+            return float(overlap_count / max(1, forget_count))
+        return float(max(0.0, min(1.0, self.args.adapter_shared_protect_strength)))
+
+    def _apply_shared_forgetting_update(self, grad_map, forget_masks, overlap_masks, lr, protect_strength):
         lr = self.lr if lr is None else lr
-        updated = 0
+        effective_updated = 0
+        full_update_params = 0
+        soft_update_params = 0
         with torch.no_grad():
             for name, param in self._shared_adapter_param_items():
                 grad = grad_map.get(name)
-                mask = crit_masks.get(name)
-                if grad is None or mask is None or not torch.any(mask):
+                forget_mask = forget_masks.get(name)
+                overlap_mask = overlap_masks.get(name)
+                if grad is None or forget_mask is None or not torch.any(forget_mask):
                     continue
-                param.add_(grad * mask.to(dtype=grad.dtype), alpha=lr)
-                updated += int(mask.sum().item())
+                if overlap_mask is None:
+                    overlap_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
+                full_mask = torch.logical_and(forget_mask, torch.logical_not(overlap_mask))
+                soft_mask = torch.logical_and(forget_mask, overlap_mask)
+                if torch.any(full_mask):
+                    param.add_(grad * full_mask.to(dtype=grad.dtype), alpha=lr)
+                    full_update_params += int(full_mask.sum().item())
+                    effective_updated += int(full_mask.sum().item())
+                if torch.any(soft_mask):
+                    soft_scale = max(0.0, 1.0 - protect_strength)
+                    soft_update_params += int(soft_mask.sum().item())
+                    if soft_scale > 0.0:
+                        param.add_(grad * soft_mask.to(dtype=grad.dtype), alpha=lr * soft_scale)
+                        effective_updated += int(soft_mask.sum().item())
+        return effective_updated, full_update_params, soft_update_params
+
+    def _apply_classifier_forgetting_update(self, grad_map, lr):
+        lr = self.lr if lr is None else lr
+        updated = 0
+        with torch.no_grad():
+            for name, param in self._classifier_param_items():
+                grad = grad_map.get(name)
+                if grad is None:
+                    continue
+                param.add_(grad, alpha=lr)
+                updated += int((grad.abs() > 0).sum().item())
         return updated
 
     def train_mode(self):
@@ -283,45 +356,64 @@ class PALLAdapter(Base):
         active_tasks = list(remaining_tasks) if remaining_tasks is not None else [t for t in self.prev_tasks if t != task_id]
         reset_param_count = self.net.count_adapter_params(task_id)
         shared_param_count, total_shared_params = self.net.count_shared_adapter_params()
-        shared_candidate_masks = self._zeros_like_shared_adapter()
-        shared_protected_masks = self._zeros_like_shared_adapter()
-        shared_crit_masks = self._zeros_like_shared_adapter()
+        shared_forget_masks = self._zeros_like_shared_adapter()
+        shared_active_masks = self._zeros_like_shared_adapter()
+        shared_overlap_masks = self._zeros_like_shared_adapter()
         shared_forget_candidates = 0
-        shared_protected_params = 0
-        shared_s_share_crit = 0
+        shared_active_critical = 0
+        shared_overlap_critical = 0
+        shared_protect_strength = 0.0
+        shared_effective_forget_params = 0
+        shared_full_update_params = 0
+        shared_soft_update_params = 0
+        classifier_param_count = int(sum(param.numel() for _, param in self._classifier_param_items()))
+        classifier_forget_param_count = 0
         deleted_grads = self._zeros_like_shared_adapter()
+        classifier_deleted_grads = self._zeros_like_classifier()
         if total_shared_params > 0 and self.args.adapter_shared_forget_ratio > 0.0:
-            deleted_importance, deleted_grads, _ = self._compute_shared_importance([task_id])
-            shared_candidate_masks, _, _ = self._topk_shared_masks(
+            deleted_importance, deleted_grads, classifier_deleted_grads, _ = self._compute_shared_importance(
+                [task_id],
+                include_classifier=True,
+            )
+            shared_forget_masks, _, _ = self._topk_shared_masks(
                 deleted_importance,
                 self.args.adapter_shared_forget_ratio,
+            )
+        elif classifier_param_count > 0:
+            _, _, classifier_deleted_grads, _ = self._compute_shared_importance(
+                [task_id],
+                include_classifier=True,
             )
         if (
             total_shared_params > 0
             and self.args.adapter_shared_forget_ratio > 0.0
             and self.args.adapter_shared_protect_ratio > 0.0
         ):
-            active_importance, _, _ = self._compute_shared_importance(active_tasks)
-            shared_protected_masks, _, _ = self._topk_shared_masks(
+            active_importance, _, _, _ = self._compute_shared_importance(active_tasks)
+            shared_active_masks, _, _ = self._topk_shared_masks(
                 active_importance,
                 self.args.adapter_shared_protect_ratio,
             )
         (
-            shared_crit_masks,
+            shared_overlap_masks,
             shared_forget_candidates,
-            shared_protected_params,
-            shared_s_share_crit,
-        ) = self._combine_shared_masks(shared_candidate_masks, shared_protected_masks)
+            shared_active_critical,
+            shared_overlap_critical,
+        ) = self._intersect_shared_masks(shared_forget_masks, shared_active_masks)
+        shared_protect_strength = self._resolve_shared_protect_strength(
+            shared_overlap_critical,
+            shared_forget_candidates,
+        )
         total_overlap_scope = reset_param_count + total_shared_params
         if total_overlap_scope <= 0:
             total_overlap_scope = max(reset_param_count, total_shared_params, 1)
         share_ratio = shared_param_count / total_overlap_scope if total_overlap_scope else 0.0
-        s_share_crit_ratio = shared_s_share_crit / shared_param_count if shared_param_count else 0.0
+        s_share_crit_ratio = shared_overlap_critical / shared_param_count if shared_param_count else 0.0
 
         info = {
             "s_t": int(total_overlap_scope),
             "s_share": int(shared_param_count),
-            "s_share_crit": int(shared_s_share_crit),
+            "s_share_crit": int(shared_overlap_critical),
             "s_share_ratio": float(share_ratio),
             "s_share_crit_ratio": float(s_share_crit_ratio),
             "num_updated_params": 0,
@@ -332,10 +424,18 @@ class PALLAdapter(Base):
             },
             "adapter_shared_forget_ratio": float(self.args.adapter_shared_forget_ratio),
             "adapter_shared_protect_ratio": float(self.args.adapter_shared_protect_ratio),
+            "shared_protect_strength": float(shared_protect_strength),
             "shared_adapter_params": int(shared_param_count),
+            "classifier_param_count": int(classifier_param_count),
+            "classifier_forget_param_count": int(classifier_forget_param_count),
             "shared_forget_candidates": int(shared_forget_candidates),
-            "shared_protected_params": int(shared_protected_params),
-            "shared_s_share_crit": int(shared_s_share_crit),
+            "shared_active_critical": int(shared_active_critical),
+            "shared_overlap_critical": int(shared_overlap_critical),
+            "shared_effective_forget_params": int(shared_effective_forget_params),
+            "shared_full_update_params": int(shared_full_update_params),
+            "shared_soft_update_params": int(shared_soft_update_params),
+            "shared_protected_params": int(shared_active_critical),
+            "shared_s_share_crit": int(shared_overlap_critical),
             "finetune_diag": {
                 "active_tasks": active_tasks,
                 "deleted_task_id": task_id,
@@ -343,25 +443,49 @@ class PALLAdapter(Base):
                 "buffer_sizes": {},
             },
         }
-        if total_shared_params > 0:
-            print(
-                "[PALLAdapter] shared critical overlap: candidates={cand} protected={prot} s_share_crit={crit}".format(
-                    cand=shared_forget_candidates,
-                    prot=shared_protected_params,
-                    crit=shared_s_share_crit,
-                ),
-                flush=True,
-            )
-
         t_reset_start = time.perf_counter()
         self.net.reset_task_adapter(task_id)
         self.net.reset_classifier_slice(task_id, self.cpt)
-        if shared_s_share_crit > 0:
-            self._apply_shared_forgetting_update(
+        if shared_forget_candidates > 0:
+            (
+                shared_effective_forget_params,
+                shared_full_update_params,
+                shared_soft_update_params,
+            ) = self._apply_shared_forgetting_update(
                 deleted_grads,
-                shared_crit_masks,
+                shared_forget_masks,
+                shared_overlap_masks,
+                self.args.adapter_shared_forget_lr,
+                shared_protect_strength,
+            )
+            info["shared_effective_forget_params"] = int(shared_effective_forget_params)
+            info["shared_full_update_params"] = int(shared_full_update_params)
+            info["shared_soft_update_params"] = int(shared_soft_update_params)
+        if classifier_param_count > 0:
+            classifier_forget_param_count = self._apply_classifier_forgetting_update(
+                classifier_deleted_grads,
                 self.args.adapter_shared_forget_lr,
             )
+            info["classifier_forget_param_count"] = int(classifier_forget_param_count)
+        if total_shared_params > 0:
+            print(
+                "[PALLAdapter] shared critical soft protection: forget_candidates={cand} active_critical={active} intersection={crit} protect_strength={strength:.4f} full_update={full} soft_update={soft}".format(
+                    cand=shared_forget_candidates,
+                    active=shared_active_critical,
+                    crit=shared_overlap_critical,
+                    strength=shared_protect_strength,
+                    full=shared_full_update_params,
+                    soft=shared_soft_update_params,
+                ),
+                flush=True,
+            )
+        print(
+            "[PALLAdapter] classifier forgetting: classifier_param_count={total} classifier_forget_param_count={updated}".format(
+                total=classifier_param_count,
+                updated=classifier_forget_param_count,
+            ),
+            flush=True,
+        )
         info["t_reset"] = time.perf_counter() - t_reset_start
         self.archived_task_ids.add(task_id)
 
