@@ -156,6 +156,9 @@ def validate_experiment_args(arg_namespace):
             parser.error("CIFAR-100 superclass tasks require --class_per_task 5.")
         if not (1 <= arg_namespace.n_tasks <= 20):
             parser.error("CIFAR-100 superclass tasks require --n_tasks in [1, 20].")
+    if arg_namespace.dataset == "tinyimagenet":
+        if arg_namespace.class_per_task * arg_namespace.n_tasks > 200:
+            parser.error("TinyImageNet requires --class_per_task * --n_tasks <= 200.")
     if arg_namespace.num_workers is not None and arg_namespace.num_workers < 0:
         parser.error("--num_workers must be >= 0.")
     if arg_namespace.method == "pall_adapter" and arg_namespace.adapter_bottleneck <= 0:
@@ -399,13 +402,17 @@ args.is_macos = sys.platform == "darwin"
 args.resolved_num_workers = resolve_num_workers(args)
 args.resolved_pin_memory = resolve_pin_memory(args)
 args.resolved_persistent_workers = False if args.resolved_num_workers > 0 else False
+dataset_metadata = get_dataset_metadata(args.dataset)
+args.num_classes = dataset_metadata["num_classes"]
+args.image_size = dataset_metadata["image_size"]
+args.channels = dataset_metadata["channels"]
 if args.method in PALL_METHODS:
     args.arch = 'subnet_' + args.arch.lower()
 elif args.method in ADAPTER_METHODS:
     args.arch = 'adapter_' + args.arch.lower()
 else:
     args.arch = args.arch.lower()
-args.dim_input = (3, 64, 64) if args.dataset == "tinyimagenet" else (3, 32, 32)
+args.dim_input = (args.channels, args.image_size, args.image_size)
 
 
 def evaluate(test_datasets, args, model, return_logits=True, verbose=True):
@@ -1590,6 +1597,10 @@ def main():
     log_event(logger, "[INFO] -- Experiment Configs --")
     log_event(logger, "       1. data & task")
     log_event(logger, f"          dataset:      {args.dataset}")
+    log_event(
+        logger,
+        f"          shape:        {args.channels}x{args.image_size}x{args.image_size} | classes={args.num_classes}",
+    )
     log_event(logger, f"          n_tasks:      {args.n_tasks}")
     log_event(logger, f"          # class/task: {args.class_per_task}")
     log_event(logger, "       2. training")

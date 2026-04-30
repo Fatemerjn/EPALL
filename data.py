@@ -1,7 +1,10 @@
 import os
+from pathlib import Path
+
 import numpy as np
-from torchvision import datasets, transforms
 from torch.utils.data import Dataset
+from torchvision import datasets, transforms
+from torchvision.datasets.folder import default_loader
 
 
 _CIFAR10_TRAIN_TRANSFORMS = [
@@ -29,7 +32,7 @@ _CIFAR100_TEST_TRANSFORMS = [
 ]
 
 _TINYIMAGENET_TRAIN_TRANSFORMS = [
-    transforms.RandomResizedCrop(64),
+    transforms.RandomCrop(64, padding=4),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
@@ -63,6 +66,105 @@ _CIFAR100_SUPERCLASSES = [
     ("vehicles_2", ["lawn_mower", "rocket", "streetcar", "tank", "tractor"]),
 ]
 
+_DATASET_METADATA = {
+    "cifar10": {"num_classes": 10, "image_size": 32, "channels": 3},
+    "cifar100": {"num_classes": 100, "image_size": 32, "channels": 3},
+    "tinyimagenet": {"num_classes": 200, "image_size": 64, "channels": 3},
+}
+
+
+def get_dataset_metadata(dataset_name):
+    try:
+        return dict(_DATASET_METADATA[dataset_name])
+    except KeyError as exc:
+        raise ValueError(f"Unsupported dataset: {dataset_name}") from exc
+
+
+def _resolve_tinyimagenet_root(data_dir):
+    candidates = [
+        Path(data_dir) / "tiny-imagenet-200",
+        Path(data_dir),
+    ]
+    for candidate in candidates:
+        if (
+            (candidate / "train").is_dir()
+            and (candidate / "val").is_dir()
+            and (candidate / "wnids.txt").is_file()
+        ):
+            return candidate
+    raise FileNotFoundError(
+        "TinyImageNet not found. Expected data/tiny-imagenet-200/ with train/, val/, and wnids.txt."
+    )
+
+
+def _load_tinyimagenet_wnids(root):
+    with open(root / "wnids.txt", "r", encoding="utf-8") as handle:
+        wnids = [line.strip() for line in handle if line.strip()]
+    expected_classes = _DATASET_METADATA["tinyimagenet"]["num_classes"]
+    if len(wnids) != expected_classes:
+        raise ValueError(f"Expected {expected_classes} TinyImageNet classes in wnids.txt, found {len(wnids)}.")
+    return wnids
+
+
+class TinyImageNetTrainDataset(datasets.ImageFolder):
+    def __init__(self, root, wnids, transform=None):
+        self.wnids = list(wnids)
+        self._wnid_to_idx = {wnid: idx for idx, wnid in enumerate(self.wnids)}
+        super().__init__(str(root), transform=transform)
+        self.targets = [target for _, target in self.samples]
+
+    def find_classes(self, directory):
+        missing = [wnid for wnid in self.wnids if not os.path.isdir(os.path.join(directory, wnid))]
+        if missing:
+            raise FileNotFoundError(
+                f"Missing TinyImageNet train class directories under {directory}: {missing[:5]}"
+            )
+        return list(self.wnids), dict(self._wnid_to_idx)
+
+
+class TinyImageNetValDataset(Dataset):
+    def __init__(self, root, wnids, transform=None):
+        super().__init__()
+        self.root = Path(root)
+        self.transform = transform
+        self.loader = default_loader
+        self.classes = list(wnids)
+        self.class_to_idx = {wnid: idx for idx, wnid in enumerate(self.classes)}
+
+        annotations_path = self.root / "val_annotations.txt"
+        images_dir = self.root / "images"
+        if not annotations_path.is_file():
+            raise FileNotFoundError(f"TinyImageNet validation annotations not found: {annotations_path}")
+        if not images_dir.is_dir():
+            raise FileNotFoundError(f"TinyImageNet validation image directory not found: {images_dir}")
+
+        self.samples = []
+        with open(annotations_path, "r", encoding="utf-8") as handle:
+            for line in handle:
+                parts = line.strip().split("\t")
+                if len(parts) < 2:
+                    continue
+                image_name, wnid = parts[0], parts[1]
+                if wnid not in self.class_to_idx:
+                    raise ValueError(f"Unknown TinyImageNet wnid '{wnid}' in {annotations_path}.")
+                image_path = images_dir / image_name
+                if not image_path.is_file():
+                    raise FileNotFoundError(f"TinyImageNet validation image not found: {image_path}")
+                self.samples.append((str(image_path), self.class_to_idx[wnid]))
+
+        self.targets = [target for _, target in self.samples]
+        self.imgs = list(self.samples)
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, index):
+        image_path, target = self.samples[index]
+        image = self.loader(image_path)
+        if self.transform is not None:
+            image = self.transform(image)
+        return image, target
+
 
 def get_cifar100_superclass_tasks(dataset):
     label_to_index = {label: idx for idx, label in enumerate(dataset.classes)}
@@ -95,11 +197,11 @@ class SubDataset(Dataset):
 def get_task_datasets(args):
     T = args.n_tasks
     CPT = args.class_per_task
+    dataset_metadata = get_dataset_metadata(args.dataset)
 
     data = {
         'cifar10': datasets.CIFAR10,
         'cifar100': datasets.CIFAR100,
-        'tinyimagenet': datasets.ImageFolder,
     }
     train_transform = {
         'cifar10': _CIFAR10_TRAIN_TRANSFORMS,
@@ -113,10 +215,24 @@ def get_task_datasets(args):
     }
 
     if args.dataset == 'tinyimagenet':
-        train = data[args.dataset](os.path.join(args.data_dir, 'tinyimagenet', 'train'),
-                                   transform=transforms.Compose(train_transform[args.dataset]))
-        test = data[args.dataset](os.path.join(args.data_dir, 'tinyimagenet', 'val'),
-                                  transform=transforms.Compose(test_transform[args.dataset]))
+        if T * CPT > dataset_metadata["num_classes"]:
+            raise ValueError("TinyImageNet requires --class_per_task * --n_tasks <= 200.")
+        tinyimagenet_root = _resolve_tinyimagenet_root(args.data_dir)
+        wnids = _load_tinyimagenet_wnids(tinyimagenet_root)
+        train = TinyImageNetTrainDataset(
+            tinyimagenet_root / 'train',
+            wnids=wnids,
+            transform=transforms.Compose(train_transform[args.dataset]),
+        )
+        test = TinyImageNetValDataset(
+            tinyimagenet_root / 'val',
+            wnids=wnids,
+            transform=transforms.Compose(test_transform[args.dataset]),
+        )
+        print(
+            f"[INFO] Loaded TinyImageNet: num_classes={dataset_metadata['num_classes']} "
+            f"train_size={len(train)} val_size={len(test)} tasks={T} classes_per_task={CPT}"
+        )
     else:
         train = data[args.dataset](args.data_dir, train=True, download=True,
                                    transform=transforms.Compose(train_transform[args.dataset]))
@@ -131,6 +247,9 @@ def get_task_datasets(args):
             raise ValueError("CIFAR-100 superclass tasks require --n_tasks <= 20.")
         labels_per_task = labels_per_task[:T]
         permutation = [label for task_labels in labels_per_task for label in task_labels]
+    elif args.dataset == "tinyimagenet":
+        permutation = np.random.permutation(np.arange(dataset_metadata["num_classes"]))[:T * CPT]
+        labels_per_task = [list(permutation[task_id * CPT:(task_id + 1) * CPT]) for task_id in range(T)]
     else:
         # generate randomized labels-per-task
         permutation = np.random.permutation(np.arange(T * CPT))

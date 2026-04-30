@@ -46,6 +46,14 @@ Notes:
 - `cifar100`
 - `tinyimagenet`
 
+TinyImageNet expects the standard layout under `data/tiny-imagenet-200/`:
+
+```bash
+python3 main.py --dataset tinyimagenet --data_dir ./data \
+  --class_per_task 10 --n_tasks 20 --n_forget 3 \
+  --arch resnet18 --method sequential --n_epochs 1 --seed 0
+```
+
 Current `cifar100` constraint in code:
 
 - `--class_per_task` must be `5`.
