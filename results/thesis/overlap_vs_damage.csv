@@ -1,4 +1,0 @@
-dataset,method,experiment_tag,seed,final_avg_acc,avg_forgetting,Fu,WorstDrop,Au,updated_param_ratio,adapter_param_ratio,S_share,S_share_crit,S_share_ratio,S_share_crit_ratio
-cifar10,pall_adapter,controlled_cifar10_high_pall_adapter_e1_v1,0,0.747375,0.046500,0.003500,0.009000,0.536000,0.007637,0.008728,16384,1365,0.500000,0.083313
-cifar10,pall_adapter,controlled_cifar10_low_pall_adapter_e1_v1,0,0.756750,0.043600,-0.003875,0.000500,0.513000,0.007637,0.008728,16384,1440,0.500000,0.087891
-cifar10,pall_adapter,controlled_cifar10_medium_pall_adapter_e1_v1,0,0.731375,0.084200,-0.006125,-0.001000,0.411500,0.007637,0.008728,16384,1545,0.500000,0.094299
