@@ -150,6 +150,31 @@ python3 main.py --dataset cifar10 --class_per_task 2 --n_tasks 5 --n_forget 3 \
 
 See `docs/adapter_notes.md` for adapter-specific notes and commands.
 
+## Journal Experiments (Overlap-Aware Forgetting)
+
+The journal experiments focus on selective forgetting with a shared adapter pathway in `pall_adapter`. The key control is `--adapter_shared_bottleneck`, which enables a shared low-rank adapter block when set to a positive value. Forgetting pressure on that shared block is controlled by `--adapter_shared_forget_ratio`, while `--adapter_shared_protect_ratio` reserves a fraction of shared critical parameters against reset or overwrite during forgetting. The resulting critical shared overlap, denoted `S_share_crit`, measures the subset of shared adapter parameters that are both reused across tasks and marked as important under the protection rule.
+
+These runs target the overlap-forgetting trade-off: increasing shared overlap can improve parameter efficiency and transfer, but it can also amplify collateral damage when forget updates pass through shared critical parameters. The adapter ablations therefore separate no-shared, shared-without-protection, and shared-critical regimes to quantify how protection changes this trade-off at fixed schedules and seeds.
+
+The ablation study uses fixed-schedule `pall_adapter` runs over named configurations such as `adapter_no_shared`, `adapter_shared_no_protection`, and protected critical-overlap variants (`p005`, `p010`, `p020`). Correlation analysis then aggregates per-run `S_share`, `S_share_crit`, `S_share_ratio`, and `S_share_crit_ratio` against outcome metrics such as final accuracy, average forgetting, `WorstDrop`, and `Au`, to test whether larger critical shared overlap is associated with stronger forgetting damage or accuracy loss.
+
+Adapter ablation runner:
+
+```bash
+python3 tools/run_adapter_ablation.py \
+  --dataset cifar100 --seeds 0 1 --epochs 3 \
+  --configs adapter_no_shared adapter_shared_no_protection adapter_shared_critical_p020 \
+  --dry-run
+```
+
+Overlap-damage analysis:
+
+```bash
+python3 tools/analyze_overlap_vs_damage.py \
+  --root runs --outdir results/thesis \
+  --method pall_adapter --exclude-empty-tags
+```
+
 ## Run Artifacts
 
 Run directory pattern:
