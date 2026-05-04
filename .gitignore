@@ -24,3 +24,6 @@ comparison_*.csv
 comparison_*.md
 results_*.csv
 .clang-module-cache/
+results/
+runs/
+schedules/*candidate*
