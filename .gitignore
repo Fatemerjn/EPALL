@@ -16,6 +16,8 @@ checkpoints/
 *.ckpt
 *.pt
 *.pth
+*.png
+*.pdf
 
 data/
 
