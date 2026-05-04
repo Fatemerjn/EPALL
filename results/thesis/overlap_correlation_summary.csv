@@ -1,5 +1,5 @@
 metric,pearson_r,n
-WorstDrop,0.043526,10
-avg_forgetting,0.644175,10
-final_avg_acc,0.052447,10
-Au,-0.162472,10
+WorstDrop,-0.886993,3
+avg_forgetting,0.881517,3
+final_avg_acc,-0.695517,3
+Au,-0.968118,3
