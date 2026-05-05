@@ -245,7 +245,53 @@ class PALLAdapter(Base):
             return float(overlap_count / max(1, forget_count))
         return float(max(0.0, min(1.0, self.args.adapter_shared_protect_strength)))
 
-    def _apply_shared_forgetting_update(self, grad_map, forget_masks, critical_masks, lr, protect_strength):
+    def _select_hard_protected_mask(self, importance_map, critical_masks, ratio):
+        if ratio <= 0.0 or not critical_masks:
+            return self._zeros_like_shared_adapter(), 0
+
+        score_chunks = []
+        meta = []
+        total_critical = 0
+        for name, critical_mask in critical_masks.items():
+            if critical_mask is None:
+                continue
+            flat_critical = critical_mask.reshape(-1)
+            critical_indices = torch.nonzero(flat_critical, as_tuple=False).reshape(-1)
+            if critical_indices.numel() == 0:
+                continue
+            importance = importance_map.get(name)
+            if importance is None:
+                importance = torch.zeros_like(critical_mask, dtype=torch.float32)
+            flat_scores = importance.reshape(-1)[critical_indices]
+            score_chunks.append(flat_scores)
+            meta.append((name, critical_mask.shape, critical_indices, flat_critical.numel(), critical_mask.device))
+            total_critical += int(critical_indices.numel())
+
+        if total_critical == 0:
+            return self._zeros_like_shared_adapter(), 0
+
+        k = min(int(math.ceil(ratio * total_critical)), total_critical)
+        if k <= 0:
+            return self._zeros_like_shared_adapter(), 0
+
+        all_scores = torch.cat(score_chunks)
+        top_indices = torch.topk(all_scores, k, largest=True, sorted=False).indices
+        selected = torch.zeros_like(all_scores, dtype=torch.bool)
+        selected[top_indices] = True
+
+        hard_protected_masks = self._zeros_like_shared_adapter()
+        offset = 0
+        protected_count = 0
+        for name, shape, critical_indices, numel, device in meta:
+            local_selected = selected[offset:offset + critical_indices.numel()]
+            flat_mask = torch.zeros(numel, dtype=torch.bool, device=device)
+            flat_mask[critical_indices[local_selected]] = True
+            hard_protected_masks[name] = flat_mask.view(shape)
+            protected_count += int(local_selected.sum().item())
+            offset += critical_indices.numel()
+        return hard_protected_masks, protected_count
+
+    def _apply_shared_forgetting_update(self, grad_map, forget_masks, critical_masks, hard_protected_masks, lr, protect_strength):
         lr = self.lr if lr is None else lr
         effective_updated = 0
         full_update_params = 0
@@ -255,14 +301,19 @@ class PALLAdapter(Base):
                 grad = grad_map.get(name)
                 forget_mask = forget_masks.get(name)
                 critical_mask = critical_masks.get(name)
+                hard_protected_mask = hard_protected_masks.get(name)
                 if grad is None or forget_mask is None or not torch.any(forget_mask):
                     continue
                 if critical_mask is None:
                     critical_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
+                if hard_protected_mask is None:
+                    hard_protected_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
                 # Apply the full forgetting update outside the shared critical
-                # region, and soften the update inside the critical region.
+                # region. Inside the critical region, a selected hard-protected
+                # subset is frozen, while the remaining critical parameters
+                # receive a softened forgetting update.
                 full_mask = torch.logical_and(forget_mask, torch.logical_not(critical_mask))
-                soft_mask = torch.logical_and(forget_mask, critical_mask)
+                soft_mask = torch.logical_and(critical_mask, torch.logical_not(hard_protected_mask))
                 if torch.any(full_mask):
                     param.add_(grad * full_mask.to(dtype=grad.dtype), alpha=lr)
                     full_update_params += int(full_mask.sum().item())
@@ -389,6 +440,7 @@ class PALLAdapter(Base):
         shared_forget_mask = self._zeros_like_shared_adapter()
         shared_active_mask = self._zeros_like_shared_adapter()
         shared_critical_mask = self._zeros_like_shared_adapter()
+        hard_protected_shared_mask = self._zeros_like_shared_adapter()
         shared_forget_count = 0
         shared_active_count = 0
         shared_critical_count = 0
@@ -397,9 +449,11 @@ class PALLAdapter(Base):
         shared_full_update_params = 0
         shared_soft_update_params = 0
         protected_adapter_params = 0
+        hard_protected_adapter_params = 0
         classifier_param_count = int(sum(param.numel() for _, param in self._classifier_param_items()))
         classifier_forget_param_count = 0
         deleted_grads = self._zeros_like_shared_adapter()
+        active_importance = self._zeros_like_shared_adapter()
         classifier_deleted_grads = self._zeros_like_classifier()
         if total_shared_params > 0 and self.args.adapter_shared_forget_ratio > 0.0:
             deleted_importance, deleted_grads, classifier_deleted_grads, _ = self._compute_shared_importance(
@@ -433,6 +487,15 @@ class PALLAdapter(Base):
             shared_active_count,
             shared_critical_count,
         ) = self._build_shared_critical_mask(shared_forget_mask, shared_active_mask)
+        # Within the critical shared region, protect a top-ranked subset
+        # according to adapter_shared_protect_ratio. These parameters are held
+        # fixed during forgetting, while the remaining critical parameters can
+        # still receive a softened forgetting update.
+        hard_protected_shared_mask, hard_protected_adapter_params = self._select_hard_protected_mask(
+            active_importance,
+            shared_critical_mask,
+            self.args.adapter_shared_protect_ratio,
+        )
         shared_protect_strength = self._resolve_shared_protect_strength(
             shared_critical_count,
             shared_forget_count,
@@ -465,12 +528,13 @@ class PALLAdapter(Base):
             "num_updated_params": 0,
             "protection": {
                 "active": bool(shared_critical_count > 0),
-                "method_variant": "adapter_explicit_critical_mask",
+                "method_variant": "adapter_hard_critical_mask",
                 "method_note": self.method_note,
                 "shared_forget_count": int(shared_forget_count),
                 "shared_active_count": int(shared_active_count),
                 "shared_critical_count": int(shared_critical_count),
                 "protected_adapter_params": int(protected_adapter_params),
+                "hard_protected_adapter_params": int(hard_protected_adapter_params),
                 "updated_adapter_params": int(updated_adapter_params),
             },
             "adapter_shared_forget_ratio": float(self.args.adapter_shared_forget_ratio),
@@ -484,6 +548,7 @@ class PALLAdapter(Base):
             "shared_critical_count": int(shared_critical_count),
             "shared_critical_ratio": float(shared_critical_ratio),
             "protected_adapter_params": int(protected_adapter_params),
+            "hard_protected_adapter_params": int(hard_protected_adapter_params),
             "updated_adapter_params": int(updated_adapter_params),
             "shared_forget_candidates": int(shared_forget_count),
             "shared_active_critical": int(shared_active_count),
@@ -512,16 +577,19 @@ class PALLAdapter(Base):
                 deleted_grads,
                 shared_forget_mask,
                 shared_critical_mask,
+                hard_protected_shared_mask,
                 self.args.adapter_shared_forget_lr,
                 shared_protect_strength,
             )
             protected_adapter_params = int(shared_critical_count)
             info["updated_adapter_params"] = int(updated_adapter_params)
             info["protected_adapter_params"] = int(protected_adapter_params)
+            info["hard_protected_adapter_params"] = int(hard_protected_adapter_params)
             info["shared_effective_forget_params"] = int(updated_adapter_params)
             info["shared_full_update_params"] = int(shared_full_update_params)
             info["shared_soft_update_params"] = int(shared_soft_update_params)
             info["protection"]["protected_adapter_params"] = int(protected_adapter_params)
+            info["protection"]["hard_protected_adapter_params"] = int(hard_protected_adapter_params)
             info["protection"]["updated_adapter_params"] = int(updated_adapter_params)
         if classifier_param_count > 0:
             classifier_forget_param_count = self._apply_classifier_forgetting_update(
@@ -531,10 +599,11 @@ class PALLAdapter(Base):
             info["classifier_forget_param_count"] = int(classifier_forget_param_count)
         if total_shared_params > 0:
             print(
-                "[PALLAdapter] shared critical mask: forget_count={forget_count} active_count={active_count} critical_count={critical_count} protect_strength={strength:.4f} full_update={full} soft_update={soft}".format(
+                "[PALLAdapter] shared hard critical mask: forget_count={forget_count} active_count={active_count} critical_count={critical_count} hard_protected={hard_protected} protect_strength={strength:.4f} full_update={full} soft_update={soft}".format(
                     forget_count=shared_forget_count,
                     active_count=shared_active_count,
                     critical_count=shared_critical_count,
+                    hard_protected=hard_protected_adapter_params,
                     strength=shared_protect_strength,
                     full=shared_full_update_params,
                     soft=shared_soft_update_params,
