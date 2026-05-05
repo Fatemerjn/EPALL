@@ -1,12 +1,12 @@
-# Adapter Prototype Notes
+# Adapter Notes
 
-`pall_adapter` is a minimal selective-forgetting prototype with a frozen ResNet backbone and per-task bottleneck adapters.
+`pall_adapter` uses a frozen ResNet backbone with per-task bottleneck adapters.
 
 Curated adapter outputs live under `results/adapter/`.
 
-Known limitation:
+Interpretation:
 
-- `pall_adapter uses adapter reset prototype, not full PALL overlap mask yet.`
+- `PALL-Adapter is a parameter-efficient selective forgetting variant based on task-specific adapters and a shared adapter component. It applies partial overlap-aware protection to shared adapter parameters and should be interpreted as a cost/stability-oriented approximation rather than strict exact unlearning in the full PALL subnet-masking sense.`
 
 Smoke test:
 

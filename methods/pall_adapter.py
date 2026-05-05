@@ -18,8 +18,11 @@ class PALLAdapter(Base):
             save_logits=False,
         )
         self.k_shot = args.k_shot
-        self.prototype_warning = "pall_adapter uses adapter reset prototype, not full PALL overlap mask yet."
-        self._prototype_warning_logged = False
+        self.method_note = (
+            "pall_adapter uses parameter-efficient overlap-aware adapter forgetting "
+            "with partial shared-adapter protection."
+        )
+        self._method_note_logged = False
         self.archived_task_ids = set()
 
         self.net.freeze_backbone(train_classifier=self.args.adapter_train_classifier)
@@ -28,7 +31,7 @@ class PALLAdapter(Base):
         self._log_param_stats()
         if not self.args.adapter_train_classifier:
             print("[WARN] pall_adapter classifier training is disabled; only adapters will be optimized.", flush=True)
-        self._log_prototype_warning()
+        self._log_method_note()
 
     def _build_param_stats(self):
         total_params = self.net.count_total_params()
@@ -98,10 +101,10 @@ class PALLAdapter(Base):
                 )
             )
 
-    def _log_prototype_warning(self):
-        if not self._prototype_warning_logged:
-            print(f"[WARN] {self.prototype_warning}", flush=True)
-            self._prototype_warning_logged = True
+    def _log_method_note(self):
+        if not self._method_note_logged:
+            print(f"[WARN] {self.method_note}", flush=True)
+            self._method_note_logged = True
 
     def _shared_adapter_param_items(self):
         if getattr(self.net, "shared_adapter", None) is None:
@@ -371,7 +374,7 @@ class PALLAdapter(Base):
         if task_id not in self.prev_tasks:
             raise AssertionError(f"[ERROR] {task_id} is not learned yet")
 
-        self._log_prototype_warning()
+        self._log_method_note()
         forget_start = time.perf_counter()
         self.log_progress(f"forget phase start: task={task_id}")
 
@@ -449,8 +452,8 @@ class PALLAdapter(Base):
             "num_updated_params": 0,
             "protection": {
                 "active": False,
-                "method_variant": "adapter_prototype",
-                "warning": self.prototype_warning,
+                "method_variant": "adapter_overlap_aware_peft",
+                "method_note": self.method_note,
             },
             "adapter_shared_forget_ratio": float(self.args.adapter_shared_forget_ratio),
             "adapter_shared_protect_ratio": float(self.args.adapter_shared_protect_ratio),
