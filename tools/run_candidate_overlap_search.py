@@ -56,6 +56,11 @@ def parse_args() -> argparse.Namespace:
         default=[0.1],
         help="Shared protection ratios for pall_adapter. Ignored for non-adapter methods.",
     )
+    parser.add_argument(
+        "--tag-suffix",
+        default=None,
+        help="Optional suffix appended to experiment tags before the trailing _v1.",
+    )
     parser.add_argument("--forget-tasks", type=int, nargs="+", default=None, help="Optional forget_task_id filter.")
     parser.add_argument("--dry-run", action="store_true", help="Print commands only.")
     parser.add_argument("--run", action="store_true", help="Execute commands sequentially.")
@@ -189,6 +194,17 @@ def protect_ratio_tag(protect_ratio: float) -> str:
     return f"p{scaled:03d}"
 
 
+def apply_tag_suffix(base_tag: str, tag_suffix: str | None) -> str:
+    if not tag_suffix:
+        return base_tag
+    normalized_suffix = tag_suffix.strip()
+    if normalized_suffix == "":
+        return base_tag
+    if base_tag.endswith("_v1"):
+        return f"{base_tag[:-3]}_{normalized_suffix}_v1"
+    return f"{base_tag}_{normalized_suffix}"
+
+
 def build_commands(
     args: argparse.Namespace, repo_root: Path, rows: Sequence[dict[str, str]]
 ) -> list[tuple[int, str, str, float | None, list[str]]]:
@@ -209,6 +225,7 @@ def build_commands(
                         f"candidate_{args.dataset}_forget{forget_task_id}_{method}_"
                         f"{protect_ratio_tag(protect_ratio)}_e{args.epochs}_v1"
                     )
+                experiment_tag = apply_tag_suffix(experiment_tag, args.tag_suffix)
                 command = [
                     args.python,
                     str(main_file),
