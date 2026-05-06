@@ -14,6 +14,12 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Sequence
 
 
+CANONICAL_METHOD_VARIANTS = {
+    "adapter_hard_critical_mask": "pall_adapter_hard_mask",
+    "adapter_explicit_critical_mask": "pall_adapter_soft_mask",
+}
+
+
 OUTPUT_COLUMNS = [
     "dataset",
     "method",
@@ -125,6 +131,15 @@ def first_non_none(*values: Any) -> Any:
         if value is not None:
             return value
     return None
+
+
+def canonicalize_method_variant(name: Any) -> str:
+    if name is None:
+        return ""
+    text = str(name).strip()
+    if text == "" or text.lower() == "none":
+        return ""
+    return CANONICAL_METHOD_VARIANTS.get(text, text)
 
 
 def nested_dict(value: Any) -> Dict[str, Any]:
@@ -285,6 +300,19 @@ def build_row(run_dir: Path) -> Optional[Dict[str, Any]]:
     row = {
         "dataset": first_non_none(config.get("dataset"), run_block.get("dataset")),
         "method": first_non_none(config.get("method"), run_block.get("method")),
+        "method_variant": canonicalize_method_variant(
+            first_non_none(
+                nested_dict(metrics.get("normalized_results")).get("final", {}).get("method_variant")
+                if isinstance(nested_dict(metrics.get("normalized_results")).get("final"), dict)
+                else None,
+                nested_dict(metrics.get("normalized_results")).get("final", {}).get("protection", {}).get("method_variant")
+                if isinstance(nested_dict(metrics.get("normalized_results")).get("final"), dict)
+                and isinstance(nested_dict(metrics.get("normalized_results")).get("final", {}).get("protection"), dict)
+                else None,
+                metrics.get("method_variant"),
+                nested_dict(metrics.get("protection")).get("method_variant"),
+            )
+        ),
         "experiment_tag": first_non_none(config.get("experiment_tag"), run_block.get("experiment_tag")),
         "seed": first_non_none(config.get("seed"), run_block.get("seed")),
         "final_avg_acc": parse_float(extract_value(candidates, "final_avg_acc", "final_avg_accuracy")),

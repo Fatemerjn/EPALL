@@ -22,6 +22,12 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
+CANONICAL_METHOD_VARIANTS = {
+    "adapter_hard_critical_mask": "pall_adapter_hard_mask",
+    "adapter_explicit_critical_mask": "pall_adapter_soft_mask",
+}
+
+
 OUTPUT_COLUMNS = [
     "dataset",
     "method",
@@ -85,6 +91,15 @@ def first_non_none(*values: Any) -> Any:
         if value is not None:
             return value
     return None
+
+
+def canonicalize_method_variant(name: Any) -> str:
+    if name is None:
+        return ""
+    text = str(name).strip()
+    if text == "" or text.lower() == "none":
+        return ""
+    return CANONICAL_METHOD_VARIANTS.get(text, text)
 
 
 def nested_get(payload: Any, *keys: str) -> Any:
@@ -333,6 +348,17 @@ def extract_run_row(
         "run_path": str(metrics_path.parent),
         "dataset": str(dataset),
         "method": str(method),
+        "method_variant": canonicalize_method_variant(
+            first_non_none(
+                nested_get(metrics, "normalized_results", "final", "protection", "method_variant"),
+                final_unlearning.get("method_variant"),
+                nested_get(final_unlearning, "protection", "method_variant"),
+                raw_last_event.get("method_variant"),
+                nested_get(raw_last_event, "protection", "method_variant"),
+                metrics.get("method_variant"),
+                nested_get(metrics, "protection", "method_variant"),
+            )
+        ),
         "experiment_tag": experiment_tag,
         "seed": first_non_none(
             metrics.get("seed"),

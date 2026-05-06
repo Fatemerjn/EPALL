@@ -15,6 +15,12 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Sequence
 
 
+CANONICAL_METHOD_VARIANTS = {
+    "adapter_hard_critical_mask": "pall_adapter_hard_mask",
+    "adapter_explicit_critical_mask": "pall_adapter_soft_mask",
+}
+
+
 OUTPUT_COLUMNS = [
     "dataset",
     "method",
@@ -138,6 +144,13 @@ def normalize_text(value: Any) -> str:
     if text.lower() == "none":
         return ""
     return text
+
+
+def canonicalize_method_variant(name: Any) -> str:
+    text = normalize_text(name)
+    if not text:
+        return ""
+    return CANONICAL_METHOD_VARIANTS.get(text, text)
 
 
 def iter_run_dirs(root: Path) -> Iterable[Path]:
@@ -266,7 +279,7 @@ def extract_method_variant(metrics: Dict[str, Any], candidates: Sequence[Dict[st
     fallback_values: list[str] = []
     for candidate in candidates:
         for value in (candidate.get("method_variant"), nested_get(candidate, "protection", "method_variant")):
-            text = normalize_text(value)
+            text = canonicalize_method_variant(value)
             if not text:
                 continue
             if text.lower() not in generic_variants:
@@ -277,7 +290,7 @@ def extract_method_variant(metrics: Dict[str, Any], candidates: Sequence[Dict[st
         nested_get(metrics, "summary", "method_variant"),
         metrics.get("method"),
     ):
-        text = normalize_text(value)
+        text = canonicalize_method_variant(value)
         if text and text.lower() not in generic_variants:
             return text
         if text:

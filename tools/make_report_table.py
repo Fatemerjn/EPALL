@@ -23,6 +23,12 @@ OUTPUT_COLUMNS = [
     "Au",
     "updated_param_ratio_mean",
     "adapter_param_ratio_mean",
+    "critical_ratio",
+    "protected_ratio",
+    "updated_overlap_ratio",
+    "shared_critical_count",
+    "protected_params",
+    "updated_params",
     "t_forget_total_mean",
 ]
 
@@ -112,6 +118,17 @@ def format_number(value: Any, decimals: int = 4) -> str:
     return f"{number:.{decimals}f}"
 
 
+def first_present_value(row: Dict[str, str], *keys: str) -> Any:
+    for key in keys:
+        value = row.get(key)
+        if value is None:
+            continue
+        if str(value).strip() == "":
+            continue
+        return value
+    return None
+
+
 def format_mean_std(row: Dict[str, str], mean_key: str, std_key: str, decimals: int = 4) -> str:
     mean_value = parse_float(row.get(mean_key))
     std_value = parse_float(row.get(std_key))
@@ -133,6 +150,56 @@ def compact_row(row: Dict[str, str]) -> Dict[str, str]:
         "Au": format_mean_std(row, "Au_mean", "Au_std"),
         "updated_param_ratio_mean": format_number(row.get("updated_param_ratio_mean")),
         "adapter_param_ratio_mean": format_number(row.get("adapter_param_ratio_mean")),
+        "critical_ratio": format_number(
+            first_present_value(
+                row,
+                "overlap_shared_critical_ratio",
+                "critical_ratio",
+                "S_share_crit_ratio",
+                "s_share_crit_ratio",
+                "shared_critical_ratio",
+            )
+        ),
+        "protected_ratio": format_number(
+            first_present_value(
+                row,
+                "overlap_protected_ratio",
+                "protected_ratio",
+            )
+        ),
+        "updated_overlap_ratio": format_number(
+            first_present_value(
+                row,
+                "overlap_updated_ratio",
+                "updated_overlap_ratio",
+            )
+        ),
+        "shared_critical_count": format_number(
+            first_present_value(
+                row,
+                "overlap_shared_critical_count",
+                "shared_critical_count",
+                "S_share_crit",
+                "s_share_crit",
+            )
+        ),
+        "protected_params": format_number(
+            first_present_value(
+                row,
+                "overlap_protected_params",
+                "protected_params",
+                "protected_adapter_params",
+                "hard_protected_adapter_params",
+            )
+        ),
+        "updated_params": format_number(
+            first_present_value(
+                row,
+                "overlap_updated_params",
+                "updated_params",
+                "updated_adapter_params",
+            )
+        ),
         "t_forget_total_mean": format_number(row.get("t_forget_total_mean")),
     }
 
