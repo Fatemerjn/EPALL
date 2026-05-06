@@ -150,9 +150,9 @@ python3 main.py --dataset cifar10 --class_per_task 2 --n_tasks 5 --n_forget 3 \
 
 See `docs/adapter_notes.md` for adapter-specific notes and commands.
 
-## Journal Experiments (Overlap-Aware Forgetting)
+## Experiments (Overlap-Aware Forgetting)
 
-The journal experiments focus on selective forgetting with a shared adapter pathway in `pall_adapter`. The key control is `--adapter_shared_bottleneck`, which enables a shared low-rank adapter block when set to a positive value. Forgetting pressure on that shared block is controlled by `--adapter_shared_forget_ratio`, while `--adapter_shared_protect_ratio` reserves a fraction of shared critical parameters against reset or overwrite during forgetting. The resulting critical shared overlap, denoted `S_share_crit`, measures the subset of shared adapter parameters that are both reused across tasks and marked as important under the protection rule.
+The experiments focus on selective forgetting with a shared adapter pathway in `pall_adapter`. The key control is `--adapter_shared_bottleneck`, which enables a shared low-rank adapter block when set to a positive value. Forgetting pressure on that shared block is controlled by `--adapter_shared_forget_ratio`, while `--adapter_shared_protect_ratio` reserves a fraction of shared critical parameters against reset or overwrite during forgetting. The resulting critical shared overlap, denoted `S_share_crit`, measures the subset of shared adapter parameters that are both reused across tasks and marked as important under the protection rule.
 
 These runs target the overlap-forgetting trade-off: increasing shared overlap can improve parameter efficiency and transfer, but it can also amplify collateral damage when forget updates pass through shared critical parameters. The adapter ablations therefore separate no-shared, shared-without-protection, and shared-critical regimes to quantify how protection changes this trade-off at fixed schedules and seeds.
 
