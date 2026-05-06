@@ -41,6 +41,12 @@ OUTPUT_COLUMNS = [
     "t_forget_total_mean",
     "updated_param_ratio_mean",
     "adapter_param_ratio_mean",
+    "overlap_shared_critical_ratio",
+    "overlap_protected_ratio",
+    "overlap_updated_ratio",
+    "overlap_shared_critical_count",
+    "overlap_protected_params",
+    "overlap_updated_params",
 ]
 
 CONFIG_GROUP_COLUMNS = [
@@ -65,6 +71,12 @@ SEED_AGG_METRICS = [
     "t_forget_total",
     "updated_param_ratio",
     "adapter_param_ratio",
+    "overlap_shared_critical_ratio",
+    "overlap_protected_ratio",
+    "overlap_updated_ratio",
+    "overlap_shared_critical_count",
+    "overlap_protected_params",
+    "overlap_updated_params",
 ]
 
 
@@ -140,6 +152,23 @@ def get_final_unlearning(metrics: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(final_unlearning, dict):
         return final_unlearning
     return get_last_unlearning_event(metrics)
+
+
+def get_overlap_analysis(metrics: Dict[str, Any], final_unlearning: Dict[str, Any], raw_last_event: Dict[str, Any]) -> Dict[str, Any]:
+    candidates = (
+        nested_get(metrics, "normalized_results", "final", "overlap_analysis"),
+        nested_get(metrics, "normalized_results", "final", "protection", "overlap_analysis"),
+        final_unlearning.get("overlap_analysis"),
+        nested_get(final_unlearning, "protection", "overlap_analysis"),
+        raw_last_event.get("overlap_analysis"),
+        nested_get(raw_last_event, "protection", "overlap_analysis"),
+        metrics.get("overlap_analysis"),
+        nested_get(metrics, "protection", "overlap_analysis"),
+    )
+    for candidate in candidates:
+        if isinstance(candidate, dict):
+            return candidate
+    return {}
 
 
 def derive_adapter_param_ratio(metrics: Dict[str, Any]) -> Optional[float]:
@@ -263,6 +292,7 @@ def extract_run_row(
 
     final_unlearning = get_final_unlearning(metrics)
     raw_last_event = get_last_unlearning_event(metrics)
+    overlap_analysis = get_overlap_analysis(metrics, final_unlearning, raw_last_event)
 
     dataset = first_non_none(
         metrics.get("dataset"),
@@ -354,6 +384,12 @@ def extract_run_row(
         "t_forget_total": t_forget_total,
         "updated_param_ratio": derive_updated_param_ratio(metrics, final_unlearning),
         "adapter_param_ratio": derive_adapter_param_ratio(metrics),
+        "overlap_shared_critical_ratio": to_float(overlap_analysis.get("critical_ratio")),
+        "overlap_protected_ratio": to_float(overlap_analysis.get("protected_ratio")),
+        "overlap_updated_ratio": to_float(overlap_analysis.get("updated_ratio")),
+        "overlap_shared_critical_count": to_float(overlap_analysis.get("shared_critical")),
+        "overlap_protected_params": to_float(overlap_analysis.get("protected_params")),
+        "overlap_updated_params": to_float(overlap_analysis.get("updated_params")),
     }
     if group_by_config:
         for key in CONFIG_GROUP_COLUMNS:
@@ -424,6 +460,12 @@ def aggregate_group(rows: List[Dict[str, Any]]) -> Dict[str, Optional[float]]:
         "t_forget_total_mean": mean_or_none(per_metric["t_forget_total"]),
         "updated_param_ratio_mean": mean_or_none(per_metric["updated_param_ratio"]),
         "adapter_param_ratio_mean": mean_or_none(per_metric["adapter_param_ratio"]),
+        "overlap_shared_critical_ratio": mean_or_none(per_metric["overlap_shared_critical_ratio"]),
+        "overlap_protected_ratio": mean_or_none(per_metric["overlap_protected_ratio"]),
+        "overlap_updated_ratio": mean_or_none(per_metric["overlap_updated_ratio"]),
+        "overlap_shared_critical_count": mean_or_none(per_metric["overlap_shared_critical_count"]),
+        "overlap_protected_params": mean_or_none(per_metric["overlap_protected_params"]),
+        "overlap_updated_params": mean_or_none(per_metric["overlap_updated_params"]),
     }
 
 

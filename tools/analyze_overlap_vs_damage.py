@@ -30,6 +30,10 @@ OUTPUT_COLUMNS = [
     "S_share_crit",
     "S_share_ratio",
     "S_share_crit_ratio",
+    "overlap_protected_ratio",
+    "overlap_updated_ratio",
+    "overlap_protected_params",
+    "overlap_updated_params",
 ]
 
 MARKDOWN_COLUMNS = [
@@ -201,6 +205,20 @@ def metric_candidates(metrics: Dict[str, Any]) -> tuple[Dict[str, Any], ...]:
     )
 
 
+def extract_overlap_analysis(metrics: Dict[str, Any], candidates: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    analysis_candidates = [
+        nested_dict(metrics.get("overlap_analysis")),
+        nested_dict(nested_dict(metrics.get("protection")).get("overlap_analysis")),
+    ]
+    for candidate in candidates:
+        analysis_candidates.append(nested_dict(candidate.get("overlap_analysis")))
+        analysis_candidates.append(nested_dict(nested_dict(candidate.get("protection")).get("overlap_analysis")))
+    for candidate in analysis_candidates:
+        if candidate:
+            return candidate
+    return {}
+
+
 def extract_value(candidates: Sequence[Dict[str, Any]], *keys: str) -> Any:
     for candidate in candidates:
         for key in keys:
@@ -254,8 +272,15 @@ def build_row(run_dir: Path) -> Optional[Dict[str, Any]]:
         return None
 
     candidates = metric_candidates(metrics)
+    overlap_analysis = extract_overlap_analysis(metrics, candidates)
     run_block = nested_dict(metrics.get("run"))
     overlap_csv_values = extract_overlap_from_csv(run_dir / "overlap.csv")
+    preferred_critical_ratio = parse_float(
+        first_non_none(
+            overlap_analysis.get("critical_ratio"),
+            extract_value(candidates, "S_share_crit_ratio", "s_share_crit_ratio"),
+        )
+    )
 
     row = {
         "dataset": first_non_none(config.get("dataset"), run_block.get("dataset")),
@@ -269,10 +294,16 @@ def build_row(run_dir: Path) -> Optional[Dict[str, Any]]:
         "Au": parse_float(extract_value(candidates, "Au")),
         "updated_param_ratio": parse_float(extract_value(candidates, "updated_param_ratio")),
         "adapter_param_ratio": parse_float(extract_value(candidates, "adapter_param_ratio")),
-        "S_share": parse_int(extract_value(candidates, "S_share", "s_share")),
-        "S_share_crit": parse_int(extract_value(candidates, "S_share_crit", "s_share_crit")),
+        "S_share": parse_int(first_non_none(overlap_analysis.get("shared_total"), extract_value(candidates, "S_share", "s_share"))),
+        "S_share_crit": parse_int(
+            first_non_none(overlap_analysis.get("shared_critical"), extract_value(candidates, "S_share_crit", "s_share_crit"))
+        ),
         "S_share_ratio": parse_float(extract_value(candidates, "S_share_ratio", "s_share_ratio")),
-        "S_share_crit_ratio": parse_float(extract_value(candidates, "S_share_crit_ratio", "s_share_crit_ratio")),
+        "S_share_crit_ratio": preferred_critical_ratio,
+        "overlap_protected_ratio": parse_float(overlap_analysis.get("protected_ratio")),
+        "overlap_updated_ratio": parse_float(overlap_analysis.get("updated_ratio")),
+        "overlap_protected_params": parse_int(overlap_analysis.get("protected_params")),
+        "overlap_updated_params": parse_int(overlap_analysis.get("updated_params")),
     }
 
     for key, value in overlap_csv_values.items():

@@ -528,7 +528,7 @@ class PALLAdapter(Base):
             "num_updated_params": 0,
             "protection": {
                 "active": bool(shared_critical_count > 0),
-                "method_variant": "adapter_hard_critical_mask",
+                "method_variant": "pall_adapter_hard_mask",
                 "method_note": self.method_note,
                 "shared_forget_count": int(shared_forget_count),
                 "shared_active_count": int(shared_active_count),
@@ -581,16 +581,50 @@ class PALLAdapter(Base):
                 self.args.adapter_shared_forget_lr,
                 shared_protect_strength,
             )
-            protected_adapter_params = int(shared_critical_count)
-            info["updated_adapter_params"] = int(updated_adapter_params)
-            info["protected_adapter_params"] = int(protected_adapter_params)
-            info["hard_protected_adapter_params"] = int(hard_protected_adapter_params)
-            info["shared_effective_forget_params"] = int(updated_adapter_params)
-            info["shared_full_update_params"] = int(shared_full_update_params)
-            info["shared_soft_update_params"] = int(shared_soft_update_params)
-            info["protection"]["protected_adapter_params"] = int(protected_adapter_params)
-            info["protection"]["hard_protected_adapter_params"] = int(hard_protected_adapter_params)
-            info["protection"]["updated_adapter_params"] = int(updated_adapter_params)
+            protected_adapter_params = int(hard_protected_adapter_params)
+        protected_adapter_params = int(protected_adapter_params)
+        updated_adapter_params = int(updated_adapter_params)
+        hard_protected_adapter_params = int(hard_protected_adapter_params)
+        if protected_adapter_params > shared_forget_count:
+            raise AssertionError(
+                "protected_adapter_params exceeds shared_forget_count: "
+                f"{protected_adapter_params} > {shared_forget_count}"
+            )
+        if updated_adapter_params > shared_forget_count:
+            raise AssertionError(
+                "updated_adapter_params exceeds shared_forget_count: "
+                f"{updated_adapter_params} > {shared_forget_count}"
+            )
+        if protected_adapter_params + updated_adapter_params != shared_forget_count:
+            raise AssertionError(
+                "protected_adapter_params + updated_adapter_params must equal shared_forget_count: "
+                f"{protected_adapter_params} + {updated_adapter_params} != {shared_forget_count}"
+            )
+        overlap_analysis = {
+            "shared_total": int(shared_param_count),
+            "shared_forget": int(shared_forget_count),
+            "shared_active": int(shared_active_count),
+            "shared_critical": int(shared_critical_count),
+            "protected_params": int(protected_adapter_params),
+            "hard_protected_params": int(hard_protected_adapter_params),
+            "updated_params": int(updated_adapter_params),
+            "critical_ratio": float(shared_critical_count / max(shared_forget_count, 1)),
+            "protected_ratio": float(protected_adapter_params / max(shared_forget_count, 1)),
+            "updated_ratio": float(updated_adapter_params / max(shared_forget_count, 1)),
+        }
+        info["updated_adapter_params"] = int(updated_adapter_params)
+        info["protected_adapter_params"] = int(protected_adapter_params)
+        info["hard_protected_adapter_params"] = int(hard_protected_adapter_params)
+        info["shared_effective_forget_params"] = int(updated_adapter_params)
+        info["shared_full_update_params"] = int(shared_full_update_params)
+        info["shared_soft_update_params"] = int(shared_soft_update_params)
+        info["shared_protected_params"] = int(protected_adapter_params)
+        info["shared_critical_ratio"] = float(overlap_analysis["critical_ratio"])
+        info["overlap_analysis"] = overlap_analysis
+        info["protection"]["protected_adapter_params"] = int(protected_adapter_params)
+        info["protection"]["hard_protected_adapter_params"] = int(hard_protected_adapter_params)
+        info["protection"]["updated_adapter_params"] = int(updated_adapter_params)
+        info["protection"]["overlap_analysis"] = overlap_analysis
         if classifier_param_count > 0:
             classifier_forget_param_count = self._apply_classifier_forgetting_update(
                 classifier_deleted_grads,
@@ -599,14 +633,13 @@ class PALLAdapter(Base):
             info["classifier_forget_param_count"] = int(classifier_forget_param_count)
         if total_shared_params > 0:
             print(
-                "[PALLAdapter] shared hard critical mask: forget_count={forget_count} active_count={active_count} critical_count={critical_count} hard_protected={hard_protected} protect_strength={strength:.4f} full_update={full} soft_update={soft}".format(
+                "[PALLAdapter] critical mask stats: shared_forget={forget_count} shared_active={active_count} "
+                "shared_critical={critical_count} protected={protected} updated={updated}".format(
                     forget_count=shared_forget_count,
                     active_count=shared_active_count,
                     critical_count=shared_critical_count,
-                    hard_protected=hard_protected_adapter_params,
-                    strength=shared_protect_strength,
-                    full=shared_full_update_params,
-                    soft=shared_soft_update_params,
+                    protected=protected_adapter_params,
+                    updated=updated_adapter_params,
                 ),
                 flush=True,
             )
