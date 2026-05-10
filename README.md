@@ -150,13 +150,36 @@ python3 main.py --dataset cifar10 --class_per_task 2 --n_tasks 5 --n_forget 3 \
 
 See `docs/adapter_notes.md` for adapter-specific notes and commands.
 
-## Experiments (Overlap-Aware Forgetting)
+## Overlap-Aware Adapter Unlearning
 
-The experiments focus on selective forgetting with a shared adapter pathway in `pall_adapter`. The key control is `--adapter_shared_bottleneck`, which enables a shared low-rank adapter block when set to a positive value. Forgetting pressure on that shared block is controlled by `--adapter_shared_forget_ratio`, while `--adapter_shared_protect_ratio` reserves a fraction of shared critical parameters against reset or overwrite during forgetting. The resulting critical shared overlap, denoted `S_share_crit`, measures the subset of shared adapter parameters that are both reused across tasks and marked as important under the protection rule.
+`pall_adapter` supports a shared adapter pathway via `--adapter_shared_bottleneck`. Task-specific adapters remain private to each task, while shared adapters are reused across tasks and are the main source of overlap in the adapter pipeline.
 
-These runs target the overlap-forgetting trade-off: increasing shared overlap can improve parameter efficiency and transfer, but it can also amplify collateral damage when forget updates pass through shared critical parameters. The adapter ablations therefore separate no-shared, shared-without-protection, and shared-critical regimes to quantify how protection changes this trade-off at fixed schedules and seeds.
+`S_share_crit` denotes the critical overlap inside that shared pathway: the subset of shared forget-side adapter parameters that are both reused and marked important by the protection rule. In the hard-mask pipeline, these critical shared parameters are protected from forget updates, so only the unprotected remainder is modified.
 
-The ablation study uses fixed-schedule `pall_adapter` runs over named configurations such as `adapter_no_shared`, `adapter_shared_no_protection`, and protected critical-overlap variants (`p005`, `p010`, `p020`). Correlation analysis then aggregates per-run `S_share`, `S_share_crit`, `S_share_ratio`, and `S_share_crit_ratio` against outcome metrics such as final accuracy, average forgetting, `WorstDrop`, and `Au`, to test whether larger critical shared overlap is associated with stronger forgetting damage or accuracy loss.
+Each `pall_adapter` run writes an `overlap_analysis` block to `metrics.json`. This block gives a compact run-level summary of shared overlap, protected parameters, and effective shared updates for downstream reporting scripts.
+
+Key ratios:
+
+- `critical_ratio`: fraction of shared forget-side parameters that belong to `S_share_crit` (`shared_critical / shared_forget`).
+- `protected_ratio`: fraction of shared forget-side parameters protected by the hard mask (`protected_params / shared_forget`).
+- `updated_overlap_ratio`: fraction of shared forget-side parameters that remain updateable after protection. In summary tables this is reported from `overlap_analysis.updated_ratio` (`updated_params / shared_forget`).
+
+Example `overlap_analysis` structure:
+
+```json
+{
+  "shared_total": 4096,
+  "shared_forget": 1024,
+  "shared_active": 768,
+  "shared_critical": 256,
+  "protected_params": 256,
+  "hard_protected_params": 256,
+  "updated_params": 768,
+  "critical_ratio": 0.25,
+  "protected_ratio": 0.25,
+  "updated_ratio": 0.75
+}
+```
 
 ### Paper-oriented interpretation
 
@@ -171,12 +194,14 @@ python3 tools/run_adapter_ablation.py \
   --dry-run
 ```
 
-Overlap-damage analysis:
+Overlap summary:
 
 ```bash
-python3 tools/analyze_overlap_vs_damage.py \
-  --root runs --outdir results/thesis \
-  --method pall_adapter --exclude-empty-tags
+python3 tools/make_overlap_experiment_summary.py \
+  --root runs \
+  --include-tags candidate_cifar10_* \
+  --out-csv results/thesis/overlap.csv \
+  --out-md results/thesis/overlap.md
 ```
 
 ## Run Artifacts
@@ -188,7 +213,7 @@ Run directory pattern:
 Key files written per run:
 
 - `config.json`
-- `metrics.json`
+- `metrics.json` with final metrics and, for `pall_adapter` overlap runs, an `overlap_analysis` summary block
 - `results.pth`
 - `summary.txt`
 - `report.md`
