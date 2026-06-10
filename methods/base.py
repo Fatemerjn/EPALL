@@ -1,5 +1,6 @@
 import inspect
 import sys
+import random
 import torch
 import torch.nn as nn
 from torch.optim import SGD, Adam
@@ -7,6 +8,20 @@ from torch.utils.data import DataLoader
 import numpy as np
 import models
 import time
+
+
+def _seed_worker(worker_id):
+    """Deterministically reseed NumPy/Python RNGs inside each DataLoader worker.
+
+    PyTorch seeds ``torch`` in every worker from the parent generator, but it
+    does NOT reseed NumPy or the ``random`` module. Any augmentation or sampling
+    that relies on those (common in CL data pipelines) therefore becomes
+    nondeterministic once ``num_workers > 0``. Deriving the per-worker seed from
+    ``torch.initial_seed()`` restores full reproducibility across seeds/epochs.
+    """
+    worker_seed = torch.initial_seed() % (2 ** 32)
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 
 class Base(nn.Module):
@@ -67,16 +82,38 @@ class Base(nn.Module):
             return False
         return self.device.type == "cuda"
 
+    def _loader_generator(self):
+        """Lazily build a CPU generator seeded from the run seed.
+
+        Passing an explicit generator makes shuffling order a deterministic
+        function of the run seed, decoupled from global RNG consumption
+        elsewhere in the pipeline (so adding/removing a forward pass cannot
+        silently change which samples a loader yields).
+        """
+        if getattr(self, "_dataloader_generator", None) is None:
+            seed = int(getattr(self.args, "seed", 0) or 0)
+            self._dataloader_generator = torch.Generator()
+            self._dataloader_generator.manual_seed(seed)
+        return self._dataloader_generator
+
     def get_dataloader_settings(self, batch_size=None, shuffle=False):
         num_workers = self.resolve_num_workers()
         pin_memory = self.resolve_pin_memory()
-        return {
+        settings = {
             "batch_size": self.args.batch_size if batch_size is None else batch_size,
             "shuffle": shuffle,
             "num_workers": num_workers,
             "pin_memory": pin_memory,
-            "persistent_workers": False if num_workers > 0 else False,
+            # Tear workers down between loaders to bound resident memory on long,
+            # heavy runs; the spawn cost is negligible relative to epoch time.
+            "persistent_workers": False,
         }
+        if num_workers > 0:
+            settings["worker_init_fn"] = _seed_worker
+        # A seeded generator only affects shuffling; attach it whenever we shuffle.
+        if shuffle:
+            settings["generator"] = self._loader_generator()
+        return settings
 
     def build_dataloader(self, dataset, batch_size=None, shuffle=False, context=""):
         settings = self.get_dataloader_settings(batch_size=batch_size, shuffle=shuffle)
