@@ -45,7 +45,7 @@ parser.add_argument('--no-pin-memory', dest='pin_memory', action='store_false', 
 
 parser.add_argument(
     '--method',
-    default='pall',
+    default='pall_modified',
     choices=[
         'sequential',
         'ewc',
@@ -54,12 +54,12 @@ parser.add_argument(
         'derpp',
         'lsf',
         'clpu',
-        'pall',
+        'pall',            # deprecated alias for pall_modified (warns)
         'pall_original',
-        'pall_modified',
+        'pall_modified',   # main method (default)
         'pall_adapter',
     ],
-    help='method for CL with unlearning',
+    help='method for CL with unlearning (default: pall_modified, the main method)',
 )
 parser.add_argument('--sparsity', default=0.8, type=float, help="layer-wise sparsity for PALL")
 parser.add_argument('--mem_budget', default=500, type=int, help='rehearsal memory capacity')
@@ -79,7 +79,17 @@ parser.add_argument('--deterministic', default=False, action='store_true', help=
 # - If adaptive_retrain is enabled, resolved steps are scaled by overlap ratio.
 parser.add_argument('--protect_ratio', default=None, type=float, help='fraction of shared params to protect')
 parser.add_argument('--protect_threshold', default=None, type=float, help='abs weight threshold for protection')
+parser.add_argument(
+    '--protect_importance', default='gradient', choices=['gradient', 'weight', 'conflict'],
+    help="pall_modified criterion for ranking critical shared params: 'conflict' "
+         "(gradient-conflict energy relu(-g_forget*g_retain) on the rehearsal buffer; "
+         "best under HIGH overlap), 'gradient' (|grad L_retain|; default main method), "
+         "or 'weight' (legacy absolute weight magnitude, ablation)")
 parser.add_argument('--lambda_protect', default=0.0, type=float, help='regularization weight for protected params')
+parser.add_argument(
+    '--adaptive_protect', default=False, action='store_true',
+    help="scale lambda_protect by the measured critical-overlap ratio "
+         "(stronger protection when forget/retain overlap is higher)")
 parser.add_argument('--retrain_steps', default=None, type=int, help='override retrain steps for PALL unlearning')
 parser.add_argument('--retrain_epochs', default=None, type=int, help='alias for retrain steps (PALL)')
 parser.add_argument('--allow_zero_retrain', default=False, action='store_true',
@@ -119,6 +129,13 @@ parser.add_argument(
     help='optional soft protection strength for shared critical shared-adapter params in pall_adapter forgetting',
 )
 parser.add_argument(
+    '--adapter_forget_steps',
+    default=10,
+    type=int,
+    help='number of Phase-3 iterations of the shared-adapter uniform-target soft-masked '
+         'forgetting loop in pall_adapter (1 reproduces the old single-step behaviour)',
+)
+parser.add_argument(
     '--adapter_train_classifier',
     default=False,
     action='store_true',
@@ -138,7 +155,14 @@ ADAPTER_METHODS = {"pall_adapter"}
 
 
 def normalize_method(arg_namespace):
+    # `pall` is a DEPRECATED alias for `pall_modified` (the main method), kept so
+    # old scripts/configs do not break. Prefer the explicit name.
     if arg_namespace.method == "pall":
+        print(
+            "[WARN] --method pall is a deprecated alias for pall_modified "
+            "(gradient-based, the main method). Use --method pall_modified explicitly.",
+            flush=True,
+        )
         arg_namespace.method = "pall_modified"
     if arg_namespace.method == "pall_modified":
         arg_namespace.method_variant = "modified"
@@ -148,6 +172,55 @@ def normalize_method(arg_namespace):
         arg_namespace.method_variant = "adapter"
     else:
         arg_namespace.method_variant = None
+    arg_namespace.variant = derive_variant(arg_namespace)
+
+
+def derive_variant(arg_namespace):
+    """Human-readable label that captures method + the flag combination.
+
+    Stored in config.json (and surfaced by tools/aggregate_results.py) so every
+    run self-describes and result tables can separate variants without parsing
+    flags. Paper-name mapping lives in README ("Method taxonomy").
+
+      pall_original                -> 'pall_original'        (PALL-Original)
+      pall_modified (grad, prot.)  -> 'pall_modified_grad'   (PALL-Modified, MAIN)
+      pall_modified (weight, prot.)-> 'pall_modified_weight' (PALL-Modified-W, ablation)
+      pall_modified (no protection)-> 'pall_modified_noprotect'
+      pall_adapter (no shared)     -> 'adapter_reset'        (PALL-Adapter reset baseline)
+      pall_adapter (shared, p=0)   -> 'adapter_shared'       (shared, no protection)
+      pall_adapter (shared, p>0)   -> 'adapter_protected'    (shared critical-protection)
+      <baseline>                   -> '<method>'             (er, derpp, ...)
+    """
+    method = arg_namespace.method
+    if method == "pall_modified":
+        has_target = (
+            arg_namespace.protect_ratio is not None
+            or arg_namespace.protect_threshold is not None
+        )
+        protecting = has_target and (arg_namespace.lambda_protect or 0.0) > 0.0
+        if not protecting:
+            return "pall_modified_noprotect"
+        importance = getattr(arg_namespace, "protect_importance", "gradient")
+        label = {
+            "gradient": "pall_modified_grad",
+            "weight": "pall_modified_weight",
+            "conflict": "pall_modified_conflict",
+        }.get(importance, "pall_modified_grad")
+        if getattr(arg_namespace, "adaptive_protect", False):
+            label += "_adapt"
+        return label
+    if method == "pall_adapter":
+        if (arg_namespace.adapter_shared_bottleneck or 0) <= 0 or (
+            arg_namespace.adapter_shared_forget_ratio or 0.0
+        ) <= 0.0:
+            return "adapter_reset"
+        if (arg_namespace.adapter_shared_protect_ratio or 0.0) <= 0.0:
+            return "adapter_shared"
+        label = "adapter_protected"
+        if getattr(arg_namespace, "protect_importance", "gradient") == "conflict":
+            label += "_conflict"
+        return label
+    return method
 
 
 def validate_experiment_args(arg_namespace):
@@ -1587,9 +1660,9 @@ def main():
         "derpp": Derpp,
         "lsf": LSF,
         "clpu": CLPU,
-        "pall": PALL,
-        "pall_original": PALL,
-        "pall_modified": PALL,
+        "pall": PALLModified,        # deprecated alias -> main method
+        "pall_original": PALLOriginal,
+        "pall_modified": PALLModified,
         "pall_adapter": PALLAdapter,
     }
 
