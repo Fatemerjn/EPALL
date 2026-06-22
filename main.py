@@ -58,6 +58,7 @@ parser.add_argument(
         'pall_original',
         'pall_modified',   # main method (default)
         'pall_adapter',
+        'lora',            # parameter-efficient LoRA baseline
     ],
     help='method for CL with unlearning (default: pall_modified, the main method)',
 )
@@ -168,11 +169,14 @@ parser.add_argument(
     choices=['residual'],
     help='adapter insertion location for pall_adapter',
 )
+parser.add_argument('--lora_rank', default=8, type=int, help='LoRA rank r for the lora baseline')
+parser.add_argument('--lora_alpha', default=16, type=float, help='LoRA scaling alpha for the lora baseline (scale = alpha/r)')
 parser.set_defaults(pin_memory=None)
 args = parser.parse_args()
 
 PALL_METHODS = {"pall", "pall_original", "pall_modified"}
 ADAPTER_METHODS = {"pall_adapter"}
+LORA_METHODS = {"lora"}
 
 
 def normalize_method(arg_namespace):
@@ -241,6 +245,8 @@ def derive_variant(arg_namespace):
         if getattr(arg_namespace, "protect_importance", "gradient") == "conflict":
             label += "_conflict"
         return label
+    if method == "lora":
+        return f"lora_r{getattr(arg_namespace, 'lora_rank', 8)}"
     return method
 
 
@@ -504,6 +510,8 @@ if args.method in PALL_METHODS:
     args.arch = 'subnet_' + args.arch.lower()
 elif args.method in ADAPTER_METHODS:
     args.arch = 'adapter_' + args.arch.lower()
+elif args.method in LORA_METHODS:
+    args.arch = 'lora_' + args.arch.lower()
 else:
     args.arch = args.arch.lower()
 args.dim_input = (args.channels, args.image_size, args.image_size)
@@ -1768,6 +1776,7 @@ def main():
         "pall_original": PALLOriginal,
         "pall_modified": PALLModified,
         "pall_adapter": PALLAdapter,
+        "lora": LoRA,
     }
 
     log_event(logger, "============================================================")
