@@ -21,6 +21,8 @@ checkpoints/
 
 data/
 
+docs/
+
 # experiment outputs
 comparison_*.csv
 comparison_*.md
