@@ -5,5 +5,8 @@ from .er import ER
 from .derpp import Derpp
 from .lsf import LSF
 from .clpu import CLPU
-from .pall import PALL
+from .pall_base import PALLBase
+from .pall_modified import PALLModified
+from .pall_original import PALLOriginal
+from .pall import PALL  # backward-compatible alias (PALL = PALLBase)
 from .pall_adapter import PALLAdapter

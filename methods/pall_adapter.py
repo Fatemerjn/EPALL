@@ -6,6 +6,43 @@ from .er import RehearsalMemory
 
 
 class PALLAdapter(Base):
+    """Parameter-efficient, overlap-aware adapter forgetting.
+
+    Architecture: frozen ResNet backbone (+ frozen BN), one task-specific
+    bottleneck adapter per task, an optional *shared* bottleneck adapter, and a
+    single classifier. Forgetting task ``t`` performs:
+      1. reset of adapter[t] and of classifier rows for task ``t``;
+      2. (shared adapter only) a soft-masked gradient-ASCENT step on the shared
+         adapter that erodes forget-task knowledge while protecting parameters
+         important to the retained tasks.
+
+    Overlap masks (only meaningful when a shared adapter exists):
+      * ``shared_forget_mask``  : top-``adapter_shared_forget_ratio`` shared params
+        by |grad L| on the FORGET task's buffer  -> S_forget.
+      * ``shared_active_mask``  : top-``adapter_shared_protect_ratio`` shared params
+        by |grad L| on the ACTIVE tasks' buffers -> S_active.
+      * ``shared_critical_mask``: S_forget AND S_active                -> S_share_crit.
+      * hard-protected subset (frozen) + soft-scaled remainder inside the critical set.
+
+    CAVEATS (read before citing results):
+      * If ``adapter_shared_bottleneck == 0`` (the DEFAULT) there is no shared
+        adapter, so steps involving overlap are no-ops and forgetting degenerates
+        to adapter + classifier RESET only. Likewise if
+        ``adapter_shared_forget_ratio`` / ``adapter_shared_protect_ratio`` are 0
+        (defaults). The overlap-aware behaviour only activates when these flags
+        are set explicitly (paper config: bottleneck 16, alpha_f 0.3, alpha_p 0.2).
+      * Phase 3 is the ITERATIVE uniform-target soft-masked loop of Algorithm 1
+        (``_run_phase3_shared_forgetting``, ``--adapter_forget_steps`` iterations):
+        each step minimises the uniform-target loss on replayed forget samples and
+        applies ``w -= lr * m_soft * grad`` with the masks held fixed -- matching
+        the WorstDrop theorem. (Set ``--adapter_forget_steps 1`` for the old
+        single-step behaviour.)
+      * The hard-protected subset is ranked by retained-task gradient importance,
+        or by gradient-CONFLICT energy ``relu(-g_forget*g_retain)`` under
+        ``--protect_importance conflict`` (recommended for HIGH overlap), mirroring
+        ``pall_modified``.
+    """
+
     def __init__(self, args):
         super(PALLAdapter, self).__init__(args)
         self.memory = RehearsalMemory(
@@ -291,40 +328,107 @@ class PALLAdapter(Base):
             offset += critical_indices.numel()
         return hard_protected_masks, protected_count
 
-    def _apply_shared_forgetting_update(self, grad_map, forget_masks, critical_masks, hard_protected_masks, lr, protect_strength):
+    def _uniform_forget_loss(self, x, task_id):
+        """Cross-entropy of the forget task's logits against a UNIFORM target.
+
+        Implements the paper's Phase-3 objective L_unlearn = E[-(1/|C|) sum_c log p_c]:
+        it pushes the forget task's class distribution toward uniform (maximum
+        entropy), i.e. erases the ability to discriminate the forgotten classes.
+        Only the forget task's own class slice is scored; the rest is already
+        masked to -inf inside ``forward``.
+        """
+        logits = self.forward(x, task_id)
+        start = task_id * self.cpt
+        end = start + self.cpt
+        log_probs = torch.log_softmax(logits[:, start:end], dim=1)
+        return -log_probs.mean()
+
+    def _compute_shared_conflict(self, deleted_grads, active_grads):
+        """Per-parameter gradient-CONFLICT energy on the shared adapter.
+
+        ``relu(-g_forget * g_retain)``: large exactly where the forget-task and
+        retained-task gradients have OPPOSITE signs and both are sizeable -- the
+        shared-adapter weights where forgetting and retention genuinely compete.
+        Used to pick the hard-protected subset when ``--protect_importance conflict``.
+        """
+        conflict = {}
+        for name, param in self._shared_adapter_param_items():
+            g_f = deleted_grads.get(name)
+            g_r = active_grads.get(name)
+            if g_f is None or g_r is None:
+                conflict[name] = torch.zeros_like(param)
+            else:
+                conflict[name] = torch.clamp(
+                    -(g_f.to(device=param.device, dtype=param.dtype)
+                      * g_r.to(device=param.device, dtype=param.dtype)),
+                    min=0.0,
+                )
+        return conflict
+
+    def _run_phase3_shared_forgetting(self, task_id, forget_masks, critical_masks,
+                                      hard_protected_masks, lr, protect_strength, n_steps):
+        """Phase 3: ITERATIVE uniform-target soft-masked forgetting on the shared adapter.
+
+        Matches Algorithm 1 / the WorstDrop theorem: for ``n_steps`` iterations we
+        minimise the uniform-target loss on replayed forget samples and apply a
+        per-coordinate soft-masked gradient DESCENT step ``w -= lr * m_soft * grad``,
+        with the masks held FIXED across steps:
+          * full   (forget \\ critical)      : m=1   (surgical erasure);
+          * soft   (critical \\ hard-protect): m=1-protect_strength;
+          * hard-protected + everything else : m=0   (frozen).
+        Returns (updated, full_count, soft_count) where updated = full + soft, so the
+        invariant hard_protected + updated == shared_forget_count holds structurally.
+        """
         lr = self.lr if lr is None else lr
-        effective_updated = 0
-        full_update_params = 0
-        soft_update_params = 0
-        with torch.no_grad():
-            for name, param in self._shared_adapter_param_items():
-                grad = grad_map.get(name)
-                forget_mask = forget_masks.get(name)
-                critical_mask = critical_masks.get(name)
-                hard_protected_mask = hard_protected_masks.get(name)
-                if grad is None or forget_mask is None or not torch.any(forget_mask):
-                    continue
-                if critical_mask is None:
-                    critical_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
-                if hard_protected_mask is None:
-                    hard_protected_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
-                # Apply the full forgetting update outside the shared critical
-                # region. Inside the critical region, a selected hard-protected
-                # subset is frozen, while the remaining critical parameters
-                # receive a softened forgetting update.
-                full_mask = torch.logical_and(forget_mask, torch.logical_not(critical_mask))
-                soft_mask = torch.logical_and(critical_mask, torch.logical_not(hard_protected_mask))
-                if torch.any(full_mask):
-                    param.add_(grad * full_mask.to(dtype=grad.dtype), alpha=lr)
-                    full_update_params += int(full_mask.sum().item())
-                    effective_updated += int(full_mask.sum().item())
-                if torch.any(soft_mask):
-                    soft_scale = max(0.0, 1.0 - protect_strength)
-                    soft_update_params += int(soft_mask.sum().item())
-                    if soft_scale > 0.0:
-                        param.add_(grad * soft_mask.to(dtype=grad.dtype), alpha=lr * soft_scale)
-                        effective_updated += int(soft_mask.sum().item())
-        return effective_updated, full_update_params, soft_update_params
+        soft_scale = max(0.0, 1.0 - protect_strength)
+        full_masks, soft_masks = {}, {}
+        full_count = 0
+        soft_count = 0
+        for name, _ in self._shared_adapter_param_items():
+            forget_mask = forget_masks.get(name)
+            if forget_mask is None or not torch.any(forget_mask):
+                continue
+            critical_mask = critical_masks.get(name)
+            if critical_mask is None:
+                critical_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
+            hard_protected_mask = hard_protected_masks.get(name)
+            if hard_protected_mask is None:
+                hard_protected_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
+            full_masks[name] = torch.logical_and(forget_mask, torch.logical_not(critical_mask))
+            soft_masks[name] = torch.logical_and(critical_mask, torch.logical_not(hard_protected_mask))
+            full_count += int(full_masks[name].sum().item())
+            soft_count += int(soft_masks[name].sum().item())
+
+        steps_run = 0
+        batch_size = max(1, self.args.batch_size)
+        for _ in range(max(0, int(n_steps))):
+            if not hasattr(self.memory, "buffer") or task_id not in self.memory.buffer:
+                break
+            x, _y = self.memory.sample_task(batch_size, task_id)
+            for param in self.net.parameters():
+                param.grad = None
+            loss = self._uniform_forget_loss(x, task_id)
+            loss.backward()
+            with torch.no_grad():
+                for name, param in self._shared_adapter_param_items():
+                    grad = param.grad
+                    if grad is None:
+                        continue
+                    full_mask = full_masks.get(name)
+                    if full_mask is not None and torch.any(full_mask):
+                        param.add_(grad * full_mask.to(dtype=grad.dtype), alpha=-lr)
+                    soft_mask = soft_masks.get(name)
+                    if soft_scale > 0.0 and soft_mask is not None and torch.any(soft_mask):
+                        param.add_(grad * soft_mask.to(dtype=grad.dtype), alpha=-lr * soft_scale)
+            steps_run += 1
+        for param in self.net.parameters():
+            param.grad = None
+
+        self.log_progress(
+            f"adapter phase-3 iterative forgetting: steps={steps_run} full={full_count} "
+            f"soft={soft_count} soft_scale={soft_scale:.3f}"
+        )
+        return full_count + soft_count, full_count, soft_count
 
     def _apply_classifier_forgetting_update(self, grad_map, lr):
         lr = self.lr if lr is None else lr
@@ -454,6 +558,7 @@ class PALLAdapter(Base):
         classifier_forget_param_count = 0
         deleted_grads = self._zeros_like_shared_adapter()
         active_importance = self._zeros_like_shared_adapter()
+        active_grads = self._zeros_like_shared_adapter()
         classifier_deleted_grads = self._zeros_like_classifier()
         if total_shared_params > 0 and self.args.adapter_shared_forget_ratio > 0.0:
             deleted_importance, deleted_grads, classifier_deleted_grads, _ = self._compute_shared_importance(
@@ -474,7 +579,7 @@ class PALLAdapter(Base):
             and self.args.adapter_shared_forget_ratio > 0.0
             and self.args.adapter_shared_protect_ratio > 0.0
         ):
-            active_importance, _, _, _ = self._compute_shared_importance(active_tasks)
+            active_importance, active_grads, _, _ = self._compute_shared_importance(active_tasks)
             shared_active_mask, _, _ = self._topk_shared_masks(
                 active_importance,
                 self.args.adapter_shared_protect_ratio,
@@ -490,9 +595,16 @@ class PALLAdapter(Base):
         # Within the critical shared region, protect a top-ranked subset
         # according to adapter_shared_protect_ratio. These parameters are held
         # fixed during forgetting, while the remaining critical parameters can
-        # still receive a softened forgetting update.
+        # still receive a softened forgetting update. The ranking score is the
+        # gradient-CONFLICT energy when --protect_importance conflict (protect the
+        # weights where forgetting and retention fight hardest), otherwise the
+        # plain retained-task gradient importance.
+        if getattr(self.args, "protect_importance", "gradient") == "conflict":
+            hard_protect_score = self._compute_shared_conflict(deleted_grads, active_grads)
+        else:
+            hard_protect_score = active_importance
         hard_protected_shared_mask, hard_protected_adapter_params = self._select_hard_protected_mask(
-            active_importance,
+            hard_protect_score,
             shared_critical_mask,
             self.args.adapter_shared_protect_ratio,
         )
@@ -573,13 +685,14 @@ class PALLAdapter(Base):
                 updated_adapter_params,
                 shared_full_update_params,
                 shared_soft_update_params,
-            ) = self._apply_shared_forgetting_update(
-                deleted_grads,
+            ) = self._run_phase3_shared_forgetting(
+                task_id,
                 shared_forget_mask,
                 shared_critical_mask,
                 hard_protected_shared_mask,
                 self.args.adapter_shared_forget_lr,
                 shared_protect_strength,
+                self.args.adapter_forget_steps,
             )
             protected_adapter_params = int(hard_protected_adapter_params)
         protected_adapter_params = int(protected_adapter_params)

@@ -119,10 +119,11 @@ class RehearsalMemory(data.Dataset):
     def remove(self, t):
         X = self.buffer[t]['X']
         Y = self.buffer[t]['Y']
-        if self.save_logits:
-            H = self.buffer[t]['H']
+        H = self.buffer[t]['H'] if self.save_logits else None
         del self.buffer[t]
-        return X, Y, H if self.save_logits else X, Y
+        # Parenthesised so the ternary returns a clean (X, Y, H) / (X, Y) tuple
+        # rather than the operator-precedence 4-tuple the old code produced.
+        return (X, Y, H) if self.save_logits else (X, Y)
 
 
 class ER(Base):
