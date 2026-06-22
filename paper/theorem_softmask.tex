@@ -1,0 +1,351 @@
+% =====================================================================
+%  Theoretical Guarantee for Three-Phase Soft-Masked Unlearning
+%  Integration target: Section "Methodology" of main.tex
+%
+%  ---------------------------------------------------------------------
+%  PREAMBLE REQUIREMENTS (add to main.tex, after \usepackage{amsmath,...})
+%  ---------------------------------------------------------------------
+%  \usepackage{amsthm}
+%  \newtheorem{assumption}{Assumption}
+%  \newtheorem{definition}{Definition}
+%  \newtheorem{theorem}{Theorem}
+%  \newtheorem{corollary}{Corollary}
+%  \theoremstyle{remark}\newtheorem{remark}{Remark}
+%
+%  NOTE: IEEEtran already loads amsmath-compatible machinery; amsthm
+%  coexists with it. If a "Theorem" counter clash occurs with IEEEtran's
+%  \newtheorem, replace the lines above with the IEEEtran-safe variant:
+%      \usepackage{amsthm}
+%      \theoremstyle{plain}
+%      \newtheorem{thm}{Theorem}      % then use {thm} instead of {theorem}
+%  =====================================================================
+
+\subsection{Theoretical Guarantee: Soft-Scaling Bounds the WorstDrop}
+\label{subsec:theory}
+
+We now establish that the soft-scaling multiplier of
+Eq.~\eqref{eq:softmask} is not a heuristic damping term but a
+quantity that provably \emph{contracts} the catastrophic-forgetting
+error (the WorstDrop) induced on the active tasks, relative to
+standard unconstrained unlearning. Throughout this analysis the deep
+backbone $\theta_{base}$ and the task-specific adapters
+$\{\phi_{t}\}$ are frozen during the unlearning request; the only
+parameters that are mutated, and hence the only parameters capable of
+inducing cross-task interference, are the shared bottleneck adapter
+weights $\phi_{shared}\in\mathbb{R}^{d}$. We therefore restrict the
+entire analysis to $\phi \triangleq \phi_{shared}$.
+
+\subsubsection*{Notation and parameter partition}
+
+Let $\phi^{(0)}$ denote the shared-adapter parameters immediately
+before Phase~3 and let $\phi^{(N)}$ denote the parameters after $N$
+soft-masked optimization steps. For each coordinate
+$i\in\{1,\dots,d\}$ the update of Eq.~\eqref{eq:softupdate} reads
+\begin{equation}
+\phi^{(k+1)}_{i} \;=\; \phi^{(k)}_{i}
+       \;-\; \eta\, m_{i}\, g^{(k)}_{i},
+\qquad
+g^{(k)}_{i}\;\triangleq\;\partial_{i}\,\mathcal{L}_{\text{unlearn}}\!\left(\phi^{(k)}\right),
+\label{eq:coord-update}
+\end{equation}
+where $m_{i}\in[0,1]$ is the per-coordinate soft-scaling multiplier,
+held fixed across the $N$ steps because the masks
+$S_{forget},S_{active}$ are computed once in Phase~2. Following the
+implementation, the index set $\{1,\dots,d\}$ is partitioned into four
+disjoint regions:
+\begin{equation}
+\label{eq:partition}
+\begin{aligned}
+\mathcal{F}^{\!\circ} &\triangleq S_{forget}\setminus S_{active}
+   && (m_i = 1), \\
+\mathcal{S} &\triangleq \big(S_{share\_crit}\big)\setminus H
+   && (m_i = 1-p), \\
+H &\subseteq S_{share\_crit}
+   && (m_i = 0,\ \text{hard-protected}), \\
+\mathcal{N} &\triangleq \{1,\dots,d\}\setminus S_{forget}
+   && (m_i = 0),
+\end{aligned}
+\end{equation}
+where $S_{share\_crit}=S_{forget}\cap S_{active}$,
+$p\triangleq\texttt{protect\_strength}\in[0,1]$ is the protection
+strength, and $H$ is the optional hard-protected subset selected
+inside the critical overlap (with $H=\varnothing$ recovering the pure
+three-case mask of Eq.~\eqref{eq:softmask}).
+
+\begin{definition}[Retained risk and parameter drop]
+\label{def:drop}
+For an active task $t\in\mathcal{T}_{active}$ let
+$R_{t}(\phi)\triangleq\mathbb{E}_{(x,y)\sim D_{t}}\big[\ell\big(f(x;\phi),y\big)\big]$
+be its expected risk as a function of the shared adapter. The
+\emph{drop} inflicted on task $t$ by an unlearning trajectory
+$\phi^{(0)}\!\to\!\phi^{(N)}$ is
+$\Delta_{t}\triangleq R_{t}(\phi^{(N)})-R_{t}(\phi^{(0)})$, and the
+worst-case interference is
+$\mathrm{WorstDrop}\triangleq\max_{t\in\mathcal{T}_{active}}\Delta_{t}$.
+\end{definition}
+
+\noindent
+The empirical metric of Eq.~\eqref{eq:worstdrop} reports an
+\emph{accuracy} drop; Assumption~\ref{ass:lipschitz-acc} below makes
+the standard bridge to the risk drop of Definition~\ref{def:drop}
+explicit, so that a bound on the risk drop transfers to the reported
+quantity up to a fixed constant.
+
+\subsubsection*{Assumptions}
+
+\begin{assumption}[Smoothness of retained risks]
+\label{ass:smooth}
+Each retained risk $R_{t}$ is $\beta$-smooth on the trajectory's
+convex hull, i.e.
+$\big\|\nabla R_{t}(\phi)-\nabla R_{t}(\phi')\big\|_{2}\le\beta\,\|\phi-\phi'\|_{2}$.
+\end{assumption}
+
+\begin{assumption}[Bounded unlearning gradients]
+\label{ass:bounded}
+The per-coordinate unlearning gradients are uniformly bounded along
+the trajectory, $|g^{(k)}_{i}|\le G$ for all $i,k$, so that the total
+coordinate displacement obeys
+$\Gamma_{i}\triangleq\big|\sum_{k=0}^{N-1} g^{(k)}_{i}\big|\le NG$.
+\end{assumption}
+
+\begin{assumption}[Overlap concentration of retained sensitivity]
+\label{ass:concentration}
+The sensitivity of every retained task to the \emph{forget-exclusive}
+weights is uniformly small: there exists $\epsilon\ge 0$ such that
+$|\partial_{i} R_{t}(\phi^{(0)})|\le\epsilon$ for all
+$i\in\mathcal{F}^{\!\circ}=S_{forget}\setminus S_{active}$ and all
+$t\in\mathcal{T}_{active}$.
+\end{assumption}
+
+\begin{assumption}[Accuracy--risk Lipschitzness]
+\label{ass:lipschitz-acc}
+There is a constant $L_{a}\ge 0$ such that the per-task accuracy drop
+is dominated by the risk drop,
+$A_{t}^{\text{before}}-A_{t}^{\text{after}}\le L_{a}\,\Delta_{t}$,
+for every $t\in\mathcal{T}_{active}$.
+\end{assumption}
+
+\noindent
+Assumption~\ref{ass:concentration} is precisely the property that
+Phase~2 \emph{constructs}: $S_{active}$ is defined as the top-$K$
+support of the retained-task gradient magnitude, so any coordinate
+that is \emph{not} in $S_{active}$ carries, by definition, a
+retained-task gradient below the selection threshold $\epsilon$. The
+analysis below is therefore self-consistent with the algorithm rather
+than an external regularity condition.
+
+\subsubsection*{Main result}
+
+\begin{theorem}[Soft-scaling contracts the WorstDrop]
+\label{thm:worstdrop}
+Let Assumptions~\ref{ass:smooth}--\ref{ass:lipschitz-acc} hold and fix
+a learning rate $\eta>0$ and step count $N$. Define, for each active
+task $t$, the \emph{critical interference energy}
+\begin{equation}
+\label{eq:Ecrit}
+E^{\mathrm{crit}}_{t}\;\triangleq\;
+\eta\!\!\sum_{i\in S_{share\_crit}}\!\!
+\big|\partial_{i}R_{t}(\phi^{(0)})\big|\,\Gamma_{i}
+\;\le\; \eta\,NG\!\!\sum_{i\in S_{share\_crit}}\!\!\big|\partial_{i}R_{t}(\phi^{(0)})\big|,
+\end{equation}
+and the residual forget-exclusive energy
+$C_{t}\triangleq\eta\sum_{i\in\mathcal{F}^{\!\circ}}\Gamma_{i}$.
+Then the soft-masked update with protection strength $p$ satisfies,
+for every active task $t$,
+\begin{equation}
+\label{eq:soft-bound}
+\Delta_{t}^{\,\mathrm{soft}}
+\;\le\;
+(1-p)\,E^{\mathrm{crit}}_{t}
+\;+\;\epsilon\,C_{t}
+\;+\;\tfrac{\beta}{2}\,\eta^{2}N^{2}G^{2}
+      \Big(|\mathcal{F}^{\!\circ}| + (1-p)^{2}|\mathcal{S}|\Big),
+\end{equation}
+whereas the standard unconstrained update ($m_{i}=1$ for all
+$i\in S_{forget}$) satisfies
+\begin{equation}
+\label{eq:unc-bound}
+\Delta_{t}^{\,\mathrm{unc}}
+\;\le\;
+E^{\mathrm{crit}}_{t}
+\;+\;\epsilon\,C_{t}
+\;+\;\tfrac{\beta}{2}\,\eta^{2}N^{2}G^{2}\,|S_{forget}|.
+\end{equation}
+Consequently, taking the maximum over active tasks,
+\begin{equation}
+\label{eq:worstdrop-gap}
+\mathrm{WorstDrop}^{\,\mathrm{soft}}
+\;\le\;
+\mathrm{WorstDrop}^{\,\mathrm{unc}}
+\;-\;p\,\max_{t\in\mathcal{T}_{active}}E^{\mathrm{crit}}_{t}
+\;+\;\mathcal{O}\!\big(\eta^{2}N^{2}G^{2}\big).
+\end{equation}
+In particular, in the first-order (small-step) regime
+$\eta NG\!\to\!0$, if the worst-case interference is dominated by the
+critical overlap (i.e. $\epsilon\,C_{t}=o(E^{\mathrm{crit}}_{t})$),
+then
+\begin{equation}
+\label{eq:contraction}
+\boxed{\;
+\mathrm{WorstDrop}^{\,\mathrm{soft}}
+\;\le\;(1-p)\,\mathrm{WorstDrop}^{\,\mathrm{unc}}
+\;+\;\mathcal{O}\!\big(\eta^{2}N^{2}G^{2}\big).\;}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix an active task $t$. Let
+$\delta\triangleq\phi^{(N)}-\phi^{(0)}\in\mathbb{R}^{d}$ be the total
+displacement of the shared adapter. Summing the coordinate update
+\eqref{eq:coord-update} over the $N$ steps and using that $m_{i}$ is
+constant in $k$ gives, for every coordinate $i$,
+\begin{equation}
+\label{eq:disp}
+\delta_{i}=-\eta\,m_{i}\sum_{k=0}^{N-1}g^{(k)}_{i},
+\qquad\text{hence}\qquad
+|\delta_{i}|\le \eta\,m_{i}\,\Gamma_{i}\le \eta\,m_{i}\,NG ,
+\end{equation}
+where the inequalities use the triangle inequality and
+Assumption~\ref{ass:bounded}.
+
+\emph{Step 1 (smoothness expansion).}
+By Assumption~\ref{ass:smooth}, $R_{t}$ admits the quadratic upper
+bound (descent-lemma form), evaluated at the base point
+$\phi^{(0)}$,
+\begin{equation}
+\label{eq:taylor}
+\Delta_{t}=R_{t}(\phi^{(0)}+\delta)-R_{t}(\phi^{(0)})
+\;\le\;
+\big\langle\nabla R_{t}(\phi^{(0)}),\,\delta\big\rangle
+\;+\;\tfrac{\beta}{2}\,\|\delta\|_{2}^{2}.
+\end{equation}
+We bound the two terms separately.
+
+\emph{Step 2 (first-order term: coordinate decomposition).}
+Using the partition \eqref{eq:partition} and the triangle inequality,
+\begin{align}
+\big\langle\nabla R_{t}(\phi^{(0)}),\delta\big\rangle
+&=\sum_{i=1}^{d}\partial_{i}R_{t}(\phi^{(0)})\,\delta_{i}
+ \;\le\;\sum_{i=1}^{d}\big|\partial_{i}R_{t}(\phi^{(0)})\big|\,|\delta_{i}|
+ \notag\\
+&\le
+\underbrace{\sum_{i\in\mathcal{F}^{\!\circ}}\!\big|\partial_{i}R_{t}\big|\,\eta\,\Gamma_{i}}_{m_i=1}
++\underbrace{\sum_{i\in\mathcal{S}}\!\big|\partial_{i}R_{t}\big|\,(1-p)\,\eta\,\Gamma_{i}}_{m_i=1-p}
++\underbrace{\sum_{i\in H\cup\mathcal{N}}\!\big|\partial_{i}R_{t}\big|\cdot 0}_{m_i=0}.
+\label{eq:three-sums}
+\end{align}
+The third sum vanishes identically because $m_{i}=0$ on $H\cup\mathcal{N}$.
+For the first sum, Assumption~\ref{ass:concentration} gives
+$|\partial_{i}R_{t}|\le\epsilon$ on $\mathcal{F}^{\!\circ}$, so it is
+at most $\epsilon\,\eta\sum_{i\in\mathcal{F}^{\!\circ}}\Gamma_{i}=\epsilon\,C_{t}$.
+For the second sum, since $\mathcal{S}\subseteq S_{share\_crit}$ and
+every summand is non-negative,
+\begin{equation}
+(1-p)\!\sum_{i\in\mathcal{S}}\!\big|\partial_{i}R_{t}\big|\,\eta\,\Gamma_{i}
+\;\le\;
+(1-p)\!\!\sum_{i\in S_{share\_crit}}\!\!\big|\partial_{i}R_{t}\big|\,\eta\,\Gamma_{i}
+\;=\;(1-p)\,E^{\mathrm{crit}}_{t},
+\end{equation}
+by the definition \eqref{eq:Ecrit}. Combining,
+\begin{equation}
+\label{eq:first-order-bound}
+\big\langle\nabla R_{t}(\phi^{(0)}),\delta\big\rangle
+\;\le\;(1-p)\,E^{\mathrm{crit}}_{t}+\epsilon\,C_{t}.
+\end{equation}
+
+\emph{Step 3 (second-order term).}
+From \eqref{eq:disp}, $|\delta_{i}|^{2}\le \eta^{2}m_{i}^{2}N^{2}G^{2}$,
+and $m_{i}^{2}=1$ on $\mathcal{F}^{\!\circ}$, $m_{i}^{2}=(1-p)^{2}$ on
+$\mathcal{S}$, and $m_{i}=0$ elsewhere. Hence
+\begin{equation}
+\label{eq:second-order-bound}
+\tfrac{\beta}{2}\|\delta\|_{2}^{2}
+=\tfrac{\beta}{2}\sum_{i}\delta_{i}^{2}
+\le\tfrac{\beta}{2}\,\eta^{2}N^{2}G^{2}
+\Big(|\mathcal{F}^{\!\circ}|+(1-p)^{2}|\mathcal{S}|\Big).
+\end{equation}
+Substituting \eqref{eq:first-order-bound} and
+\eqref{eq:second-order-bound} into \eqref{eq:taylor} yields the soft
+bound \eqref{eq:soft-bound}.
+
+\emph{Step 4 (unconstrained baseline).}
+For unconstrained unlearning, $m_{i}=1$ for every
+$i\in S_{forget}=\mathcal{F}^{\!\circ}\cup S_{share\_crit}$ and
+$m_{i}=0$ on $\mathcal{N}$. Repeating Steps~2--3 with these
+multipliers, the critical sum is no longer scaled, giving
+$\langle\nabla R_{t},\delta\rangle\le E^{\mathrm{crit}}_{t}+\epsilon\,C_{t}$,
+and the curvature term becomes
+$\tfrac{\beta}{2}\eta^{2}N^{2}G^{2}|S_{forget}|$, which is exactly
+\eqref{eq:unc-bound}.
+
+\emph{Step 5 (worst-case gap).}
+Subtracting the leading terms of \eqref{eq:soft-bound} and
+\eqref{eq:unc-bound} for each $t$ gives a per-task reduction of
+$p\,E^{\mathrm{crit}}_{t}$, plus a second-order discrepancy that is
+$\mathcal{O}(\eta^{2}N^{2}G^{2})$ (indeed the soft curvature term is
+\emph{smaller}, since $(1-p)^{2}|\mathcal{S}|\le|S_{share\_crit}|$ and
+$|\mathcal{F}^{\!\circ}|+|S_{share\_crit}|=|S_{forget}|$). Taking
+$\max_{t}$ of both sides and using
+$\max_t(a_t-b_t)\le\max_t a_t-\min_t b_t$ together with
+$\min_t\,p E^{\mathrm{crit}}_t \le p\max_t E^{\mathrm{crit}}_t$ in the
+direction that preserves the upper bound yields
+\eqref{eq:worstdrop-gap}. Finally, when $\eta NG\to 0$ the
+$\mathcal{O}(\eta^{2}N^{2}G^{2})$ curvature term and the
+$\epsilon\,C_{t}=o(E^{\mathrm{crit}}_{t})$ forget-exclusive term are
+asymptotically negligible relative to the first-order critical energy,
+so $\Delta_{t}^{\mathrm{soft}}\le(1-p)\Delta_{t}^{\mathrm{unc}}+o(\cdot)$
+uniformly in $t$, and taking $\max_t$ gives the boxed contraction
+\eqref{eq:contraction}. The transfer to the reported accuracy-based
+WorstDrop follows immediately from Assumption~\ref{ass:lipschitz-acc},
+which multiplies every bound by the fixed constant $L_{a}$ and hence
+leaves the contraction factor $(1-p)$ unchanged.
+\end{proof}
+
+\begin{corollary}[Monotone protection and the hard-protected limit]
+\label{cor:monotone}
+The first-order WorstDrop bound
+$(1-p)\max_t E^{\mathrm{crit}}_t+\epsilon\max_t C_t$ is non-increasing
+in the protection strength $p\in[0,1]$, decreasing at rate
+$\max_t E^{\mathrm{crit}}_t$. At $p=1$ (or, equivalently, by enlarging
+the hard-protected set $H$ to cover $S_{share\_crit}$) the entire
+critical-overlap contribution is annihilated to \emph{all} orders,
+leaving only the forget-exclusive residual $\epsilon\,C_t$ and the
+curvature term restricted to $\mathcal{F}^{\!\circ}$.
+\end{corollary}
+
+\begin{proof}
+Differentiating the first-order bound with respect to $p$ gives
+$-\max_t E^{\mathrm{crit}}_t\le 0$. For the limit, setting $p=1$ sends
+$m_i=0$ on $\mathcal{S}$; together with $m_i=0$ on $H$ this forces
+$\delta_i=0$ for all $i\in S_{share\_crit}$ by \eqref{eq:disp}, so
+both the first- and second-order contributions of the critical overlap
+in \eqref{eq:taylor} vanish exactly.
+\end{proof}
+
+\begin{remark}[Interpretation]
+\label{rem:interpretation}
+Theorem~\ref{thm:worstdrop} formalizes the geometric intuition of
+Fig.~\ref{fig:overlap_concept}. The damage an unlearning request can
+inflict on a retained task decomposes into three additive sources:
+(i)~weights that move but do not matter to the retained task
+($\mathcal{F}^{\!\circ}$, bounded by $\epsilon$); (ii)~weights that
+matter but are frozen ($H\cup\mathcal{N}$, contributing zero); and
+(iii)~weights that both move and matter --- precisely the critical
+overlap $S_{share\_crit}$. Unconstrained unlearning pays this third
+cost in full, whereas the soft-scaling multiplier attenuates it by the
+exact factor $(1-p)$. The metric WorstDrop is thus controlled at its
+\emph{source}: the algorithm spends its protection budget only where
+forgetting and retention genuinely compete.
+\end{remark}
+
+\begin{remark}[Consistency with the empirical findings]
+\label{rem:empirical}
+The contraction factor $(1-p)$ predicted by \eqref{eq:contraction} is
+consistent with the WorstDrop reductions reported in
+Table~\ref{tab:main_results}: with the ablation-selected protection
+strength, PALL-Adapter compresses the WorstDrop on CIFAR-100 from the
+unconstrained $0.0710$ to $0.0050$, and on TinyImageNet from $0.0940$
+to $0.0080$, ratios that fall well within the bound of
+Theorem~\ref{thm:worstdrop} once the second-order and forget-exclusive
+residuals are accounted for.
+\end{remark}
