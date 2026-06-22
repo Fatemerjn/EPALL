@@ -45,7 +45,7 @@ While classical CL methodologies focus extensively on mitigating "catastrophic f
 
 The dominant barrier to effective selective forgetting within multi-task neural networks is the "parameter overlap" phenomenon. High-capacity neural networks implicitly distribute conceptual representations across vast, entangled arrays of shared parameters. When traditional unlearning techniques, such as unconstrained gradient ascent or Fisher-based network scrubbing \cite{golatkar2020forgetting}, are executed on a target task dataset \(D_f\), they inadvertently disrupt the functional representations of the retained tasks \(D_r\) that rely on those identical parameter spaces. 
 
-The original Privacy-Aware Lifelong Learning (PALL) framework \cite{ozdenizci2025pall} was introduced as a mechanism to modularize task knowledge. However, the standard implementation (PALL-Original) still operates over large network sub-spaces and lacks a granular mechanism to control feature-level overlaps, often requiring updates to up to 10\% of a deep network's total parameters during an unlearning request.
+The original Privacy-Aware Lifelong Learning (PALL) framework \cite{ozdenizci2025pall} was introduced as a mechanism to modularize task knowledge. However, the standard implementation (PALL-Original) still operates over large network sub-spaces and lacks a granular mechanism to control feature-level overlaps, updating on the order of roughly $1$--$4\%$ of a deep network's total parameters per unlearning request \cite{ozdenizci2025pall}.
 
 \textbf{Contributions:} To circumvent these limitations, we propose two distinct, synergistic methodologies:
 \begin{enumerate}
@@ -76,11 +76,13 @@ To identify critical knowledge boundaries without the full computational overhea
 S_{share\_crit} = S_{forget} \cap S_{active}
 \end{equation}
 
-PALL-Modified formulates the unlearning process as a constrained optimization problem. While shifting the output of the forgotten dataset to a uniform distribution, a regularization penalty \(\lambda\) is enforced exclusively on the critical intersection:
+Computing \(S_{forget}\) assumes momentary access, at the time of the unlearning request, to a small sample of the target task's own data in order to localize its parameter footprint via \(|\nabla_w \mathcal{L}|\). In our implementation this sample is drawn from the rehearsal buffer and is purged immediately afterward, together with the task's stored exemplars, as part of the same forgetting operation. The privacy cost is therefore bounded: the to-be-forgotten data is touched only to estimate importance and is deleted in situ, leaving no retained copy of the forgotten task.
+
+Rather than optimizing a single combined objective, PALL-Modified separates \emph{forgetting} from \emph{retention repair} into two distinct stages. \textbf{(i) Forgetting (reset).} The weights that are exclusive to the target task---those in its subnetwork but outside the retained-task support, \(S_{forget}\setminus S_{active}\)---are reset to their initialization, erasing the task-specific pathway without any gradient step. \textbf{(ii) Retention repair.} The model is then briefly fine-tuned on the rehearsal buffer of the \emph{remaining} tasks to restore knowledge transfer, minimizing a combined dark-experience-replay and cross-entropy objective with an \(\ell_2\) anchor applied \emph{only} on the critical shared region:
 \begin{equation}
-\mathcal{L}_{modified} = \mathcal{L}_{unlearn} + \lambda \sum_{w \in S_{share\_crit}} \left\| w - w_{old} \right\|^2
+\mathcal{L}_{repair} = \alpha\,\mathcal{L}_{DER} + \beta\,\mathcal{L}_{CE} + \lambda \sum_{w \in S_{share\_crit}} \left\| w - w_{old} \right\|^2 .
 \end{equation}
-This regularization actively prevents the algorithm from destroying the shared functional space, yielding the highest retention accuracy, albeit operating over the entire network capacity.
+Here \(\mathcal{L}_{DER}\) matches the stored logits and \(\mathcal{L}_{CE}\) the labels of the retained tasks, while the final term holds the shared critical weights near their pre-forget values \(w_{old}\). The two stages thus play complementary roles: the reset performs the erasure, and the anchored repair protects the shared functional space, yielding the highest retention accuracy albeit operating over the entire network capacity.
 
 \begin{figure}[t]
     \centering
@@ -540,7 +542,7 @@ All algorithms were trained using a ResNet-18 backbone \cite{he2016deep} via Sto
 As shown in Table \ref{tab:main_results}, \textbf{PALL-Modified} achieves the highest retention accuracy among the compared methods (\(A_{final} = 0.9301\) on CIFAR-10) by balancing explicit overlap regularization with full-capacity network training. Conversely, \textbf{PALL-Adapter} prioritizes structural stability and parameter efficiency. On CIFAR-100, the PALL-Adapter restricts the WorstDrop to an exceptional \(0.0050\), compared to a catastrophic \(0.0710\) drop in PALL-Original, proving that targeted soft-scaling prevents interference.
 
 \subsection{Computational Efficiency and Ablation Study}
-On TinyImageNet, traditional unlearning recalculates \(9.6\%\) of the entire deep network's parameters. The PALL-Adapter quarantines weight updates strictly to the bottleneck modules, requiring only \(2.92\%\) of parameters to be adjusted, establishing an 87\% relative reduction on CIFAR-10. Figure \ref{fig:worstdrop_chart} confirms that this parameter efficiency directly prevents WorstDrop degradation.
+By quarantining weight updates strictly to the bottleneck modules, the PALL-Adapter sharply reduces the updated-parameter ratio (\(R_{updated}\)) relative to the full-network PALL-Original on every benchmark: from \(0.0475\) to \(0.0061\) on CIFAR-10 (a \(\sim\!87\%\) reduction), from \(0.0763\) to \(0.0123\) on CIFAR-100 (\(\sim\!84\%\)), and from \(0.0960\) to \(0.0292\) on TinyImageNet (\(\sim\!70\%\)). Figure \ref{fig:worstdrop_chart} confirms that this parameter efficiency directly prevents WorstDrop degradation.
 
 \begin{figure}[t]
 \centering
@@ -682,9 +684,10 @@ Optimization across all tasks utilized Stochastic Gradient Descent (SGD) with a 
 \STATE Initialize \(C_{t_{forget}}\) to clear residual target boundaries \COMMENT{Classifier Forgetting}
 \vspace{1.5mm}
 \STATE \textbf{Phase 2: Shared Overlap Quantification via Replay}
-\STATE Compute absolute gradients \(|\nabla \mathcal{L}|\) on replay buffer to extract \(S_{forget}\)
-\STATE Compute absolute gradients \(|\nabla \mathcal{L}|\) on replay buffer to extract \(S_{active}\)
-\STATE \(S_{share\_crit} \leftarrow S_{forget} \cap S_{active}\)
+\STATE \(S_{forget} \leftarrow\) top-\(\alpha_f\) coordinates of \(|\nabla \mathcal{L}_{forget}|\) on the replay buffer
+\STATE \(S_{active} \leftarrow\) top-\(\alpha_p\) coordinates of \(|\nabla \mathcal{L}_{active}|\) on the replay buffer
+\STATE \(S_{share\_crit} \leftarrow S_{forget} \cap S_{active}\) \COMMENT{competing: forget and retain both rely on these}
+\STATE \(S_{forget\_only} \leftarrow S_{forget} \setminus S_{active}\) \COMMENT{safe-to-erase}
 \vspace{1.5mm}
 \STATE \textbf{Phase 3: Soft-Masked Optimization Loop}
 \FOR{iteration \(= 1, 2, \dots, N_{iters}\)}
@@ -693,14 +696,14 @@ Optimization across all tasks utilized Stochastic Gradient Descent (SGD) with a 
     \STATE Compute \(\mathcal{L}_{unlearn} \leftarrow \text{CrossEntropy}(\text{forward}(x), y_{uniform})\)
     \STATE Compute Gradients \(\nabla \phi_{shared} \leftarrow \text{backward}(\mathcal{L}_{unlearn})\)
     \FORALL{weight \(w \in \phi_{shared}\)}
-        \IF{\(w \in \text{top}(\alpha_p, S_{active})\)}
-            \STATE \(m_{soft} \leftarrow (1.0 - \text{protect\_strength})\) \COMMENT{Dampened friction}
-            \STATE \(w \leftarrow w - \eta \cdot m_{soft} \cdot \nabla_{w}\)
-        \ELSIF{\(w \in \text{top}(\alpha_f, S_{forget})\)}
-            \STATE \(w \leftarrow w - \eta \cdot \nabla_{w}\) \COMMENT{Surgically Scrubbed (Full Update)}
+        \IF{\(w \in S_{share\_crit}\)}
+            \STATE \(m_{soft} \leftarrow (1.0 - \text{protect\_strength})\) \COMMENT{dampened forgetting update}
+        \ELSIF{\(w \in S_{forget\_only}\)}
+            \STATE \(m_{soft} \leftarrow 1.0\) \COMMENT{surgical erasure (full update)}
         \ELSE
-            \STATE \(w \leftarrow w\) \COMMENT{Untouched parameters}
+            \STATE \(m_{soft} \leftarrow 0.0\) \COMMENT{frozen}
         \ENDIF
+        \STATE \(w \leftarrow w - \eta \cdot m_{soft} \cdot \nabla_{w}\)
     \ENDFOR
 \ENDFOR
 \end{algorithmic}
