@@ -142,6 +142,17 @@ parser.add_argument(
          'forgetting loop in pall_adapter (1 reproduces the old single-step behaviour)',
 )
 parser.add_argument(
+    '--adapter_forget_mode',
+    default='uniform_loop',
+    choices=['ascent_step', 'uniform_loop'],
+    help="pall_adapter shared-adapter forgetting rule. 'uniform_loop' (default, "
+         "current behaviour): iterate --adapter_forget_steps gradient-DESCENT steps "
+         "toward a uniform target over the forget task's classes. 'ascent_step': a "
+         "single gradient-ASCENT step on the true-label loss. Both use the same "
+         "soft mask (full on S_forget_only, scaled by 1-protect_strength on "
+         "S_share_crit, frozen elsewhere).",
+)
+parser.add_argument(
     '--adapter_train_classifier',
     default=False,
     action='store_true',

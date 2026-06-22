@@ -365,6 +365,49 @@ class PALLAdapter(Base):
                 )
         return conflict
 
+    def _apply_ascent_step_forgetting(self, grad_map, forget_masks, critical_masks,
+                                      hard_protected_masks, lr, protect_strength):
+        """Single gradient-ASCENT step on the forget task's true-label loss.
+
+        The legacy ``--adapter_forget_mode ascent_step`` rule: one soft-masked
+        step ``w += lr * m_soft * g_forget`` using the precomputed forget-task
+        gradient (gradient ascent erodes forget-task accuracy). Same soft mask as
+        the iterative loop: full on ``S_forget_only``, scaled by
+        ``1-protect_strength`` on ``S_share_crit``, frozen on the hard-protected
+        subset and outside ``S_forget``. Returns (updated, full, soft) with
+        updated = full + soft so the protected+updated == shared_forget invariant
+        holds structurally.
+        """
+        lr = self.lr if lr is None else lr
+        soft_scale = max(0.0, 1.0 - protect_strength)
+        full_count = 0
+        soft_count = 0
+        with torch.no_grad():
+            for name, param in self._shared_adapter_param_items():
+                grad = grad_map.get(name)
+                forget_mask = forget_masks.get(name)
+                if grad is None or forget_mask is None or not torch.any(forget_mask):
+                    continue
+                critical_mask = critical_masks.get(name)
+                if critical_mask is None:
+                    critical_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
+                hard_protected_mask = hard_protected_masks.get(name)
+                if hard_protected_mask is None:
+                    hard_protected_mask = torch.zeros_like(forget_mask, dtype=torch.bool)
+                full_mask = torch.logical_and(forget_mask, torch.logical_not(critical_mask))
+                soft_mask = torch.logical_and(critical_mask, torch.logical_not(hard_protected_mask))
+                if torch.any(full_mask):
+                    param.add_(grad * full_mask.to(dtype=grad.dtype), alpha=lr)
+                if soft_scale > 0.0 and torch.any(soft_mask):
+                    param.add_(grad * soft_mask.to(dtype=grad.dtype), alpha=lr * soft_scale)
+                full_count += int(full_mask.sum().item())
+                soft_count += int(soft_mask.sum().item())
+        self.log_progress(
+            f"adapter ascent-step forgetting: full={full_count} soft={soft_count} "
+            f"soft_scale={soft_scale:.3f}"
+        )
+        return full_count + soft_count, full_count, soft_count
+
     def _run_phase3_shared_forgetting(self, task_id, forget_masks, critical_masks,
                                       hard_protected_masks, lr, protect_strength, n_steps):
         """Phase 3: ITERATIVE uniform-target soft-masked forgetting on the shared adapter.
@@ -681,19 +724,33 @@ class PALLAdapter(Base):
         self.net.reset_task_adapter(task_id)
         self.net.reset_classifier_slice(task_id, self.cpt)
         if shared_forget_count > 0:
-            (
-                updated_adapter_params,
-                shared_full_update_params,
-                shared_soft_update_params,
-            ) = self._run_phase3_shared_forgetting(
-                task_id,
-                shared_forget_mask,
-                shared_critical_mask,
-                hard_protected_shared_mask,
-                self.args.adapter_shared_forget_lr,
-                shared_protect_strength,
-                self.args.adapter_forget_steps,
-            )
+            if getattr(self.args, "adapter_forget_mode", "uniform_loop") == "ascent_step":
+                (
+                    updated_adapter_params,
+                    shared_full_update_params,
+                    shared_soft_update_params,
+                ) = self._apply_ascent_step_forgetting(
+                    deleted_grads,
+                    shared_forget_mask,
+                    shared_critical_mask,
+                    hard_protected_shared_mask,
+                    self.args.adapter_shared_forget_lr,
+                    shared_protect_strength,
+                )
+            else:
+                (
+                    updated_adapter_params,
+                    shared_full_update_params,
+                    shared_soft_update_params,
+                ) = self._run_phase3_shared_forgetting(
+                    task_id,
+                    shared_forget_mask,
+                    shared_critical_mask,
+                    hard_protected_shared_mask,
+                    self.args.adapter_shared_forget_lr,
+                    shared_protect_strength,
+                    self.args.adapter_forget_steps,
+                )
             protected_adapter_params = int(hard_protected_adapter_params)
         protected_adapter_params = int(protected_adapter_params)
         updated_adapter_params = int(updated_adapter_params)
