@@ -37,6 +37,8 @@ COLUMNS: List[str] = [
     "experiment_tag",
     "dataset",
     "method",
+    "method_variant",
+    "variant",
     "seed",
     "arch",
     "class_per_task",
@@ -46,7 +48,12 @@ COLUMNS: List[str] = [
     "adapter_bottleneck",
     "adapter_train_classifier",
     "adapter_location",
+    "adapter_shared_bottleneck",
+    "adapter_shared_forget_ratio",
+    "adapter_shared_protect_ratio",
+    "adapter_shared_protect_strength",
     "protect_ratio",
+    "protect_importance",
     "lambda_protect",
     "retrain_steps",
     "request_schedule_file",
@@ -155,6 +162,8 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
         "experiment_tag": first_non_none(config.get("experiment_tag"), nested_get(metrics, "run", "experiment_tag")),
         "dataset": first_non_none(config.get("dataset"), nested_get(metrics, "run", "dataset")),
         "method": first_non_none(config.get("method"), nested_get(metrics, "run", "method")),
+        "method_variant": config.get("method_variant"),
+        "variant": config.get("variant"),
         "seed": first_non_none(config.get("seed"), nested_get(metrics, "run", "seed")),
         "arch": config.get("arch"),
         "class_per_task": config.get("class_per_task"),
@@ -164,7 +173,12 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
         "adapter_bottleneck": config.get("adapter_bottleneck"),
         "adapter_train_classifier": config.get("adapter_train_classifier"),
         "adapter_location": config.get("adapter_location"),
+        "adapter_shared_bottleneck": config.get("adapter_shared_bottleneck"),
+        "adapter_shared_forget_ratio": config.get("adapter_shared_forget_ratio"),
+        "adapter_shared_protect_ratio": config.get("adapter_shared_protect_ratio"),
+        "adapter_shared_protect_strength": config.get("adapter_shared_protect_strength"),
         "protect_ratio": config.get("protect_ratio"),
+        "protect_importance": config.get("protect_importance"),
         "lambda_protect": config.get("lambda_protect"),
         "retrain_steps": config.get("retrain_steps"),
         "request_schedule_file": first_non_none(
@@ -206,7 +220,22 @@ def value_matches_filter(value: Any, accepted_values: Optional[List[str]]) -> bo
     return str(value) in {str(item) for item in accepted_values}
 
 
+_SMOKE_TAG_PREFIXES = ("smoke", "test")
+
+
+def is_smoke_run(row: Dict[str, Any]) -> bool:
+    tag = row.get("experiment_tag")
+    if tag is None:
+        return False
+    return str(tag).lower().startswith(_SMOKE_TAG_PREFIXES)
+
+
 def row_matches_filters(row: Dict[str, Any], args: argparse.Namespace) -> bool:
+    # By default, smoke/test runs (experiment_tag starting with 'smoke'/'test')
+    # are excluded so they never leak into thesis tables. Pass --include-smoke
+    # to keep them.
+    if not getattr(args, "include_smoke", False) and is_smoke_run(row):
+        return False
     return (
         value_matches_filter(row.get("dataset"), args.dataset)
         and value_matches_filter(row.get("method"), args.method)
@@ -250,6 +279,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--n-forget", dest="n_forget", nargs="+", default=None, help="Filter by n_forget value(s).")
     parser.add_argument("--seed", nargs="+", default=None, help="Filter by seed value(s).")
     parser.add_argument("--experiment-tag", nargs="+", default=None, help="Filter by experiment_tag value(s).")
+    parser.add_argument(
+        "--include-smoke",
+        action="store_true",
+        help="Include smoke/test runs (experiment_tag starting with 'smoke'/'test'); excluded by default.",
+    )
     return parser.parse_args()
 
 
