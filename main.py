@@ -87,6 +87,12 @@ parser.add_argument(
          "or 'weight' (legacy absolute weight magnitude, ablation)")
 parser.add_argument('--lambda_protect', default=0.0, type=float, help='regularization weight for protected params')
 parser.add_argument(
+    '--protect_anchor', default='old', choices=['old', 'reinit'],
+    help="pall_modified anchor target for the critical-shared L2 penalty: 'old' "
+         "anchors to pre-forget weights w_old (default); 'reinit' anchors to a "
+         "fresh data-independent reinitialization sample (w_old still encodes "
+         "forget-task information, so 'reinit' removes that leakage)")
+parser.add_argument(
     '--adaptive_protect', default=False, action='store_true',
     help="scale lambda_protect by the measured critical-overlap ratio "
          "(stronger protection when forget/retain overlap is higher)")

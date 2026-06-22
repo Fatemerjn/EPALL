@@ -365,6 +365,39 @@ class PALLBase(Base):
                 crit_masks[key] = torch.logical_and(mask, _score(key, param) >= threshold)
         return crit_masks
 
+    def _reinit_anchor_values(self, masks, param_map):
+        """Fresh, data-independent reinit sample for the masked positions.
+
+        Used by ``--protect_anchor reinit``. Reviewer point: anchoring the L2
+        penalty to the pre-forget weights ``w_old`` keeps the protected critical
+        weights close to a state that still ENCODES the forgotten task; anchoring
+        instead to a fresh reinitialization removes that residual leakage while
+        still pinning the weights (so retained tasks can repair them). The init
+        scheme mirrors ``SubnetResNet.reinit_weights``: kaiming_uniform_(a=sqrt 5)
+        for weights, uniform(+/- 1/sqrt(fan_in)) for biases.
+        """
+        out = {}
+        for key, mask in masks.items():
+            if mask is None:
+                continue
+            param = param_map.get(key)
+            if param is None:
+                continue
+            m = mask.to(dtype=torch.bool, device=param.device)
+            if not torch.any(m):
+                continue
+            sample = torch.zeros_like(param)
+            if key.endswith(".bias"):
+                weight = param_map.get(key[: -len("bias")] + "weight")
+                if weight is not None and weight.dim() >= 2:
+                    fan_in, _ = nn.init._calculate_fan_in_and_fan_out(weight)
+                    if fan_in > 0:
+                        nn.init.uniform_(sample, -1.0 / math.sqrt(fan_in), 1.0 / math.sqrt(fan_in))
+            elif param.dim() >= 2:
+                nn.init.kaiming_uniform_(sample, a=math.sqrt(5))
+            out[key] = sample[m].clone()
+        return out
+
     def _compute_signed_grads(self, task_ids):
         """Per-parameter SIGNED gradient of the summed CE loss over the given
         tasks' rehearsal buffers.
@@ -626,6 +659,12 @@ class PALLBase(Base):
             use_protection = self.method_variant == "modified"
             param_map = dict(self.net.named_parameters())
             if s_share_crit_count > 0 and ((use_protection and self.args.lambda_protect > 0.0) or debug_context is not None):
+                # Anchor target for the critical-shared L2 penalty: pre-forget
+                # weights w_old (default), or a fresh reinit sample when
+                # --protect_anchor reinit (w_old still encodes forget info).
+                reinit_anchor = {}
+                if getattr(self.args, "protect_anchor", "old") == "reinit":
+                    reinit_anchor = self._reinit_anchor_values(s_share_crit_masks, param_map)
                 for key, mask in s_share_crit_masks.items():
                     if mask is None:
                         continue
@@ -637,7 +676,7 @@ class PALLBase(Base):
                         continue
                     crit_refs[key] = {
                         "mask": mask,
-                        "values": param.detach()[mask].clone(),
+                        "values": reinit_anchor.get(key, param.detach()[mask].clone()),
                     }
 
             if use_protection and s_share_crit_count > 0:
