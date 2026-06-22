@@ -103,6 +103,10 @@ parser.add_argument('--allow_zero_retrain', default=False, action='store_true',
 parser.add_argument('--adaptive_retrain', default=False, action='store_true', help='adapt retrain steps to overlap')
 parser.add_argument('--debug_unlearning', default=False, action='store_true', help='dump unlearning artifacts')
 parser.add_argument('--dump_overlap', default=False, action='store_true', help='dump overlap matrix CSV')
+parser.add_argument('--eval_mia', default=False, action='store_true',
+                    help='run a simple membership-inference attack before and after each '
+                         'forget event (members=forget-task train samples, non-members=its '
+                         'test split); writes AUC and balanced accuracy under metrics "mia"')
 parser.add_argument('--adapter_bottleneck', default=16, type=int, help='adapter bottleneck size for pall_adapter')
 parser.add_argument(
     '--adapter_shared_bottleneck',
@@ -775,6 +779,78 @@ def normalize_unlearning_event(event, availability=None):
     }
 
 
+def _mia_auc(member_scores, nonmember_scores):
+    """AUC of a membership score (higher == more member-like), computed from the
+    rank statistic (= probability a random member outscores a random non-member,
+    the Mann-Whitney U form). Returns None if either group is empty."""
+    member = np.asarray(member_scores, dtype=np.float64)
+    nonmember = np.asarray(nonmember_scores, dtype=np.float64)
+    if member.size == 0 or nonmember.size == 0:
+        return None
+    allv = np.concatenate([member, nonmember])
+    order = allv.argsort(kind="mergesort")
+    ranks = np.empty(allv.size, dtype=np.float64)
+    ranks[order] = np.arange(1, allv.size + 1, dtype=np.float64)
+    rank_sum = ranks[: member.size].sum()
+    return float((rank_sum - member.size * (member.size + 1) / 2.0) / (member.size * nonmember.size))
+
+
+def _mia_balanced_accuracy(member_scores, nonmember_scores):
+    """Best balanced accuracy over score thresholds (predict member when
+    score >= threshold). Returns None if either group is empty."""
+    member = np.asarray(member_scores, dtype=np.float64)
+    nonmember = np.asarray(nonmember_scores, dtype=np.float64)
+    if member.size == 0 or nonmember.size == 0:
+        return None
+    best = 0.0
+    for thr in np.unique(np.concatenate([member, nonmember])):
+        tpr = float((member >= thr).mean())
+        tnr = float((nonmember < thr).mean())
+        best = max(best, 0.5 * (tpr + tnr))
+    return float(best)
+
+
+def _mia_per_sample_scores(model, dataset, task_id, args, max_samples=512):
+    """Per-sample (loss, max-softmax confidence) for `dataset` under `model`,
+    via the model-agnostic ``evaluate(x, task)`` head. Capped at `max_samples`."""
+    model.eval_mode()
+    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
+    losses, confidences, seen = [], [], 0
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(args.device)
+            y = y.to(args.device)
+            logits = model.evaluate(x, task_id)
+            losses.append(F.cross_entropy(logits, y, reduction="none").detach().cpu())
+            confidences.append(torch.softmax(logits, dim=1).max(dim=1).values.detach().cpu())
+            seen += int(x.size(0))
+            if seen >= max_samples:
+                break
+    if not losses:
+        return np.zeros(0), np.zeros(0)
+    return torch.cat(losses).numpy(), torch.cat(confidences).numpy()
+
+
+def compute_mia(model, member_dataset, nonmember_dataset, task_id, args, max_samples=512):
+    """Simple membership-inference attack for one forget target.
+
+    Members = the forgotten task's own (training) samples the model was exposed to;
+    non-members = that task's held-out test split. Successful unlearning drives the
+    attack toward chance (AUC ~ 0.5). The membership score is the negative
+    per-sample loss (members tend to be lower-loss / higher-confidence); we also
+    report a confidence-based AUC. Model-agnostic: works for pall_modified,
+    pall_original, and pall_adapter via ``model.evaluate``."""
+    m_loss, m_conf = _mia_per_sample_scores(model, member_dataset, task_id, args, max_samples)
+    n_loss, n_conf = _mia_per_sample_scores(model, nonmember_dataset, task_id, args, max_samples)
+    return {
+        "auc_loss": _mia_auc(-m_loss, -n_loss),
+        "auc_confidence": _mia_auc(m_conf, n_conf),
+        "balanced_accuracy": _mia_balanced_accuracy(-m_loss, -n_loss),
+        "n_members": int(m_loss.size),
+        "n_nonmembers": int(n_loss.size),
+    }
+
+
 def process_requests(args, model, train_datasets, test_datasets, requests, run_context):
     forgotten_tasks = []
     loss = torch.zeros(len(requests), args.n_tasks)
@@ -806,6 +882,11 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
             avg_before = avg_for_tasks(pre_acc, remaining_tasks)
             forget_phase_start = time.perf_counter()
             log_event(logger, f"[INFO] forgetting start: task={task_id} remaining_tasks={remaining_tasks}")
+
+            mia_before = None
+            if getattr(args, "eval_mia", False):
+                mia_before = compute_mia(model, train_datasets[task_id], test_datasets[task_id], task_id, args)
+                log_event(logger, f"[INFO] MIA before forget: task={task_id} {mia_before}")
 
             def eval_callback(stage):
                 return evaluate(test_datasets, args, model, return_logits=False, verbose=False)
@@ -849,6 +930,11 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
             stat = evaluate(test_datasets, args, model, return_logits=True, verbose=True)
             post_acc = to_list(stat["accuracy"])
 
+            mia_after = None
+            if getattr(args, "eval_mia", False):
+                mia_after = compute_mia(model, train_datasets[task_id], test_datasets[task_id], task_id, args)
+                log_event(logger, f"[INFO] MIA after forget: task={task_id} {mia_after}")
+
             avg_after_reset = avg_for_tasks(after_reset_acc, remaining_tasks)
             avg_after_retrain = avg_for_tasks(post_acc, remaining_tasks)
             fu = avg_before - avg_after_retrain
@@ -872,6 +958,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "Fu": fu,
                 "WorstDrop": worst_drop,
                 "Au": au,
+                "mia": ({"before": mia_before, "after": mia_after} if getattr(args, "eval_mia", False) else None),
                 "t_reset": info.get("t_reset", 0.0) if info.get("t_reset") is not None else 0.0,
                 "t_retrain": info.get("t_retrain", 0.0) if info.get("t_retrain") is not None else 0.0,
                 "t_forget_total": info.get("t_forget_total"),
