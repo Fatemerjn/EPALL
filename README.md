@@ -23,21 +23,33 @@ https://openreview.net/forum?id=UstOpZCESc
 
 ## Implemented Methods
 
-- `sequential`
-- `ewc`
-- `lwf`
-- `er`
-- `derpp`
-- `lsf`
-- `clpu`
-- `pall_original`
-- `pall_modified`
-- `pall_adapter`
+Baselines: `sequential`, `ewc`, `lwf`, `er`, `derpp`, `lsf`, `clpu`.
+
+### Method taxonomy (which is the main method?)
+
+The contribution is overlap-aware forgetting: when parameters are shared between
+the forget task and retained tasks, naive forgetting damages the retained tasks.
+Each run records a `variant` label (in `config.json` and the aggregated CSV) so
+tables can separate them unambiguously.
+
+| `--method` (+ flags) | `variant` label | Paper name | Role |
+|---|---|---|---|
+| `pall_original` | `pall_original` | PALL-Original | Baseline (no overlap protection) |
+| `pall_modified` (default) | `pall_modified_grad` | **PALL-Modified** | **MAIN METHOD** — protect critical overlap, ranked by retained-task **gradient** importance `\|∇L_retain\|` on the rehearsal buffer |
+| `pall_modified --protect_importance conflict` | `pall_modified_conflict` | PALL-Modified-C | **For HIGH overlap** — rank critical overlap by gradient-**conflict** energy `relu(-∇L_forget·∇L_retain)`: protects exactly the params where forgetting and retention fight |
+| `pall_modified ... --adaptive_protect` | `..._adapt` | — | Optional: scale the protection penalty by the measured critical-overlap ratio (stronger protection as overlap grows) |
+| `pall_modified --protect_importance weight` | `pall_modified_weight` | PALL-Modified-W | Ablation — same protection, ranked by **weight** magnitude (legacy) |
+| `pall_modified` w/o `--lambda_protect`/`--protect_ratio` | `pall_modified_noprotect` | — | Sanity (protection disabled) |
+| `pall_adapter` (no shared adapter) | `adapter_reset` | PALL-Adapter (reset) | Adapter baseline: reset task adapter + classifier only |
+| `pall_adapter --adapter_shared_bottleneck N --adapter_shared_forget_ratio r` | `adapter_shared` | PALL-Adapter (shared) | Shared adapter, **no** protection |
+| `... --adapter_shared_protect_ratio p` | `adapter_protected` | PALL-Adapter (protected) | Shared adapter with critical-overlap protection |
 
 Notes:
 
-- `--method pall` is normalized to `pall_modified`.
-- PALL-Adapter is a parameter-efficient variant of overlap-aware selective forgetting. It uses task-specific adapters and a shared adapter component to reduce the number of trainable and updated parameters during forgetting. The adapter variant implements partial overlap-aware control over shared adapter parameters, and is intended as a cost/stability-oriented alternative to full PALL-style subnet masking.
+- **Main publishable method: `pall_modified`.** Use `--protect_importance conflict` for high-overlap regimes (the core contribution); `gradient` is the default general criterion; `weight` is a legacy ablation.
+- `pall_modified`/`pall_original` are thin subclasses of `PALLBase`; the implementation files map 1:1 to the paper: `methods/pall_base.py` (machinery), `methods/pall_modified.py` (main), `methods/pall_original.py` (baseline). `methods/pall.py` is a backward-compatible shim (`PALL = PALLBase`).
+- `--method pall` is a **deprecated alias** for `pall_modified` (prints a warning). Use the explicit name.
+- PALL-Adapter is a parameter-efficient variant (frozen backbone + task/shared adapters). Its shared-adapter forgetting is the **iterative uniform-target Phase-3 loop** of Algorithm 1 (`--adapter_forget_steps`, default 10), and supports `--protect_importance conflict` to protect the high-conflict overlap. Set `--adapter_forget_steps 1` for the legacy single-step behaviour.
 - The pipeline is task-ID-aware: task IDs are known at training, forgetting, and evaluation time.
 
 ## Supported Datasets
