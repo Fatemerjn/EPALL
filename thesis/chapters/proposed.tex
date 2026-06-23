@@ -1,0 +1,486 @@
+
+\فصل{روش پیشنهادی}
+
+در دو فصلِ پیشین، مسئله‌ی فراموشیِ انتخابی در یادگیری پیوسته صورت‌بندی شد و نشان داده شد که مانعِ اصلیِ آن، هم‌پوشانیِ پارامتری میانِ وظیفه‌ی فراموش‌شونده و وظایفِ فعالِ باقی‌مانده است. در این فصل، دو روشِ پیشنهادیِ این پژوهش—\lr{PALL-Modified} و \lr{PALL-Adapter}—به‌تفصیل معرفی می‌شوند. هر دو روش بر یک اصلِ مشترک استوارند: \emph{شناساییِ صریحِ ناحیه‌ی بحرانیِ مشترک و رفتارِ محتاطانه تنها در همان ناحیه}. تفاوتِ آن‌ها در سازوکارِ پیاده‌سازیِ این اصل است؛ روشِ نخست روی کلِ ظرفیتِ شبکه و با یک جریمه‌ی تنظیمِ محافظتی عمل می‌کند و بالاترین دقتِ نگه‌داری را هدف می‌گیرد، و روشِ دوم با منجمدکردنِ بدنه و محدودکردنِ یادگیری به آداپترهای کوچک، کمترین هزینه‌ی پارامتری و کمترین بیشترین‌افت را دنبال می‌کند.
+
+ساختارِ این فصل چنین است: ابتدا در بخشِ \ref{sec:unconstrained} محدودیتِ بنیادینِ فراموشیِ بی‌قید به‌صورت صوری تحلیل می‌شود تا انگیزه‌ی هر دو روش روشن گردد. سپس در بخشِ \ref{sec:modified} روشِ \lr{PALL-Modified}، شاملِ تعریفِ هم‌پوشانیِ بحرانی، سنجشِ اهمیتِ گرادیانی، و جریمه‌ی محافظتی، شرح داده می‌شود. در بخشِ \ref{sec:adapter} معماریِ \lr{PALL-Adapter} و در بخشِ \ref{sec:threephase} فرآیندِ سه‌فازیِ ماسکِ نرم ارائه می‌گردد. در بخشِ \ref{sec:theory} پشتوانه‌ی نظریِ سازوکارِ ماسکِ نرم—یعنی قضیه‌ی انقباضِ بیشترین‌افت—به‌همراه اثبات آورده می‌شود، و در پایان، بخشِ \ref{sec:ch3summary} فصل را جمع‌بندی می‌کند.
+
+پیش از ورود به جزئیات، یک نکته‌ی صداقتِ علمی را تصریح می‌کنیم: هر دو روشِ پیشنهادی در رده‌ی {فراموشیِ تقریبی\پانویس{Approximate Unlearning}} قرار می‌گیرند، نه فراموشیِ دقیق. هدف، نزدیک‌کردنِ رفتارِ مدل به حالتی است که گویی وظیفه‌ی هدف هرگز آموزش داده نشده، اما هیچ تضمینِ توزیعیِ دقیقی—از آن دست که چارچوب‌هایی مانند \lr{SISA} ارائه می‌دهند—ادعا نمی‌شود. کیفیتِ فراموشی در این پژوهش با شواهدِ تجربی (به‌ویژه نزدیک‌شدنِ دقتِ وظیفه‌ی فراموش‌شده به سطحِ تصادفی) و یک کرانِ نظری بر آسیبِ جانبی سنجیده می‌شود.
+
+\قسمت{محدودیتِ فراموشیِ بی‌قید}
+\label{sec:unconstrained}
+
+برای روشن‌شدنِ انگیزه‌ی روش‌های پیشنهادی، نخست نشان می‌دهیم که چرا ساده‌ترین راهبردِ فراموشی—یعنی {صعودِ گرادیانیِ بی‌قید\پانویس{Unconstrained Gradient Ascent}} روی داده‌ی وظیفه‌ی هدف—در محیطِ یادگیری پیوسته به‌طور ساختاری شکست می‌خورد.
+
+فرض کنید مدلی با پارامترهای $w$ روی دنباله‌ای از وظایف آموزش دیده و اکنون درخواستِ فراموشیِ وظیفه‌ی هدف $u$ رسیده است. رویکردِ بی‌قید می‌کوشد زیانِ آنتروپیِ متقاطعِ وظیفه‌ی هدف را \emph{بیشینه} کند، یعنی در خلافِ جهتِ گرادیان گام بردارد:
+\begin{equation}
+\label{eq:unconstrained-ascent}
+w \;\leftarrow\; w \;+\; \eta\,\nabla_{w}\,\mathcal{L}_{CE}\big(f(x;w),\,y\big),
+\qquad (x,y)\in D_{u}.
+\end{equation}
+از دیدِ وظیفه‌ی هدف، این به‌روزرسانی مطلوب است؛ مرزهای تصمیمِ آن وظیفه به‌سرعت تخریب می‌شوند و دقتش به سطحِ تصادفی می‌افتد. مشکل آن‌جاست که گرادیانِ \eqref{eq:unconstrained-ascent} روی \emph{همه‌ی} پارامترهای دخیل در محاسبه‌ی خروجیِ وظیفه‌ی هدف اثر می‌گذارد، و در یک شبکه‌ی پرظرفیت، بخشِ بزرگی از این پارامترها هم‌زمان در مسیرِ محاسباتیِ وظایفِ فعالِ باقی‌مانده نیز قرار دارند.
+
+این درهم‌تنیدگی را می‌توان دقیق‌تر بیان کرد. مجموعه‌ی پارامترهای حساس به وظیفه‌ی هدف را $S_{\mathrm{forget}}$ و مجموعه‌ی پارامترهای مهم برای وظایفِ فعال را $S_{\mathrm{active}}$ می‌نامیم. اشتراکِ این دو، یعنی
+\begin{equation}
+\label{eq:scrit-def}
+S_{\mathrm{crit}} \;\triangleq\; S_{\mathrm{forget}} \,\cap\, S_{\mathrm{active}},
+\end{equation}
+ناحیه‌ای است که در آن، خواسته‌ی فراموشی و خواسته‌ی نگه‌داری مستقیماً با هم رقابت می‌کنند. هر گامِ صعودی روی پارامترهای $S_{\mathrm{crit}}$، در حالی که دانشِ وظیفه‌ی هدف را می‌زداید، نمایشِ کارکردیِ وظایفِ فعال را نیز جابه‌جا می‌کند. اثرِ مرتبه‌ی اولِ این جابه‌جایی بر ریسکِ یک وظیفه‌ی فعالِ $t$ را می‌توان چنین تقریب زد:
+\begin{equation}
+\label{eq:firstorder-damage}
+\Delta R_{t} \;\approx\; \big\langle \nabla_{w} R_{t}(w),\; \delta w \big\rangle
+\;=\; \sum_{i} \partial_{i} R_{t}(w)\,\delta w_{i},
+\end{equation}
+که در آن $\delta w$ کلِ جابه‌جاییِ پارامترها در اثرِ فراموشی است. در فراموشیِ بی‌قید، مؤلفه‌های $\delta w_i$ روی $S_{\mathrm{crit}}$ بزرگ‌اند و هم‌زمان $\partial_{i} R_{t}$ نیز روی همین مجموعه بزرگ است (چون این پارامترها برای وظیفه‌ی $t$ مهم‌اند)؛ در نتیجه حاصل‌جمعِ \eqref{eq:firstorder-damage} به‌طور قابل‌توجهی مثبت می‌شود و افتِ شدیدی پدید می‌آورد. این دقیقاً همان پدیده‌ای است که در فصلِ چهارم برای روش‌های بی‌قید مشاهده خواهد شد و معیارِ {بیشترین افت\پانویس{WorstDrop}} را به‌شدت بزرگ می‌کند.
+
+از این تحلیل، اصلِ راهنمای هر دو روشِ پیشنهادی نتیجه می‌شود: \emph{به‌روزرسانیِ فراموشی باید روی پارامترهای منحصر به وظیفه‌ی هدف ($S_{\mathrm{forget}}\setminus S_{\mathrm{active}}$) آزادانه و روی ناحیه‌ی بحرانیِ مشترک ($S_{\mathrm{crit}}$) محتاطانه عمل کند.} مسئله‌ی فنیِ پیشِ‌رو، نخست \emph{شناساییِ} صریحِ $S_{\mathrm{crit}}$ و سپس طراحیِ سازوکاری برای \emph{محافظت} از آن است. شکلِ \ref{fig:overlap-concept} این مفهوم را به‌صورت شهودی نشان می‌دهد.
+
+% ---- شکل ۱: نمودار مفهومیِ هم‌پوشانیِ بحرانی ----
+\begin{figure}[t]
+    \centering
+    % راهنمای ساخت در سند «مشخصات شکل‌ها»، شکل ۳-۱
+    \includegraphics[width=0.75\columnwidth]{overlap_concept.pdf}
+    \caption{نمایشِ مفهومیِ هم‌پوشانیِ پارامتری. مجموعه‌ی $S_{\mathrm{forget}}$ (پارامترهای حساس به وظیفه‌ی فراموش‌شونده) و $S_{\mathrm{active}}$ (پارامترهای مهمِ وظایفِ فعال) دارای اشتراکِ بحرانیِ $S_{\mathrm{crit}}$ هستند. سازوکارِ مقیاس‌دهیِ نرم همچون سپری روی همین اشتراک عمل می‌کند: ناحیه‌ی منحصر به فراموشی آزادانه پاک و ناحیه‌ی بحرانی محافظت می‌شود.}
+    \label{fig:overlap-concept}
+\end{figure}
+
+\قسمت{روشِ نخست: \lr{PALL-Modified}}
+\label{sec:modified}
+
+روشِ \lr{PALL-Modified} توسعه‌ای بر چارچوبِ \lr{PALL} است که فراموشی را به دو مرحله‌ی مجزا تفکیک می‌کند: مرحله‌ی \emph{بازنشانی} که دانشِ وظیفه‌ی هدف را حذف می‌کند، و مرحله‌ی \emph{بازآموزیِ ترمیمیِ محافظت‌شده} که دانشِ وظایفِ فعال را بازمی‌سازد و هم‌زمان از ناحیه‌ی بحرانی محافظت می‌کند. این تفکیک، نکته‌ی کلیدیِ صحتِ روش است و باید با دقت بیان شود، زیرا—برخلافِ برداشتِ سرراست—جریمه‌ی $\ell_2$ روی وزن‌هایی که قرار است فراموش شوند اعمال نمی‌شود، بلکه تنها در مرحله‌ی بازآموزی و روی ناحیه‌ی بحرانیِ مشترک به کار می‌رود.
+
+\زیرقسمت{نمادگذاری و یادگیریِ یک وظیفه روی زیرشبکه}
+\label{subsec:mod-notation}
+
+پایه‌ی \lr{PALL-Modified}، آموزشِ هر وظیفه روی یک {زیرشبکه‌ی پراکنده\پانویس{Sparse Subnetwork}} است. برای هر وزنِ شبکه یک پارامترِ {امتیازِ یادگرفتنی\پانویس{Learnable Score}} به‌نامِ $s$ نگه داشته می‌شود و {ماسکِ دودویی\پانویس{Binary Mask}} وظیفه‌ی $t$ با آستانه‌گذاری روی بزرگیِ این امتیازها ساخته می‌شود. با {نرخِ پراکندگی\پانویس{Sparsity}} $\kappa$، تنها وزن‌هایی فعال می‌مانند که امتیازشان بالاتر از صدکِ $\kappa$ باشد:
+\begin{equation}
+\label{eq:mask-from-score}
+m_{t} \;=\; \mathbb{1}\!\left[\,|s| \;\geq\; \mathrm{quantile}_{\kappa}\big(|s|\big)\,\right],
+\qquad m_{t}\in\{0,1\}^{|w|}.
+\end{equation}
+عبورِ رو به جلو با وزن‌های ماسک‌خورده انجام می‌شود و زیانِ آنتروپیِ متقاطع محاسبه می‌گردد:
+\begin{equation}
+\label{eq:forward-mask}
+\hat{y} \;=\; f\big(x;\; w \odot m_{t}\big),
+\qquad
+\mathcal{L} \;=\; \mathcal{L}_{CE}(\hat{y},\,y),
+\end{equation}
+که در آن $\odot$ ضربِ نقطه‌به‌نقطه است. برای جلوگیری از {فراموشیِ فاجعه‌بار\پانویس{Catastrophic Forgetting}} هنگامِ یادگیریِ وظیفه‌ی جدید، گرادیانِ وزن‌هایی که پیش‌تر توسطِ وظایفِ قبلی استفاده شده‌اند صفر می‌شود. اگر {ماسکِ ترکیبیِ\پانویس{Combined Mask}} وظایفِ پیش از $t$ را با $M_{<t}=\bigcup_{j<t} m_j$ نشان دهیم (که در آن اجتماعِ ماسک‌ها به‌صورت $a\cup b \triangleq 1-(1-a)(1-b)$ تعریف می‌شود)، قاعده‌ی به‌روزرسانی چنین است:
+\begin{equation}
+\label{eq:grad-zeroing}
+g_{i} \;\leftarrow\; 0 \quad \text{اگر}\;\; i \in M_{<t},
+\qquad\qquad
+w \;\leftarrow\; w - \eta\, g.
+\end{equation}
+پس از پایانِ آموزشِ وظیفه‌ی $t$، ماسکِ آن ذخیره و ماسکِ ترکیبی به‌روز می‌شود ($M_{\leq t}=M_{<t}\cup m_t$)؛ سپس چند نمونه به‌همراه {لاجیت‌های\پانویس{Logits}} ذخیره‌شده‌شان، یعنی سه‌تایی‌های $(x_j,\,y_j,\,h_j^{\mathrm{old}})$، در {حافظه‌ی بازپخش\پانویس{Replay Buffer}} نگه داشته می‌شوند تا در مراحلِ بعد برای سنجشِ اهمیت و بازآموزی به کار روند.
+
+\زیرقسمت{تعریفِ هم‌پوشانیِ بحرانی و سنجشِ اهمیتِ گرادیانی}
+\label{subsec:mod-critical}
+
+با رسیدنِ درخواستِ فراموشیِ وظیفه‌ی هدف $u$، نخست ماسکِ $m_u$ آرشیو و از فهرستِ ماسک‌های فعال حذف می‌شود و نمونه‌های وظیفه‌ی $u$ از حافظه‌ی بازپخش پاک می‌گردند. سپس ناحیه‌ی بحرانی در دو گام ساخته می‌شود.
+
+\textbf{گامِ نخست — ناحیه‌ی اشتراکِ ساختاری.} ابتدا ماسکِ ترکیبیِ وظایفِ باقی‌مانده $M_a=\bigcup_{j\in\mathcal{T}_a} m_j$ تشکیل می‌شود (که $\mathcal{T}_a$ مجموعه‌ی وظایفِ فعال است)، و اشتراکِ آن با ماسکِ وظیفه‌ی حذف‌شده، {ناحیه‌ی اشتراک\پانویس{Shared Region}} را می‌دهد:
+\begin{equation}
+\label{eq:s-share}
+S_{\mathrm{share}} \;=\; m_{u} \,\wedge\, M_{a}.
+\end{equation}
+این مجموعه شاملِ وزن‌هایی است که هم در مسیرِ محاسباتیِ وظیفه‌ی حذف‌شده بوده‌اند و هم در مسیرِ دستِ‌کم یکی از وظایفِ باقی‌مانده.
+
+\textbf{گامِ دوم — سنجشِ اهمیت و انتخابِ ناحیه‌ی بحرانی.} اشتراکِ ساختاریِ $S_{\mathrm{share}}$ به‌تنهایی برای محافظت کافی نیست؛ زیرا همه‌ی وزن‌های مشترک به یک اندازه برای وظایفِ فعال حیاتی نیستند. برای تمایزگذاری، به‌جای ماتریسِ پرهزینه‌ی {اطلاعاتِ فیشر\پانویس{Fisher Information Matrix}}، از {بزرگیِ گرادیان\پانویس{Gradient Magnitude}} روی حافظه‌ی بازپخش استفاده می‌کنیم. با یک پس‌انتشار از زیانِ وظایفِ باقی‌مانده، اهمیتِ هر وزن چنین برآورد می‌شود:
+\begin{equation}
+\label{eq:importance}
+I_{w} \;=\; \left| \frac{\partial}{\partial w} \sum_{j\in\mathcal{T}_a} \mathcal{L}_{CE}\big(f(x_j;\, w\odot m_j),\,y_j\big) \right|.
+\end{equation}
+شهودِ پشتِ این انتخاب آن است که اگر تغییرِ یک وزن، زیانِ وظایفِ فعال را به‌شدت بالا ببرد (یعنی $I_w$ بزرگ باشد)، آن وزن برای آن وظایف حیاتی است. این کمیت همان $S_{\mathrm{active}}$ را به‌صورت پیوسته نمایندگی می‌کند. اکنون درونِ $S_{\mathrm{share}}$، کسرِ $\rho$ (پارامترِ \lr{protect\_ratio}) از وزن‌هایی که بیشترین $I_w$ را دارند به‌عنوان ناحیه‌ی بحرانی نگه داشته می‌شوند:
+\begin{equation}
+\label{eq:s-crit-mod}
+S_{\mathrm{crit}} \;=\; \big\{\, w \in S_{\mathrm{share}} \;:\; I_{w} \geq \tau_{\rho} \,\big\},
+\end{equation}
+که $\tau_{\rho}$ آستانه‌ی متناظر با صدکِ $\rho$ است. مقادیرِ فعلیِ این وزن‌ها به‌عنوان {لنگر\پانویس{Anchor}} ذخیره می‌شوند: $w_{\mathrm{old}} \leftarrow w|_{S_{\mathrm{crit}}}$. این لنگرها در مرحله‌ی بازآموزی برای جریمه‌ی محافظتی به کار خواهند رفت.
+
+\زیرقسمت{مرحله‌ی فراموشی: بازنشانیِ وزن‌های منحصربه‌وظیفه}
+\label{subsec:mod-reset}
+
+هسته‌ی عملِ فراموشی در \lr{PALL-Modified} یک {بازنشانی\پانویس{Reset}} است، نه یک گامِ گرادیانی. وزن‌هایی که منحصراً متعلق به وظیفه‌ی هدف‌اند—یعنی در ماسکِ آن هستند اما با هیچ‌یک از وظایفِ پیشین مشترک نیستند—دوباره مقداردهیِ اولیه می‌شوند:
+\begin{equation}
+\label{eq:to-reset}
+\mathrm{to\_reset} \;=\; m_{u} \,\wedge\, \neg M_{<u},
+\qquad
+w|_{\mathrm{to\_reset}} \;\sim\; \mathrm{Kaiming}.
+\end{equation}
+این بازنشانی، مسیرِ منحصربه‌فردِ وظیفه‌ی هدف را نابود می‌کند و دانشِ آن را به‌طور مؤثر می‌زداید، بی‌آنکه نیازی به گامِ صعودیِ پرریسک روی ناحیه‌ی مشترک باشد. زیبایی این رویکرد در آن است که بخشِ عمده‌ی فراموشی، نه با دستکاریِ خطرناکِ ناحیه‌ی مشترک، بلکه با حذفِ تمیزِ ناحیه‌ی اختصاصی انجام می‌شود.
+
+\زیرقسمت{بازآموزیِ ترمیمیِ محافظت‌شده}
+\label{subsec:mod-repair}
+
+پس از بازنشانی، ممکن است عملکردِ وظایفِ فعال—به‌دلیلِ سهمِ ازدست‌رفته‌ی ناحیه‌ی مشترک و جابه‌جاییِ توزیعی—اندکی آسیب دیده باشد. برای ترمیمِ این آسیب، به‌ازای $K$ گام، تنها روی زیرمجموعه‌ی مشترکِ $\mathrm{to\_finetune}=m_u\wedge M_a$ بهینه‌سازی انجام می‌شود (گرادیانِ وزن‌های خارج از این زیرمجموعه صفر می‌شود). هدفِ بازآموزی سه جزء دارد:
+\begin{equation}
+\label{eq:l-modified}
+\mathcal{L}_{\mathrm{modified}}
+\;=\;
+\underbrace{\sum_{j\in\mathcal{T}_a}\Big[\alpha\,\big\|h_j - h_j^{\mathrm{old}}\big\|^2 \;+\; \beta\,\mathcal{L}_{CE}(h_j,\,y_j)\Big]}_{\text{ترمیمِ وظایفِ فعال (بازپخش)}}
+\;+\;
+\underbrace{\lambda \sum_{w\in S_{\mathrm{crit}}} \big(w - w_{\mathrm{old}}\big)^2}_{\text{محافظت از ناحیه‌ی بحرانی}}.
+\end{equation}
+جمله‌ی نخست با ضرایبِ $\alpha,\beta$ دانشِ وظایفِ فعال را از روی لاجیت‌ها و برچسب‌های ذخیره‌شده بازمی‌سازد؛ جزءِ $\alpha$ همان زیانِ {بازپخشِ تجربه‌ی تاریک\پانویس{Dark Experience Replay}} است که لاجیت‌های ذخیره‌شده ($h_j^{\mathrm{old}}$) را تطبیق می‌دهد و جزءِ $\beta$ آنتروپیِ متقاطعِ معمولی روی برچسب‌هاست. جمله‌ی دوم با ضریبِ $\lambda$ (پارامترِ \lr{lambda\_protect})، وزن‌های ناحیه‌ی بحرانی را نزدیکِ مقدارِ پیش از فراموشی نگه می‌دارد و مانع از آن می‌شود که خودِ فرآیندِ ترمیم، فضای کارکردیِ مشترک را بیش از حد جابه‌جا کند.
+
+\مهم{تأکیدِ صحتِ علمی.} همان‌گونه که در صورت‌بندیِ بالا پیداست، جریمه‌ی $\ell_2$ \emph{تنها} روی $S_{\mathrm{crit}}$ و \emph{تنها} در مرحله‌ی بازآموزیِ ترمیمی اعمال می‌شود؛ این جریمه روی وزن‌هایی که قرار است فراموش شوند ($\mathrm{to\_reset}$) اثر ندارد، چرا که آن وزن‌ها پیش‌تر بازنشانی شده‌اند. بنابراین فراموشی و محافظت دو سازوکارِ مجزا هستند و توصیفِ آن‌ها به‌صورتِ یک هدفِ واحد، تصویری نادرست از روش می‌دهد. چکیده‌ی روند چنین است:
+\[
+\text{فراموشی} \;=\; \underbrace{\text{بازنشانیِ وزن‌های مخصوصِ وظیفه}}_{\text{حذف}} \;+\; \underbrace{\text{بازآموزیِ زیرمجموعه‌ی مشترک تحتِ لنگرِ }\ell_2\text{ روی }S_{\mathrm{crit}}}_{\text{ترمیم و محافظت}}.
+\]
+
+\زیرقسمت{الگوریتمِ کاملِ \lr{PALL-Modified}}
+\label{subsec:mod-algo}
+
+الگوریتمِ \ref{algo:pall-modified} کلِ روندِ فراموشی را گرد هم می‌آورد. توجه شود که گام‌های ۱ تا ۴ صرفاً تعیین‌کننده‌ی ناحیه‌ها هستند و هزینه‌ی محاسباتیِ اصلی به حلقه‌ی بازآموزیِ گام ۷ بازمی‌گردد که تنها روی زیرمجموعه‌ی مشترک اجرا می‌شود.
+
+\begin{alg}{PALL-Modified Unlearning of task $u$}{pall-modified}
+\Require Weights $w$, masks $\{m_j\}$, combined mask $M_{<u}$, replay buffer $\mathcal{B}$, active tasks $\mathcal{T}_a$, ratios $\rho,\lambda,\alpha,\beta$, steps $K$
+\Ensure Updated weights $w$ with task $u$ forgotten
+\State Archive $m_u$; remove $m_u$ from active masks; purge task-$u$ samples from $\mathcal{B}$
+\State $M_a \gets \bigcup_{j\in\mathcal{T}_a} m_j$; \quad $S_{\mathrm{share}} \gets m_u \wedge M_a$
+\State $I_w \gets \big|\nabla_w \sum_{j\in\mathcal{T}_a}\mathcal{L}_{CE}(f(x_j; w\odot m_j),y_j)\big|$ \Comment{one backward on $\mathcal{B}$}
+\State $S_{\mathrm{crit}} \gets \{\,w\in S_{\mathrm{share}} : I_w \geq \tau_\rho\,\}$; \quad $w_{\mathrm{old}} \gets w|_{S_{\mathrm{crit}}}$
+\State $\mathrm{to\_reset} \gets m_u \wedge \neg M_{<u}$; \quad reinitialize $w|_{\mathrm{to\_reset}} \sim$ Kaiming
+\State $\mathrm{to\_finetune} \gets m_u \wedge M_a$
+\For{$k = 1$ \textbf{to} $K$}
+    \State sample minibatch of retained tasks from $\mathcal{B}$
+    \State $\mathcal{L} \gets \alpha\,\mathcal{L}_{DER} + \beta\,\mathcal{L}_{CE} + \lambda\!\sum_{w\in S_{\mathrm{crit}}}\!(w-w_{\mathrm{old}})^2$
+    \State backward; \; zero gradients outside $\mathrm{to\_finetune}$; \; optimizer step
+\EndFor
+\State rebuild combined mask; \textbf{return} $w$
+\end{alg}
+
+\قسمت{روشِ دوم: معماریِ \lr{PALL-Adapter}}
+\label{sec:adapter}
+
+روشِ \lr{PALL-Modified} بالاترین دقتِ نگه‌داری را به‌دست می‌آورد، اما روی کلِ ظرفیتِ شبکه عمل می‌کند و در نتیجه نسبتِ پارامترهای به‌روزرسانی‌شده و هزینه‌ی محاسباتیِ آن بالاست. روشِ دوم، \lr{PALL-Adapter}، با الهام از {یادگیریِ کارآمدِ پارامتری\پانویس{Parameter-Efficient Fine-Tuning}}، این هزینه را به‌شدت کاهش می‌دهد.
+
+\زیرقسمت{انگیزه و کارآییِ پارامتری}
+\label{subsec:adapter-motivation}
+
+ایده‌ی محوری آن است که بدنه‌ی عمیقِ استخراجِ ویژگی ($\theta_{\mathrm{base}}$) به‌طور کامل {منجمد\پانویس{Frozen}} شود و یادگیری و فراموشی تنها از طریقِ ماژول‌های کوچکِ {آداپتر\پانویس{Adapter}} هدایت شوند. این کار دو فایده دارد: نخست، تعدادِ پارامترهای آموزش‌پذیر—و در نتیجه پارامترهای به‌روزرسانی‌شده در هر درخواستِ فراموشی—به‌شدت کم می‌شود؛ دوم، جداسازیِ دانشِ وظایف به‌صورتِ ساختاری و از طریقِ آداپترهای مجزا تأمین می‌شود و دیگر نیازی به سازوکارِ صفرکردنِ گرادیانِ ماسکیِ \lr{PALL-Modified} نیست. در پیکربندیِ ارزیابی‌شده، این طراحی نسبتِ پارامترهای به‌روزرسانی‌شده را تا حدودِ ۸۷ درصد نسبت به نسخه‌های تمام‌شبکه کاهش می‌دهد.
+
+\زیرقسمت{ساختارِ آداپترِ گلوگاهی}
+\label{subsec:adapter-bottleneck}
+
+هر آداپتر یک نگاشتِ {گلوگاهی\پانویس{Bottleneck}} با {اتصالِ باقی‌مانده\پانویس{Residual Connection}} است که ابعادِ ورودی را ابتدا کاهش، سپس یک تابعِ غیرخطیِ \lr{ReLU} اعمال، و دوباره به ابعادِ اصلی بازمی‌گرداند:
+\begin{equation}
+\label{eq:adapter}
+\phi(z) \;=\; z \;+\; W_{\mathrm{up}}\,\mathrm{ReLU}\!\big(W_{\mathrm{down}}\,z\big),
+\qquad W_{\mathrm{up}}\big|_{\mathrm{init}} = 0.
+\end{equation}
+دو نکته‌ی طراحی در اینجا مهم است. نخست، اتصالِ باقی‌مانده‌ی $z+\cdots$ باعث می‌شود آداپتر تنها یک «اصلاحیه‌ی کوچک» به نمایشِ اصلی بیفزاید، نه آن‌که آن را از نو بسازد. دوم، مقداردهیِ اولیه‌ی $W_{\mathrm{up}}=0$ تضمین می‌کند که آداپترِ تازه در آغاز هیچ اثری ندارد و شبکه دقیقاً مانندِ بدنه‌ی منجمد رفتار می‌کند؛ این موضوع، آموزش را پایدار و فراموشیِ مبتنی بر بازنشانیِ آداپتر را تمیز می‌سازد.
+
+\زیرقسمت{آداپترِ مشترک و آداپترِ مخصوصِ وظیفه}
+\label{subsec:adapter-routing}
+
+دو نوع آداپتر در شبکه تعبیه می‌شوند: یک {آداپترِ مشترک\پانویس{Shared Adapter}} $\phi_s$ که میانِ همه‌ی وظایف مشترک است، و {آداپترهای مخصوصِ وظیفه\پانویس{Task-Specific Adapter}} $\phi_t$ که برای هر وظیفه یکی وجود دارد. نمایشِ ورودی نخست از بدنه‌ی منجمد، سپس از آداپترِ مشترک، و در پایان از آداپترِ مخصوصِ وظیفه عبور می‌کند و به طبقه‌بندِ $C$ می‌رسد:
+\begin{equation}
+\label{eq:adapter-forward}
+\hat{y} \;=\; C\Big(\phi_t\big(\phi_s\big(g(x)\big)\big)\Big),
+\end{equation}
+که $g(\cdot)$ بدنه‌ی منجمد است. به‌بیانِ صریح‌تر، در هر بلوکِ باقی‌مانده داریم:
+\begin{align}
+\label{eq:adapter-shared-block}
+z_{\mathrm{shared}} &= x + W_{\mathrm{up}}^{(s)}\,\mathrm{ReLU}\!\big(W_{\mathrm{down}}^{(s)}\,x\big),\\
+\label{eq:adapter-task-block}
+z_{\mathrm{final}} &= z_{\mathrm{shared}} + W_{\mathrm{up}}^{(t)}\,\mathrm{ReLU}\!\big(W_{\mathrm{down}}^{(t)}\,z_{\mathrm{shared}}\big).
+\end{align}
+این تفکیک، تقسیمِ کارِ روشنی پدید می‌آورد: آداپترِ مخصوصِ وظیفه دانشِ منحصربه‌فردِ هر وظیفه را در خود نگه می‌دارد—پس فراموشیِ یک وظیفه می‌تواند با بازنشانیِ امنِ آداپترِ آن انجام شود—در حالی که آداپترِ مشترک، نمایش‌های میان‌وظیفه‌ای را حمل می‌کند و دقیقاً همان جایی است که هم‌پوشانی و آسیبِ بالقوه رخ می‌دهد و باید با احتیاط دستکاری شود. شکلِ \ref{fig:architecture} این مسیریابی را نشان می‌دهد.
+
+% ---- شکل ۲: معماریِ PALL-Adapter ----
+\begin{figure}[t]
+    \centering
+    % راهنمای ساخت در سند «مشخصات شکل‌ها»، شکل ۳-۲
+    \includegraphics[width=\columnwidth]{architecture.pdf}
+    \caption{معماریِ پیشنهادیِ \lr{PALL-Adapter}. بدنه‌ی عمیق ($\theta_{\mathrm{base}}$) کاملاً منجمد است و نمایش‌ها به‌ترتیب از آداپترِ مشترک ($\phi_s$) و سپس آداپترِ مخصوصِ وظیفه ($\phi_t$) عبور می‌کنند و به سرِ طبقه‌بندِ همان وظیفه می‌رسند.}
+    \label{fig:architecture}
+\end{figure}
+
+\زیرقسمت{یادگیریِ یک وظیفه}
+\label{subsec:adapter-learn}
+
+چون بدنه و آمارِ {نرمال‌سازیِ دسته‌ای\پانویس{Batch Normalization}} منجمدند، تنها مجموعه‌پارامترهای $\Theta=\{\phi_t,\,\phi_s,\,C\}$ به‌روزرسانی می‌شوند:
+\begin{equation}
+\label{eq:adapter-train}
+\mathcal{L} = \mathcal{L}_{CE}(\hat{y},\,y),
+\qquad
+\Theta \;\leftarrow\; \Theta - \eta\,\nabla_{\Theta}\,\mathcal{L}.
+\end{equation}
+برخلافِ \lr{PALL-Modified}، در اینجا هیچ صفرکردنِ گرادیانِ ماسکی لازم نیست؛ زیرا جداسازیِ وظایف از طریقِ آداپترهای مجزا و به‌صورتِ معماری‌محور تأمین می‌شود.
+
+\قسمت{فراموشیِ سه‌فازیِ ماسکِ نرم}
+\label{sec:threephase}
+
+فراموشی در \lr{PALL-Adapter} در سه فازِ ریاضیاتیِ متمایز اجرا می‌شود که در ادامه به‌تفصیل می‌آیند و در الگوریتمِ \ref{algo:pall-adapter} گرد هم آمده‌اند.
+
+\زیرقسمت{فاز ۱ — ریشه‌کنیِ مخصوصِ دامنه}
+\label{subsec:phase1}
+
+در این فاز، بدونِ نیاز به هیچ پس‌انتشاری، آداپترِ مخصوصِ وظیفه‌ی هدف و ردیف‌های متناظرِ طبقه‌بند فوراً بازنشانی می‌شوند:
+\begin{equation}
+\label{eq:phase1}
+W_{\mathrm{down}}^{(u)} \sim \mathrm{Kaiming},
+\qquad
+W_{\mathrm{up}}^{(u)} \leftarrow 0,
+\qquad
+C[u] \sim \mathrm{Kaiming}.
+\end{equation}
+چون آداپترِ هر وظیفه کاملاً جداست، این ریشه‌کنی هیچ آسیبی به وظایفِ دیگر نمی‌زند و مرزهای تصمیمِ باقی‌مانده‌ای از وظیفه‌ی هدف باقی نمی‌گذارد. این فاز، بخشِ عمده‌ی فراموشی را با کمترین ریسک انجام می‌دهد.
+
+\زیرقسمت{فاز ۲ — کمی‌سازیِ هم‌پوشانیِ مشترک}
+\label{subsec:phase2}
+
+اکنون تنها چالش، اثرِ باقی‌مانده‌ی وظیفه‌ی هدف در آداپترِ مشترک $\phi_s\in\mathbb{R}^d$ است. برای شناساییِ هم‌پوشانی، بزرگیِ گرادیانِ مطلق روی آداپترِ مشترک دو بار محاسبه می‌شود—یک‌بار نسبت به زیانِ وظیفه‌ی هدف و یک‌بار نسبت به زیانِ وظایفِ فعال:
+\begin{equation}
+\label{eq:phase2-grads}
+I^{f} = \big|\nabla_{\phi_s}\,\mathcal{L}_{CE}^{\mathrm{forget}}\big|,
+\qquad
+I^{a} = \big|\nabla_{\phi_s}\,\mathcal{L}_{CE}^{\mathrm{active}}\big|.
+\end{equation}
+سپس مجموعه‌های بالاترین مقادیر با نسبت‌های $\alpha_f$ و $\alpha_p$ انتخاب و اشتراکشان به‌عنوان ناحیه‌ی بحرانی تعریف می‌شود:
+\begin{equation}
+\label{eq:phase2-sets}
+S_{\mathrm{forget}} = \mathrm{top}_{\alpha_f}\!\big(I^{f}\big),
+\quad
+S_{\mathrm{active}} = \mathrm{top}_{\alpha_p}\!\big(I^{a}\big),
+\quad
+S_{\mathrm{crit}} = S_{\mathrm{forget}} \cap S_{\mathrm{active}}.
+\end{equation}
+افزون بر این، درونِ $S_{\mathrm{crit}}$ یک زیرمجموعه‌ی {سفت‌محافظت‌شده\پانویس{Hard-Protected}} با $H=\mathrm{top}_{\alpha_p}\!\big(I^{a}|_{S_{\mathrm{crit}}}\big)$ جدا می‌شود که در فازِ بعد اصلاً تغییر نخواهد کرد. نکته‌ی ظریف آن است که تعریفِ $S_{\mathrm{active}}$ به‌عنوانِ بالاترین مقادیرِ گرادیانِ نگه‌داری، خودبه‌خود تضمین می‌کند که هر مختصه‌ی خارج از آن، حساسیتِ نگه‌داریِ کوچکی دارد؛ این ویژگی در تحلیلِ نظریِ بخشِ \ref{sec:theory} نقشِ محوری ایفا می‌کند.
+
+\زیرقسمت{فاز ۳ — به‌روزرسانی با ماسکِ نرم}
+\label{subsec:phase3}
+
+در فازِ پایانی، آداپترِ مشترک با یک به‌روزرسانیِ مقیاس‌دهی‌شده اصلاح می‌شود تا اثرِ باقی‌مانده‌ی وظیفه‌ی هدف از ناحیه‌ی مشترک نیز زدوده شود، بی‌آنکه به ناحیه‌ی بحرانی آسیبِ جدی برسد. {ضرب‌گرِ ماسکِ نرم\پانویس{Soft-Scaling Multiplier}} $m_{\mathrm{soft}}$ برای هر مختصه چنین تعریف می‌شود:
+\begin{equation}
+\label{eq:softmask}
+m_{\mathrm{soft}}(w) =
+\begin{cases}
+1, & w \in S_{\mathrm{forget}} \setminus S_{\mathrm{crit}} \quad (\text{مخصوصِ فراموشی}),\\[4pt]
+1-p, & w \in S_{\mathrm{crit}} \setminus H \quad (\text{بحرانیِ نرم‌شده}),\\[4pt]
+0, & w \in H \;\text{یا سایرِ مختصه‌ها} \quad (\text{منجمد}),
+\end{cases}
+\end{equation}
+که $p=\,$\lr{protect\_strength}$\,\in[0,1]$ شدتِ محافظت است. ترجمه‌ی شهودیِ این سه حالت چنین است: وزنی که فقط برای فراموشی مهم است آزادانه به‌روز می‌شود (ضریبِ ۱)؛ وزنی که هم‌زمان بحرانیِ مشترک است با اصطکاکِ شدید و تنها به‌اندازه‌ی $1-p$ تغییر می‌کند؛ و وزن‌های سفت‌محافظت‌شده یا بی‌ربط اصلاً تکان نمی‌خورند (ضریبِ ۰). با گرادیانِ زیانِ وظیفه‌ی هدف $g=\nabla_{\phi_s}\mathcal{L}_{CE}^{\mathrm{forget}}$، یک گامِ \emph{صعودی} زده می‌شود:
+\begin{equation}
+\label{eq:phase3-update}
+\phi_s \;\leftarrow\; \phi_s \;+\; \eta\,\big(m_{\mathrm{soft}} \odot g\big),
+\qquad
+C \;\leftarrow\; C + \eta\,\nabla_{C}\,\mathcal{L}_{CE}^{\mathrm{forget}}.
+\end{equation}
+
+\مهم{توجهِ دقیق به واقعیتِ پیاده‌سازی.} دو روایت از فازِ ۳ وجود دارد که باید با صداقت از هم تفکیک شوند. روایتِ \emph{نظری}، فاز ۳ را یک حلقه‌ی تکراری می‌داند که خروجیِ وظیفه‌ی هدف را به‌سمتِ {توزیعِ یکنواخت\پانویس{Uniform Distribution}} هل می‌دهد و زیانِ آن چنین است:
+\begin{equation}
+\label{eq:unlearn-uniform}
+\mathcal{L}_{\mathrm{unlearn}} = \mathbb{E}_{(x,y)\in D_{\mathrm{forget}}}\!\left[-\sum_{c}\frac{1}{|C|}\log p(y=c\mid x;\Phi)\right].
+\end{equation}
+اما \emph{پیاده‌سازیِ پیش‌فرضِ} کد، فاز ۳ را به‌صورتِ \emph{یک گامِ گرادیان صعودی روی برچسبِ واقعی} (معادله‌ی \ref{eq:phase3-update}) اجرا می‌کند، نه حلقه‌ای به‌سمتِ توزیعِ یکنواخت. نسخه‌ی حلقه‌ای را می‌توان تعمیمِ نظریِ همین گام دانست و در پیاده‌سازی به‌عنوان گزینه افزوده شده است. در این پایان‌نامه هر دو روایت توصیف می‌شوند، اما تأکید می‌شود که نتایجِ تجربیِ فصلِ چهارم بر پایه‌ی پیاده‌سازیِ یک‌گامیِ پیش‌فرض به‌دست آمده‌اند.
+
+\زیرقسمت{بازآموزیِ پایانی}
+\label{subsec:phase3-repair}
+
+پس از سه فاز، برای $K$ گام یک بازآموزیِ کوتاه روی نمونه‌های بازپخشِ وظایفِ باقی‌مانده انجام می‌شود تا هر آسیبِ جزئیِ باقی‌مانده ترمیم گردد:
+\begin{equation}
+\label{eq:adapter-repair}
+\mathcal{L}_{\mathrm{repair}} = \frac{1}{|\mathcal{T}_a|}\sum_{j\in\mathcal{T}_a}\mathcal{L}_{CE}\big(f(x_j;\,\text{task }j),\,y_j\big).
+\end{equation}
+چکیده‌ی روند چنین است: فراموشی $=$ ریشه‌کنیِ آداپترِ وظیفه و سرِ طبقه‌بند $+$ یک گامِ صعودیِ ماسک‌نرم روی آداپترِ مشترک $+$ یک بازآموزیِ کوتاه.
+
+\begin{alg}{PALL-Adapter Three-Phase Unlearning of task $u$}{pall-adapter}
+\Require Frozen backbone $g$, shared adapter $\phi_s$, task adapters $\{\phi_t\}$, classifier $C$, replay $\mathcal{B}$, ratios $\alpha_f,\alpha_p$, strength $p$, learning rate $\eta$, steps $K$
+\Ensure Shared adapter and classifier with task $u$ forgotten
+\Statex \textbf{Phase 1 (Eradication):}
+\State $W_{\mathrm{down}}^{(u)} \sim$ Kaiming; \; $W_{\mathrm{up}}^{(u)} \gets 0$; \; reinitialize $C[u]$
+\Statex \textbf{Phase 2 (Quantification):}
+\State $I^{f} \gets |\nabla_{\phi_s}\mathcal{L}_{CE}^{\mathrm{forget}}|$; \quad $I^{a} \gets |\nabla_{\phi_s}\mathcal{L}_{CE}^{\mathrm{active}}|$
+\State $S_{\mathrm{forget}} \gets \mathrm{top}_{\alpha_f}(I^{f})$; \; $S_{\mathrm{active}} \gets \mathrm{top}_{\alpha_p}(I^{a})$; \; $S_{\mathrm{crit}} \gets S_{\mathrm{forget}}\cap S_{\mathrm{active}}$
+\State $H \gets \mathrm{top}_{\alpha_p}(I^{a}|_{S_{\mathrm{crit}}})$
+\Statex \textbf{Phase 3 (Soft-Masked Update):}
+\State build $m_{\mathrm{soft}}$ from Eq.~\eqref{eq:softmask}
+\State $g \gets \nabla_{\phi_s}\mathcal{L}_{CE}^{\mathrm{forget}}$; \quad $\phi_s \gets \phi_s + \eta\,(m_{\mathrm{soft}}\odot g)$; \quad $C \gets C + \eta\,\nabla_C \mathcal{L}_{CE}^{\mathrm{forget}}$
+\Statex \textbf{Final repair:}
+\For{$k=1$ \textbf{to} $K$}
+    \State minibatch from $\mathcal{B}$; \; $\mathcal{L}_{\mathrm{repair}}$ step on $\{\phi_s,\phi_t,C\}$ for retained tasks
+\EndFor
+\State \textbf{return} $\phi_s, C$
+\end{alg}
+
+\قسمت{تحلیلِ نظری: کرانِ بیشترین افت}
+\label{sec:theory}
+
+در این بخش نشان می‌دهیم که ضرب‌گرِ ماسکِ نرمِ معادله‌ی \eqref{eq:softmask} صرفاً یک ترفندِ مهارِ شهودی نیست، بلکه به‌طور اثبات‌پذیر، خطای فراموشیِ فاجعه‌بار (یعنی {بیشترین افت\پانویس{WorstDrop}}) را که بر وظایفِ فعال تحمیل می‌شود، نسبت به فراموشیِ بی‌قید \emph{منقبض} می‌کند. در سراسرِ این تحلیل، بدنه‌ی منجمد $\theta_{\mathrm{base}}$ و آداپترهای مخصوصِ وظیفه $\{\phi_t\}$ ثابت‌اند؛ پس تنها پارامترهایی که تغییر می‌کنند و در نتیجه تنها منبعِ تداخلِ میان‌وظیفه‌ای، وزن‌های آداپترِ مشترک $\phi_s\in\mathbb{R}^d$ هستند. از این رو کلِ تحلیل را به $\phi \triangleq \phi_s$ محدود می‌کنیم.
+
+\زیرقسمت{نمادگذاری و افرازِ پارامترها}
+\label{subsec:theory-notation}
+
+$\phi^{(0)}$ را پارامترهای آداپترِ مشترک بلافاصله پیش از فاز ۳ و $\phi^{(N)}$ را پس از $N$ گامِ بهینه‌سازیِ ماسک‌نرم می‌نامیم. به‌روزرسانیِ هر مختصه‌ی $i$ چنین است:
+\begin{equation}
+\label{eq:coord-update}
+\phi^{(k+1)}_{i} = \phi^{(k)}_{i} - \eta\,m_{i}\,g^{(k)}_{i},
+\qquad
+g^{(k)}_{i} \triangleq \partial_{i}\,\mathcal{L}_{\mathrm{unlearn}}\big(\phi^{(k)}\big),
+\end{equation}
+که در آن $m_i\in[0,1]$ ضرب‌گرِ ماسکِ نرمِ هر مختصه است و در طولِ $N$ گام ثابت می‌ماند، چون ماسک‌ها در فاز ۲ یک‌بار محاسبه می‌شوند. مجموعه‌ی اندیس‌ها به چهار ناحیه‌ی مجزا افراز می‌شود:
+\begin{equation}
+\label{eq:partition}
+\begin{aligned}
+\mathcal{F}^{\circ} &\triangleq S_{\mathrm{forget}}\setminus S_{\mathrm{active}} && (m_i = 1),\\
+\mathcal{S} &\triangleq S_{\mathrm{crit}}\setminus H && (m_i = 1-p),\\
+H &\subseteq S_{\mathrm{crit}} && (m_i = 0,\ \text{سفت‌محافظت‌شده}),\\
+\mathcal{N} &\triangleq \{1,\dots,d\}\setminus S_{\mathrm{forget}} && (m_i = 0),
+\end{aligned}
+\end{equation}
+که $S_{\mathrm{crit}}=S_{\mathrm{forget}}\cap S_{\mathrm{active}}$ و $p\in[0,1]$ شدتِ محافظت است؛ حالتِ $H=\varnothing$ همان ماسکِ سه‌حالتیِ معادله‌ی \eqref{eq:softmask} را بازمی‌گرداند.
+
+\begin{تعریف}[ریسکِ نگه‌داری و افتِ پارامتری]
+\label{def:drop}
+برای هر وظیفه‌ی فعالِ $t\in\mathcal{T}_a$، ریسکِ موردِانتظارِ آن را به‌صورتِ تابعی از آداپترِ مشترک چنین تعریف می‌کنیم:
+$R_{t}(\phi)\triangleq\mathbb{E}_{(x,y)\sim D_t}\big[\ell\big(f(x;\phi),y\big)\big]$.
+افتی که مسیرِ فراموشیِ $\phi^{(0)}\!\to\!\phi^{(N)}$ بر وظیفه‌ی $t$ تحمیل می‌کند برابر است با $\Delta_t\triangleq R_t(\phi^{(N)})-R_t(\phi^{(0)})$، و بیشترین تداخل عبارت است از $\mathrm{WorstDrop}\triangleq\max_{t\in\mathcal{T}_a}\Delta_t$.
+\end{تعریف}
+
+\زیرقسمت{فرض‌ها}
+\label{subsec:theory-assumptions}
+
+تحلیل بر چهار فرضِ زیر استوار است.
+
+\begin{فرض}[همواریِ ریسک‌های نگه‌داری]
+\label{ass:smooth}
+هر ریسکِ $R_t$ روی پوششِ محدبِ مسیر، $\beta$-هموار است؛ یعنی $\|\nabla R_t(\phi)-\nabla R_t(\phi')\|_2\leq\beta\,\|\phi-\phi'\|_2$.
+\end{فرض}
+
+\begin{فرض}[کران‌داریِ گرادیان‌های فراموشی]
+\label{ass:bounded}
+گرادیان‌های فراموشیِ هر مختصه روی مسیر به‌طور یکنواخت کران‌دارند، $|g^{(k)}_i|\leq G$، پس کلِ جابه‌جاییِ هر مختصه از $\Gamma_i\triangleq|\sum_{k=0}^{N-1}g^{(k)}_i|\leq NG$ پیروی می‌کند.
+\end{فرض}
+
+\begin{فرض}[تمرکزِ حساسیتِ نگه‌داری روی هم‌پوشانی]
+\label{ass:concentration}
+حساسیتِ هر وظیفه‌ی نگه‌داری به وزن‌های \emph{منحصرِ فراموشی} به‌طور یکنواخت کوچک است؛ یعنی $\epsilon\geq 0$ای وجود دارد که $|\partial_i R_t(\phi^{(0)})|\leq\epsilon$ برای هر $i\in\mathcal{F}^{\circ}$ و هر $t\in\mathcal{T}_a$.
+\end{فرض}
+
+\begin{فرض}[لیپ‌شیتس‌بودنِ دقت نسبت به ریسک]
+\label{ass:lipschitz}
+ثابتِ $L_a\geq 0$ای وجود دارد که افتِ دقتِ هر وظیفه زیرِ افتِ ریسکِ آن قرار می‌گیرد: $A_t^{\mathrm{before}}-A_t^{\mathrm{after}}\leq L_a\,\Delta_t$ برای هر $t\in\mathcal{T}_a$.
+\end{فرض}
+
+نکته‌ی مهم آن است که فرضِ \ref{ass:concentration} دقیقاً همان ویژگی‌ای است که فاز ۲ \emph{می‌سازد}: چون $S_{\mathrm{active}}$ به‌عنوانِ بالاترین مقادیرِ بزرگیِ گرادیانِ نگه‌داری تعریف شده، هر مختصه‌ای که در $S_{\mathrm{active}}$ نباشد—از جمله مختصه‌های $\mathcal{F}^{\circ}$—طبقِ تعریف گرادیانِ نگه‌داری‌اش زیرِ آستانه‌ی انتخاب است. بنابراین این فرض، یک شرطِ بیرونیِ تحمیلی نیست، بلکه از خودِ الگوریتم برمی‌خیزد.
+
+\زیرقسمت{قضیه‌ی اصلی}
+\label{subsec:theory-theorem}
+
+\begin{قضیه}[ماسکِ نرم، بیشترین‌افت را منقبض می‌کند]
+\label{thm:worstdrop}
+فرض‌های \ref{ass:smooth} تا \ref{ass:lipschitz} را برقرار بگیرید و نرخِ یادگیریِ $\eta>0$ و تعدادِ گام‌های $N$ را ثابت کنید. برای هر وظیفه‌ی فعالِ $t$، {انرژیِ تداخلِ بحرانی\پانویس{Critical Interference Energy}} را چنین تعریف کنید:
+\begin{equation}
+\label{eq:Ecrit}
+E^{\mathrm{crit}}_{t} \triangleq \eta\!\!\sum_{i\in S_{\mathrm{crit}}}\!\!\big|\partial_i R_t(\phi^{(0)})\big|\,\Gamma_i
+\;\leq\; \eta\,NG\!\!\sum_{i\in S_{\mathrm{crit}}}\!\!\big|\partial_i R_t(\phi^{(0)})\big|,
+\end{equation}
+و انرژیِ پس‌مانده‌ی منحصرِ فراموشی را $C_t\triangleq\eta\sum_{i\in\mathcal{F}^{\circ}}\Gamma_i$. آنگاه به‌روزرسانیِ ماسک‌نرم با شدتِ محافظتِ $p$ برای هر وظیفه‌ی فعال در کرانِ زیر صدق می‌کند:
+\begin{equation}
+\label{eq:soft-bound}
+\Delta_t^{\mathrm{soft}} \leq (1-p)\,E^{\mathrm{crit}}_t + \epsilon\,C_t + \tfrac{\beta}{2}\,\eta^2 N^2 G^2\Big(|\mathcal{F}^{\circ}| + (1-p)^2|\mathcal{S}|\Big),
+\end{equation}
+حال‌آنکه به‌روزرسانیِ بی‌قید ($m_i=1$ روی $S_{\mathrm{forget}}$) از کرانِ زیر پیروی می‌کند:
+\begin{equation}
+\label{eq:unc-bound}
+\Delta_t^{\mathrm{unc}} \leq E^{\mathrm{crit}}_t + \epsilon\,C_t + \tfrac{\beta}{2}\,\eta^2 N^2 G^2\,|S_{\mathrm{forget}}|.
+\end{equation}
+در نتیجه، با گرفتنِ بیشینه روی وظایفِ فعال،
+\begin{equation}
+\label{eq:worstdrop-gap}
+\mathrm{WorstDrop}^{\mathrm{soft}} \leq \mathrm{WorstDrop}^{\mathrm{unc}} - p\,\max_{t\in\mathcal{T}_a}E^{\mathrm{crit}}_t + \mathcal{O}\!\big(\eta^2 N^2 G^2\big),
+\end{equation}
+و به‌ویژه در رژیمِ گام‌کوچک ($\eta NG\to 0$)، اگر تداخلِ بیشینه را ناحیه‌ی بحرانی تسلط کند (یعنی $\epsilon C_t = o(E^{\mathrm{crit}}_t)$)، آنگاه
+\begin{equation}
+\label{eq:contraction}
+\boxed{\;\mathrm{WorstDrop}^{\mathrm{soft}} \leq (1-p)\,\mathrm{WorstDrop}^{\mathrm{unc}} + \mathcal{O}\!\big(\eta^2 N^2 G^2\big).\;}
+\end{equation}
+\end{قضیه}
+
+\begin{اثبات}
+وظیفه‌ی فعالِ $t$ را ثابت می‌گیریم. کلِ جابه‌جاییِ آداپترِ مشترک را $\delta\triangleq\phi^{(N)}-\phi^{(0)}\in\mathbb{R}^d$ می‌نامیم. با جمع‌بستنِ به‌روزرسانیِ مختصه‌ای \eqref{eq:coord-update} روی $N$ گام و با توجه به ثابت‌بودنِ $m_i$، برای هر مختصه داریم:
+\begin{equation}
+\label{eq:disp}
+\delta_i = -\eta\,m_i\sum_{k=0}^{N-1}g^{(k)}_i,
+\qquad\text{و در نتیجه}\qquad
+|\delta_i|\leq\eta\,m_i\,\Gamma_i\leq\eta\,m_i\,NG,
+\end{equation}
+که نابرابری‌ها از نابرابریِ مثلثی و فرضِ \ref{ass:bounded} می‌آیند.
+
+\textit{گام ۱ (بسطِ همواری).} طبقِ فرضِ \ref{ass:smooth}، ریسکِ $R_t$ کرانِ بالایِ درجه‌دومِ زیر را می‌پذیرد (شکلِ لمِ کاهش)، که در نقطه‌ی پایه‌ی $\phi^{(0)}$ ارزیابی شده است:
+\begin{equation}
+\label{eq:taylor}
+\Delta_t = R_t(\phi^{(0)}+\delta) - R_t(\phi^{(0)}) \leq \big\langle\nabla R_t(\phi^{(0)}),\,\delta\big\rangle + \tfrac{\beta}{2}\,\|\delta\|_2^2.
+\end{equation}
+دو جمله را جداگانه کران می‌زنیم.
+
+\textit{گام ۲ (جمله‌ی مرتبه‌ی اول).} با افرازِ \eqref{eq:partition} و نابرابریِ مثلثی:
+\begin{align}
+\big\langle\nabla R_t,\delta\big\rangle
+&\leq \sum_{i=1}^{d}\big|\partial_i R_t\big|\,|\delta_i| \notag\\
+&\leq \underbrace{\sum_{i\in\mathcal{F}^{\circ}}\!\big|\partial_i R_t\big|\,\eta\,\Gamma_i}_{m_i=1}
++ \underbrace{\sum_{i\in\mathcal{S}}\!\big|\partial_i R_t\big|\,(1-p)\,\eta\,\Gamma_i}_{m_i=1-p}
++ \underbrace{\sum_{i\in H\cup\mathcal{N}}\!\big|\partial_i R_t\big|\cdot 0}_{m_i=0}.
+\label{eq:three-sums}
+\end{align}
+جمله‌ی سوم هویتاً صفر است. جمله‌ی نخست طبقِ فرضِ \ref{ass:concentration} حداکثر $\epsilon\,\eta\sum_{i\in\mathcal{F}^{\circ}}\Gamma_i=\epsilon\,C_t$ است. جمله‌ی دوم چون $\mathcal{S}\subseteq S_{\mathrm{crit}}$ و همه‌ی جملاتش نامنفی‌اند، حداکثر $(1-p)\,E^{\mathrm{crit}}_t$ است. پس:
+\begin{equation}
+\label{eq:first-order}
+\big\langle\nabla R_t,\delta\big\rangle \leq (1-p)\,E^{\mathrm{crit}}_t + \epsilon\,C_t.
+\end{equation}
+
+\textit{گام ۳ (جمله‌ی مرتبه‌ی دوم).} از \eqref{eq:disp}، $|\delta_i|^2\leq\eta^2 m_i^2 N^2 G^2$؛ و چون $m_i^2=1$ روی $\mathcal{F}^{\circ}$، $m_i^2=(1-p)^2$ روی $\mathcal{S}$، و $m_i=0$ در سایرِ نواحی:
+\begin{equation}
+\label{eq:second-order}
+\tfrac{\beta}{2}\|\delta\|_2^2 \leq \tfrac{\beta}{2}\,\eta^2 N^2 G^2\Big(|\mathcal{F}^{\circ}| + (1-p)^2|\mathcal{S}|\Big).
+\end{equation}
+جای‌گذاریِ \eqref{eq:first-order} و \eqref{eq:second-order} در \eqref{eq:taylor}، کرانِ نرمِ \eqref{eq:soft-bound} را می‌دهد.
+
+\textit{گام ۴ (خطِ پایه‌ی بی‌قید).} برای فراموشیِ بی‌قید، $m_i=1$ روی کلِ $S_{\mathrm{forget}}=\mathcal{F}^{\circ}\cup S_{\mathrm{crit}}$ و $m_i=0$ روی $\mathcal{N}$. تکرارِ گام‌های ۲ و ۳ با این ضرب‌گرها، جمله‌ی بحرانی را بدونِ مقیاس‌دهی می‌دهد، پس $\langle\nabla R_t,\delta\rangle\leq E^{\mathrm{crit}}_t+\epsilon C_t$ و جمله‌ی انحنا برابر $\tfrac{\beta}{2}\eta^2 N^2 G^2|S_{\mathrm{forget}}|$ می‌شود؛ یعنی دقیقاً \eqref{eq:unc-bound}.
+
+\textit{گام ۵ (شکافِ بدترین‌حالت).} تفریقِ جملاتِ پیشروِ \eqref{eq:soft-bound} از \eqref{eq:unc-bound} برای هر $t$، کاهشِ $p\,E^{\mathrm{crit}}_t$ را می‌دهد، به‌علاوه‌ی یک اختلافِ مرتبه‌ی دوم که $\mathcal{O}(\eta^2 N^2 G^2)$ است (و در حالتِ نرم کوچک‌تر است، چون $(1-p)^2|\mathcal{S}|\leq|S_{\mathrm{crit}}|$ و $|\mathcal{F}^{\circ}|+|S_{\mathrm{crit}}|=|S_{\mathrm{forget}}|$). با گرفتنِ بیشینه روی $t$ و به‌کاربردنِ $\max_t(a_t-b_t)\leq\max_t a_t-\min_t b_t$، رابطه‌ی \eqref{eq:worstdrop-gap} حاصل می‌شود. سرانجام وقتی $\eta NG\to 0$، جمله‌ی انحنا و جمله‌ی منحصرِ فراموشی نسبت به انرژیِ بحرانیِ مرتبه‌ی اول نامحسوس می‌شوند و انقباضِ \eqref{eq:contraction} به‌دست می‌آید. انتقال به دقتِ گزارش‌شده از فرضِ \ref{ass:lipschitz} نتیجه می‌شود که هر کران را در ثابتِ $L_a$ ضرب می‌کند و ضریبِ انقباضِ $(1-p)$ را تغییر نمی‌دهد.
+\end{اثبات}
+
+\begin{نتیجه}[مونوتونیِ محافظت و حدِ سفت‌محافظت‌شده]
+\label{cor:monotone}
+کرانِ مرتبه‌ی اولِ بیشترین‌افت، یعنی $(1-p)\max_t E^{\mathrm{crit}}_t+\epsilon\max_t C_t$، نسبت به شدتِ محافظتِ $p\in[0,1]$ ناافزاینده است و با نرخِ $\max_t E^{\mathrm{crit}}_t$ کاهش می‌یابد. در $p=1$ (یا هم‌ارز، با گسترشِ مجموعه‌ی سفت‌محافظت‌شده‌ی $H$ تا پوششِ کلِ $S_{\mathrm{crit}}$)، کلِ سهمِ ناحیه‌ی بحرانی به‌طورِ کامل صفر می‌شود و تنها پس‌مانده‌ی منحصرِ فراموشیِ $\epsilon C_t$ و جمله‌ی انحنای محدود به $\mathcal{F}^{\circ}$ باقی می‌ماند.
+\end{نتیجه}
+
+این نتیجه، پیامِ عملیِ روشنی دارد: هرچه شدتِ محافظتِ $p$ بزرگ‌تر باشد، آسیبِ ناشی از فراموشی روی وظایفِ فعال به‌طورِ کران‌دار کوچک‌تر می‌شود؛ و در حدِ $p=1$ هیچ تداخلی از مسیرِ ناحیه‌ی بحرانی باقی نمی‌ماند. البته باید توجه داشت که افزایشِ $p$ ممکن است سرعتِ خودِ فراموشی را در ناحیه‌ی مشترک بکاهد؛ بنابراین انتخابِ $p$ یک مصالحه‌ی تنظیم‌پذیر میانِ سرعتِ فراموشی و پایداریِ نگه‌داری است. شکلِ \ref{fig:drop-decomposition} تجزیه‌ی این بودجه‌ی افت را به سه منبعِ مجزا نشان می‌دهد.
+
+% ---- شکل ۳: تجزیه‌ی بودجه‌ی افت ----
+\begin{figure}[t]
+    \centering
+    % راهنمای ساخت در سند «مشخصات شکل‌ها»، شکل ۳-۳
+    \includegraphics[width=\columnwidth]{drop_decomposition.pdf}
+    \caption{تجزیه‌ی بودجه‌ی افتِ یک وظیفه‌ی فعال به سه منبعِ مجزای جمله‌ی مرتبه‌ی اولِ $\langle\nabla R_t,\delta\rangle$: (الف) وزن‌های منحصرِ فراموشی $\mathcal{F}^{\circ}$ که کامل به‌روز می‌شوند اما حساسیتِ نگه‌داری‌شان زیرِ $\epsilon$ است؛ (ب) وزن‌های محافظت‌شده $H\cup\mathcal{N}$ که با ضرب‌گرِ صفر سهمِ صفر دارند؛ و (پ) ناحیه‌ی بحرانیِ $S_{\mathrm{crit}}$ که تنها جایی است که فراموشی و نگه‌داری واقعاً رقابت می‌کنند. میله‌های جفتی، فراموشیِ بی‌قید (خاکستری، $m_i=1$) را با به‌روزرسانیِ ماسک‌نرم (آبی) مقایسه می‌کنند؛ میله‌ی ناحیه‌ی بحرانی در حالتِ نرم تا کسرِ $(1-p)$ کوتاه شده است.}
+    \label{fig:drop-decomposition}
+\end{figure}
+
+\قسمت{جمع‌بندیِ فصل}
+\label{sec:ch3summary}
+
+در این فصل دو روشِ مکمل برای فراموشیِ انتخابیِ آگاه از هم‌پوشانی ارائه شد. هر دو روش بر یک اصلِ مشترک استوارند—شناساییِ صریحِ ناحیه‌ی بحرانیِ $S_{\mathrm{crit}}=S_{\mathrm{forget}}\cap S_{\mathrm{active}}$ با بزرگیِ گرادیان، و رفتارِ محتاطانه تنها در همان ناحیه—اما در سازوکارِ پیاده‌سازی و مصالحه‌های عملی تفاوت دارند. جدولِ \ref{tab:method-compare} این تفاوت‌ها را خلاصه می‌کند.
+
+\begin{table}[t]
+\centering
+\caption{مقایسه‌ی فشرده‌ی دو روشِ پیشنهادی}
+\label{tab:method-compare}
+\begin{tabular}{lll}
+\toprule
+\textbf{ویژگی} & \textbf{\lr{PALL-Modified}} & \textbf{\lr{PALL-Adapter}} \\
+\midrule
+دامنه‌ی یادگیری & کلِ شبکه (با ماسکِ زیرشبکه) & فقط آداپترها؛ بدنه منجمد \\
+تعریفِ هم‌پوشانی & اشتراکِ ماسک‌های زیرشبکه & اشتراکِ مجموعه‌های بالاترین گرادیان \\
+سازوکارِ فراموشی & بازنشانی $+$ بازآموزی & ریشه‌کنی $+$ گامِ صعودیِ ماسک‌نرم \\
+سازوکارِ محافظت & جریمه‌ی $\ell_2$ روی $S_{\mathrm{crit}}$ & ضرب‌گرِ نرمِ $(1-p)$ \\
+نقطه‌ی قوت & بالاترین دقتِ نگه‌داری & کمترین پارامترِ به‌روزشده و بیشترین‌افت \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\lr{PALL-Modified} روی کلِ ظرفیتِ شبکه عمل می‌کند، فراموشی را با بازنشانیِ وزن‌های مخصوصِ وظیفه و محافظت را با جریمه‌ی $\ell_2$ روی ناحیه‌ی بحرانی هنگامِ بازآموزی انجام می‌دهد، و در نتیجه بالاترین دقتِ نگه‌داری را به‌دست می‌آورد. در مقابل، \lr{PALL-Adapter} با منجمدکردنِ بدنه و محدودکردنِ یادگیری و فراموشی به آداپترهای کوچک، کمترین نسبتِ پارامترِ به‌روزشده و—به‌پشتوانه‌ی قضیه‌ی \ref{thm:worstdrop}—کمترین بیشترین‌افت را فراهم می‌کند. تحلیلِ نظریِ ارائه‌شده نشان داد که ضرب‌گرِ ماسکِ نرم، بیشترین‌افت را با ضریبِ $(1-p)$ منقبض می‌کند؛ ادعایی که در فصلِ بعد به‌صورتِ تجربی نیز اعتبارسنجی می‌شود. در فصلِ چهارم، این دو روش در کنارِ مجموعه‌ای از روش‌های پایه—از جمله خطِ پایه‌ی قدرتمندِ \lr{CLPU}—روی محک‌های \lr{CIFAR-10}، \lr{CIFAR-100} و \lr{TinyImageNet} ارزیابی می‌شوند.
