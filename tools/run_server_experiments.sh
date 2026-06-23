@@ -18,8 +18,11 @@ SEEDS="${SEEDS:-0 1}"
 WHICH="${1:-all}"
 mkdir -p logs results/aggregates
 
+# Data directory: override with DATA_DIR=/path/to/data to keep CIFAR off the SSD.
+DATA_DIR="${DATA_DIR:-./data}"
+
 # Shared hyperparameters, mirroring tools/run_paper_experiments.sh
-COMMON="--k_shot 50 --alpha 0.5 --beta 1.0 --mem_budget 500 --optim sgd \
+COMMON="--data_dir ${DATA_DIR} --k_shot 50 --alpha 0.5 --beta 1.0 --mem_budget 500 --optim sgd \
         --momentum 0.9 --lr 1e-2 --weight_decay 5e-4 --batch_size 32 --n_epochs 3 --deterministic"
 C10="--dataset cifar10  --class_per_task 2 --n_tasks 5  --n_forget 3 --arch resnet18 --sparsity 0.8"
 C100="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9"
@@ -95,7 +98,7 @@ $PY tools/make_thesis_table.py --root runs --group-by-config \
     --out-csv results/aggregates/server_thesis_table.csv \
     --out-md  results/aggregates/server_thesis_table.md || true
 $PY tools/make_report_table.py \
-    --in-csv results/aggregates/server_thesis_table.csv \
+    --input results/aggregates/server_thesis_table.csv \
     --out-csv results/aggregates/server_report_table.csv \
     --out-md  results/aggregates/server_report_table.md || true
 

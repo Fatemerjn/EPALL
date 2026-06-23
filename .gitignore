@@ -22,7 +22,7 @@ checkpoints/
 data/
 
 docs/
-
+wheels_linux/
 # experiment outputs
 comparison_*.csv
 comparison_*.md
