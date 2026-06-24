@@ -1,9 +1,9 @@
 {
   "n_tasks": 5,
-  "n_forget": 1,
+  "n_forget": 3,
   "seed": 0,
-  "sequence_length_requested": 6,
-  "sequence_length_actual": 6,
+  "sequence_length_requested": 8,
+  "sequence_length_actual": 8,
   "requests": [
     {
       "task_id": 0,
@@ -40,10 +40,18 @@
       ]
     },
     {
+      "task_id": 0,
+      "request_type": "F",
+      "active_tasks": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
       "task_id": 4,
       "request_type": "T",
       "active_tasks": [
-        0,
         1,
         2,
         3,
@@ -54,10 +62,17 @@
       "task_id": 3,
       "request_type": "F",
       "active_tasks": [
-        0,
         1,
         2,
         4
+      ]
+    },
+    {
+      "task_id": 4,
+      "request_type": "F",
+      "active_tasks": [
+        1,
+        2
       ]
     }
   ]

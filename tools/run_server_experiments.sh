@@ -2,7 +2,7 @@
 # Server experiment runner for the reviewer-response experiments.
 # Covers three groups, then aggregates tables.
 #   GROUP 1: extra baselines (ewc, lwf, clpu) on fixed schedules, CIFAR-10 + CIFAR-100, seeds 0,1
-#   GROUP 2: rerun PALL-Modified (gradient importance, with protection) to replace stale numbers
+#   GROUP 2: proposed methods (pall_original, pall_modified, pall_adapter, lora), CIFAR-10 + CIFAR-100, seeds 0,1
 #   GROUP 3: PALL-Adapter bottleneck ablation on CIFAR-10 (seed 0)
 #
 # Usage (run on a GPU node, inside tmux):
@@ -53,19 +53,45 @@ group1 () {
 }
 
 # -------------------------------------------------------------------- GROUP 2
+# Proposed methods on both datasets (seeds 0,1). Flags copied from
+# tools/run_paper_experiments.sh. main.py auto-prefixes the arch per method
+# (subnet_/adapter_/lora_), so the same --arch in $C10/$C100 serves every method.
 group2 () {
-    echo "===== GROUP 2: rerun PALL-Modified (gradient, protected) ====="
+    echo "===== GROUP 2: proposed methods (pall_original / pall_modified / pall_adapter / lora) ====="
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
     for s in $SEEDS; do
         local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
         local c100="schedules/cifar100_t10_f3_seed${s}.json"
-        launch "c10_pall_modified_grad_s${s}"  $C10  $COMMON --seed $s \
-               --request_schedule_file $c10  --method pall_modified \
-               --protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 \
+        # ---- CIFAR-10 (resnet18) ----
+        launch "c10_pall_original_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_original \
                --retrain_steps 50 --experiment_tag cifar10_main
-        launch "c100_pall_modified_grad_s${s}" $C100 $COMMON --seed $s \
-               --request_schedule_file $c100 --method pall_modified \
-               --protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 \
+        launch "c10_pall_modified_grad_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+               --experiment_tag cifar10_main
+        launch "c10_pall_adapter_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+               --experiment_tag cifar10_main
+        launch "c10_lora_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method lora $LORA \
+               --experiment_tag cifar10_main
+        # ---- CIFAR-100 (resnet34) ----
+        launch "c100_pall_original_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_original \
                --retrain_steps 50 --experiment_tag cifar100_main
+        launch "c100_pall_modified_grad_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_modified $PALL_MOD \
+               --experiment_tag cifar100_main
+        launch "c100_pall_adapter_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+               --experiment_tag cifar100_main
+        launch "c100_lora_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method lora $LORA \
+               --experiment_tag cifar100_main
     done
 }
 
