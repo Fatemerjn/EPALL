@@ -52,6 +52,8 @@ class AdapterResNet(BaseModel):
         adapter_shared_bottleneck=0,
         adapter_location="residual",
         norm_params=False,
+        pretrained_backbone="none",
+        pretrained_weights=None,
     ):
         super(AdapterResNet, self).__init__()
         if adapter_location != "residual":
@@ -66,16 +68,25 @@ class AdapterResNet(BaseModel):
         self.adapter_bottleneck = adapter_bottleneck
         self.adapter_shared_bottleneck = adapter_shared_bottleneck
         self.adapter_location = adapter_location
+        self.pretrained_backbone = pretrained_backbone
 
-        self.conv1 = conv3x3(3, nf * 1)
-        self.bn1 = nn.BatchNorm2d(nf * 1, track_running_stats=self.norm_params, affine=self.norm_params)
-        self.layer1 = self._make_layer(block, nf * 1, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, nf * 2, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, nf * 4, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        # Feature extractor: either the from-scratch stem (default) or a frozen
+        # ImageNet-pretrained backbone. Both yield a 512-d pooled feature, so the
+        # adapters/classifier below are identical either way.
+        from .pretrained_backbone import build_frozen_backbone
+        self.frozen_backbone = build_frozen_backbone(pretrained_backbone, pretrained_weights)
+        if self.frozen_backbone is not None:
+            self.feature_dim = self.frozen_backbone.feature_dim
+        else:
+            self.conv1 = conv3x3(3, nf * 1)
+            self.bn1 = nn.BatchNorm2d(nf * 1, track_running_stats=self.norm_params, affine=self.norm_params)
+            self.layer1 = self._make_layer(block, nf * 1, num_blocks[0], stride=1)
+            self.layer2 = self._make_layer(block, nf * 2, num_blocks[1], stride=2)
+            self.layer3 = self._make_layer(block, nf * 4, num_blocks[2], stride=2)
+            self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
+            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+            self.feature_dim = nf * 8 * block.expansion
 
-        self.feature_dim = nf * 8 * block.expansion
         self.shared_adapter = None
         if adapter_shared_bottleneck > 0:
             self.shared_adapter = SharedBottleneckAdapter(self.feature_dim, adapter_shared_bottleneck)
@@ -93,6 +104,8 @@ class AdapterResNet(BaseModel):
         return nn.Sequential(*layers)
 
     def extract_backbone_features(self, x):
+        if self.frozen_backbone is not None:
+            return self.frozen_backbone(x)
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
@@ -187,6 +200,8 @@ def adapter_resnet18(
     adapter_bottleneck=16,
     adapter_shared_bottleneck=0,
     adapter_location="residual",
+    pretrained_backbone="none",
+    pretrained_weights=None,
 ):
     del sparsity
     return AdapterResNet(
@@ -199,6 +214,8 @@ def adapter_resnet18(
         adapter_shared_bottleneck=adapter_shared_bottleneck,
         adapter_location=adapter_location,
         norm_params=norm_params,
+        pretrained_backbone=pretrained_backbone,
+        pretrained_weights=pretrained_weights,
     )
 
 
@@ -211,6 +228,8 @@ def adapter_resnet34(
     adapter_bottleneck=16,
     adapter_shared_bottleneck=0,
     adapter_location="residual",
+    pretrained_backbone="none",
+    pretrained_weights=None,
 ):
     del sparsity
     return AdapterResNet(
@@ -223,6 +242,8 @@ def adapter_resnet34(
         adapter_shared_bottleneck=adapter_shared_bottleneck,
         adapter_location=adapter_location,
         norm_params=norm_params,
+        pretrained_backbone=pretrained_backbone,
+        pretrained_weights=pretrained_weights,
     )
 
 
@@ -235,6 +256,8 @@ def adapter_resnet50(
     adapter_bottleneck=16,
     adapter_shared_bottleneck=0,
     adapter_location="residual",
+    pretrained_backbone="none",
+    pretrained_weights=None,
 ):
     del sparsity
     return AdapterResNet(
@@ -247,4 +270,6 @@ def adapter_resnet50(
         adapter_shared_bottleneck=adapter_shared_bottleneck,
         adapter_location=adapter_location,
         norm_params=norm_params,
+        pretrained_backbone=pretrained_backbone,
+        pretrained_weights=pretrained_weights,
     )

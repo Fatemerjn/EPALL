@@ -71,6 +71,8 @@ class LoRAResNet(BaseModel):
         lora_alpha=16,
         lora_shared_rank=0,
         norm_params=False,
+        pretrained_backbone="none",
+        pretrained_weights=None,
     ):
         super(LoRAResNet, self).__init__()
 
@@ -83,16 +85,25 @@ class LoRAResNet(BaseModel):
         self.lora_rank = lora_rank
         self.lora_alpha = lora_alpha
         self.lora_shared_rank = lora_shared_rank
+        self.pretrained_backbone = pretrained_backbone
 
-        self.conv1 = conv3x3(3, nf * 1)
-        self.bn1 = nn.BatchNorm2d(nf * 1, track_running_stats=self.norm_params, affine=self.norm_params)
-        self.layer1 = self._make_layer(block, nf * 1, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, nf * 2, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, nf * 4, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        # Feature extractor: from-scratch stem (default) or a frozen ImageNet
+        # backbone. Both yield a 512-d pooled feature; the LoRA/classifier below
+        # are identical either way.
+        from .pretrained_backbone import build_frozen_backbone
+        self.frozen_backbone = build_frozen_backbone(pretrained_backbone, pretrained_weights)
+        if self.frozen_backbone is not None:
+            self.feature_dim = self.frozen_backbone.feature_dim
+        else:
+            self.conv1 = conv3x3(3, nf * 1)
+            self.bn1 = nn.BatchNorm2d(nf * 1, track_running_stats=self.norm_params, affine=self.norm_params)
+            self.layer1 = self._make_layer(block, nf * 1, num_blocks[0], stride=1)
+            self.layer2 = self._make_layer(block, nf * 2, num_blocks[1], stride=2)
+            self.layer3 = self._make_layer(block, nf * 4, num_blocks[2], stride=2)
+            self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
+            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+            self.feature_dim = nf * 8 * block.expansion
 
-        self.feature_dim = nf * 8 * block.expansion
         self.shared_lora = None
         if lora_shared_rank > 0:
             self.shared_lora = SharedLoRA(self.feature_dim, lora_shared_rank, lora_alpha)
@@ -110,6 +121,8 @@ class LoRAResNet(BaseModel):
         return nn.Sequential(*layers)
 
     def extract_backbone_features(self, x):
+        if self.frozen_backbone is not None:
+            return self.frozen_backbone(x)
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
@@ -194,24 +207,30 @@ class LoRAResNet(BaseModel):
 
 
 def lora_resnet18(num_classes, nf=64, norm_params=False, n_tasks=1, sparsity=None,
-                  lora_rank=8, lora_alpha=16, lora_shared_rank=0):
+                  lora_rank=8, lora_alpha=16, lora_shared_rank=0,
+                  pretrained_backbone="none", pretrained_weights=None):
     del sparsity
     return LoRAResNet(BasicBlock, [2, 2, 2, 2], num_classes, nf, n_tasks=n_tasks,
                       lora_rank=lora_rank, lora_alpha=lora_alpha,
-                      lora_shared_rank=lora_shared_rank, norm_params=norm_params)
+                      lora_shared_rank=lora_shared_rank, norm_params=norm_params,
+                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights)
 
 
 def lora_resnet34(num_classes, nf=64, norm_params=False, n_tasks=1, sparsity=None,
-                  lora_rank=8, lora_alpha=16, lora_shared_rank=0):
+                  lora_rank=8, lora_alpha=16, lora_shared_rank=0,
+                  pretrained_backbone="none", pretrained_weights=None):
     del sparsity
     return LoRAResNet(BasicBlock, [3, 4, 6, 3], num_classes, nf, n_tasks=n_tasks,
                       lora_rank=lora_rank, lora_alpha=lora_alpha,
-                      lora_shared_rank=lora_shared_rank, norm_params=norm_params)
+                      lora_shared_rank=lora_shared_rank, norm_params=norm_params,
+                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights)
 
 
 def lora_resnet50(num_classes, nf=64, norm_params=False, n_tasks=1, sparsity=None,
-                  lora_rank=8, lora_alpha=16, lora_shared_rank=0):
+                  lora_rank=8, lora_alpha=16, lora_shared_rank=0,
+                  pretrained_backbone="none", pretrained_weights=None):
     del sparsity
     return LoRAResNet(Bottleneck, [3, 4, 6, 3], num_classes, nf, n_tasks=n_tasks,
                       lora_rank=lora_rank, lora_alpha=lora_alpha,
-                      lora_shared_rank=lora_shared_rank, norm_params=norm_params)
+                      lora_shared_rank=lora_shared_rank, norm_params=norm_params,
+                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights)

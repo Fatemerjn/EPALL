@@ -1,6 +1,7 @@
 import math
 import time
 import torch
+import models
 from .base import *
 from .er import RehearsalMemory
 
@@ -45,6 +46,21 @@ class PALLAdapter(Base):
 
     def __init__(self, args):
         super(PALLAdapter, self).__init__(args)
+        # Optionally swap the from-scratch feature extractor for a frozen ImageNet
+        # backbone. Base already built the default net; rebuild only when requested
+        # so default (pretrained_backbone=none) runs are byte-for-byte unchanged.
+        if getattr(args, "pretrained_backbone", "none") != "none":
+            self.net = models.__dict__[args.arch](
+                args.class_per_task * args.n_tasks,
+                n_tasks=args.n_tasks,
+                sparsity=args.sparsity,
+                norm_params=args.norm_params,
+                adapter_bottleneck=args.adapter_bottleneck,
+                adapter_shared_bottleneck=args.adapter_shared_bottleneck,
+                adapter_location=args.adapter_location,
+                pretrained_backbone=args.pretrained_backbone,
+                pretrained_weights=args.pretrained_weights,
+            ).to(self.device)
         self.memory = RehearsalMemory(
             buffer_size=self.args.mem_budget,
             n_tasks=self.args.n_tasks,

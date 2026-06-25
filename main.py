@@ -171,6 +171,12 @@ parser.add_argument(
 )
 parser.add_argument('--lora_rank', default=8, type=int, help='LoRA rank r for the lora baseline')
 parser.add_argument('--lora_alpha', default=16, type=float, help='LoRA scaling alpha for the lora baseline (scale = alpha/r)')
+parser.add_argument('--pretrained_backbone', default='none', choices=['none', 'imagenet_resnet18'],
+                    help="feature extractor for the PEFT methods (pall_adapter, lora): 'none' = the "
+                         "from-scratch backbone (default, unchanged); 'imagenet_resnet18' = a frozen "
+                         "ImageNet ResNet-18 loaded from --pretrained_weights (adapters/LoRA run on its 512-d feature)")
+parser.add_argument('--pretrained_weights', default='pretrained/resnet18_imagenet.pth', type=str,
+                    help='local .pth weights for --pretrained_backbone imagenet_resnet18 (offline-safe)')
 parser.set_defaults(pin_memory=None)
 args = parser.parse_args()
 
