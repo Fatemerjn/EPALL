@@ -4,10 +4,12 @@
 #   GROUP 1: extra baselines (ewc, lwf, clpu) on fixed schedules, CIFAR-10 + CIFAR-100, seeds 0,1
 #   GROUP 2: proposed methods (pall_original, pall_modified, pall_adapter, lora), CIFAR-10 + CIFAR-100, seeds 0,1
 #   GROUP 3: PALL-Adapter bottleneck ablation on CIFAR-10 (seed 0)
+#   GROUP 4: pretrained-backbone PEFT (pall_adapter, lora on a frozen ImageNet ResNet-18) -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
-#   bash tools/run_server_experiments.sh            # all groups
+#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4 is NOT included)
 #   bash tools/run_server_experiments.sh g1         # only group 1
+#   bash tools/run_server_experiments.sh g4         # only the pretrained-backbone PEFT group
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -109,12 +111,46 @@ group3 () {
     done
 }
 
+# -------------------------------------------------------------------- GROUP 4
+# Pretrained-backbone PEFT variant: pall_adapter + lora on a FROZEN ImageNet
+# ResNet-18 feature extractor. Run ON DEMAND (g4) -- intentionally NOT part of
+# `all`. Both datasets use --arch resnet18 (the frozen backbone replaces the
+# from-scratch one anyway). Same per-method flags as GROUP 2 + the shared BASE.
+group4 () {
+    echo "===== GROUP 4: pretrained-backbone PEFT (pall_adapter / lora, frozen ImageNet ResNet-18) ====="
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    local C100_R18="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9"
+    for s in $SEEDS; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        # ---- CIFAR-10 (resnet18) ----
+        launch "c10_pall_adapter_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+               --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+               --experiment_tag cifar10_pretrained
+        launch "c10_lora_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+               --request_schedule_file $c10 --method lora $LORA \
+               --experiment_tag cifar10_pretrained
+        # ---- CIFAR-100 (resnet18) ----
+        launch "c100_pall_adapter_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+               --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+               --experiment_tag cifar100_pretrained
+        launch "c100_lora_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+               --request_schedule_file $c100 --method lora $LORA \
+               --experiment_tag cifar100_pretrained
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
     g2)  group2 ;;
     g3)  group3 ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3)"; exit 1 ;;
+    g4)  group4 ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4)"; exit 1 ;;
 esac
 
 echo "===================================================================="
