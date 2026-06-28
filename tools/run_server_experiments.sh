@@ -5,11 +5,13 @@
 #   GROUP 2: proposed methods (pall_original, pall_modified, pall_adapter, lora), CIFAR-10 + CIFAR-100, seeds 0,1
 #   GROUP 3: PALL-Adapter bottleneck ablation on CIFAR-10 (seed 0)
 #   GROUP 4: pretrained-backbone PEFT (pall_adapter, lora on a frozen ImageNet ResNet-18) -- ON DEMAND, not in `all`
+#   GROUP 5: pretrained PALL-Adapter hyperparameter sweep on CIFAR-100 -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
-#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4 is NOT included)
+#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5 are NOT included)
 #   bash tools/run_server_experiments.sh g1         # only group 1
 #   bash tools/run_server_experiments.sh g4         # only the pretrained-backbone PEFT group
+#   bash tools/run_server_experiments.sh g5         # only the pretrained PALL-Adapter tuning sweep
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -144,13 +146,43 @@ group4 () {
     done
 }
 
+# -------------------------------------------------------------------- GROUP 5
+# Focused pretrained PALL-Adapter tuning sweep. Run ON DEMAND (g5) -- intentionally
+# NOT part of `all`. Fixed to CIFAR-100 seeds 0 and 1 so the grid is always
+# 8 configs x 2 seeds = 16 runs, independent of the SEEDS override.
+group5 () {
+    echo "===== GROUP 5: pretrained PALL-Adapter tuning sweep (CIFAR-100, frozen ImageNet ResNet-18) ====="
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local COMMON_E5="${COMMON/--n_epochs 3/--n_epochs 5}"
+    local C100_R18="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9"
+    for s in 0 1; do
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        for forget_ratio in 0.3 0.5; do
+            for protect_ratio in 0.2 0.4; do
+                for forget_steps in 10 30; do
+                    launch "c100_pall_adapter_pretrained_fr${forget_ratio}_pr${protect_ratio}_fs${forget_steps}_s${s}" \
+                           $C100_R18 $COMMON_E5 $PRE --seed $s \
+                           --request_schedule_file $c100 --method pall_adapter \
+                           --adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+                           --adapter_shared_forget_ratio $forget_ratio \
+                           --adapter_shared_protect_ratio $protect_ratio \
+                           --adapter_train_classifier --retrain_steps 50 \
+                           --adapter_forget_steps $forget_steps \
+                           --experiment_tag adapter_tune_pretrained_v1
+                done
+            done
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
     g2)  group2 ;;
     g3)  group3 ;;
     g4)  group4 ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4)"; exit 1 ;;
+    g5)  group5 ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5)"; exit 1 ;;
 esac
 
 echo "===================================================================="
