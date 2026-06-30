@@ -239,7 +239,10 @@ def get_task_datasets(args):
         test = data[args.dataset](args.data_dir, train=False, download=True,
                                   transform=transforms.Compose(test_transform[args.dataset]))
 
-    if args.dataset == "cifar100":
+    cifar100_split = getattr(args, "cifar100_split", "superclass")
+    if args.dataset == "cifar100" and cifar100_split == "superclass":
+        # Overlap-heavy setting: semantically coherent superclass tasks (5 fine
+        # classes per superclass). See docs/standard_vs_overlap.md.
         labels_per_task, permutation = get_cifar100_superclass_tasks(train)
         if CPT != 5:
             raise ValueError("CIFAR-100 superclass tasks require --class_per_task 5.")
@@ -251,7 +254,8 @@ def get_task_datasets(args):
         permutation = np.random.permutation(np.arange(dataset_metadata["num_classes"]))[:T * CPT]
         labels_per_task = [list(permutation[task_id * CPT:(task_id + 1) * CPT]) for task_id in range(T)]
     else:
-        # generate randomized labels-per-task
+        # cifar10, OR standard Split-CIFAR-100 (--cifar100_split standard):
+        # random disjoint class splits over T*CPT classes (literature-comparable).
         permutation = np.random.permutation(np.arange(T * CPT))
         labels_per_task = [list(permutation[task_id * CPT:(task_id + 1) * CPT]) for task_id in range(T)]
 

@@ -6,12 +6,14 @@
 #   GROUP 3: PALL-Adapter bottleneck ablation on CIFAR-10 (seed 0)
 #   GROUP 4: pretrained-backbone PEFT (pall_adapter, lora on a frozen ImageNet ResNet-18) -- ON DEMAND, not in `all`
 #   GROUP 5: pretrained PALL-Adapter hyperparameter sweep on CIFAR-100 -- ON DEMAND, not in `all`
+#   GROUP 6 (g6_standard): literature-comparable STANDARD Split-CIFAR, all 9 methods -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
-#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5 are NOT included)
+#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard are NOT included)
 #   bash tools/run_server_experiments.sh g1         # only group 1
 #   bash tools/run_server_experiments.sh g4         # only the pretrained-backbone PEFT group
 #   bash tools/run_server_experiments.sh g5         # only the pretrained PALL-Adapter tuning sweep
+#   bash tools/run_server_experiments.sh g6_standard # standard Split-CIFAR benchmark (see docs/standard_vs_overlap.md)
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -175,6 +177,52 @@ group5 () {
     done
 }
 
+# ----------------------------------------------------------- GROUP 6 (standard)
+# Literature-comparable STANDARD Split-CIFAR benchmark (NOT our overlap-heavy
+# setting). Run ON DEMAND (g6_standard) -- intentionally NOT part of `all`.
+# Differences vs the default groups (see docs/standard_vs_overlap.md):
+#   * CIFAR-10  : standard 5 tasks x 2 classes (already disjoint/random).
+#   * CIFAR-100 : standard Split-CIFAR-100 = 10 tasks x 10 RANDOM disjoint classes
+#                 (--cifar100_split standard), instead of the 20 semantic
+#                 superclasses x 5 fine classes used elsewhere.
+#   * n_epochs 20 (reference training length) instead of the overlap runs' 3.
+# All 9 methods, both datasets, seeds 0/1. er/derpp need --forget_iters.
+group6_standard () {
+    echo "===== GROUP 6 (standard): literature-comparable Split-CIFAR (all methods) ====="
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    local FI="--forget_iters 50"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    for s in $SEEDS; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        # ---- CIFAR-10 (standard 5x2) ----
+        launch "std_c10_pall_original_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_original --retrain_steps 50 --experiment_tag cifar10_standard
+        launch "std_c10_pall_modified_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_modified $PALL_MOD --experiment_tag cifar10_standard
+        launch "std_c10_pall_adapter_s${s}"  $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_adapter $ADAPTER --experiment_tag cifar10_standard
+        launch "std_c10_lora_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lora $LORA --experiment_tag cifar10_standard
+        launch "std_c10_er_s${s}"            $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method er $FI --experiment_tag cifar10_standard
+        launch "std_c10_derpp_s${s}"         $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method derpp $FI --experiment_tag cifar10_standard
+        launch "std_c10_ewc_s${s}"           $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method ewc --experiment_tag cifar10_standard
+        launch "std_c10_lwf_s${s}"           $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lwf --experiment_tag cifar10_standard
+        launch "std_c10_clpu_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method clpu --experiment_tag cifar10_standard
+        # ---- CIFAR-100 (standard Split-CIFAR-100, 10x10 random disjoint) ----
+        launch "std_c100_pall_original_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_original --retrain_steps 50 --experiment_tag cifar100_standard
+        launch "std_c100_pall_modified_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_modified $PALL_MOD --experiment_tag cifar100_standard
+        launch "std_c100_pall_adapter_s${s}"  $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_adapter $ADAPTER --experiment_tag cifar100_standard
+        launch "std_c100_lora_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lora $LORA --experiment_tag cifar100_standard
+        launch "std_c100_er_s${s}"            $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method er $FI --experiment_tag cifar100_standard
+        launch "std_c100_derpp_s${s}"         $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method derpp $FI --experiment_tag cifar100_standard
+        launch "std_c100_ewc_s${s}"           $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method ewc --experiment_tag cifar100_standard
+        launch "std_c100_lwf_s${s}"           $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lwf --experiment_tag cifar100_standard
+        launch "std_c100_clpu_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method clpu --experiment_tag cifar100_standard
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -182,7 +230,8 @@ case "$WHICH" in
     g3)  group3 ;;
     g4)  group4 ;;
     g5)  group5 ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5)"; exit 1 ;;
+    g6_standard) group6_standard ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard)"; exit 1 ;;
 esac
 
 echo "===================================================================="

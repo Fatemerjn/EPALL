@@ -21,6 +21,10 @@ parser = argparse.ArgumentParser(description='Privacy-Aware Lifelong Learning')
 parser.add_argument('--data_dir', default='./data', type=str, help='data directory')
 parser.add_argument('--dataset', default='cifar10', choices=['cifar10', 'cifar100', 'tinyimagenet'])
 parser.add_argument('--class_per_task', default=2, type=int, help='number of classes per task in CL')
+parser.add_argument('--cifar100_split', default='superclass', choices=['superclass', 'standard'],
+                    help="CIFAR-100 task construction: 'superclass' (default; the 20 semantic "
+                         "superclasses, 5 fine classes/task -- our overlap-heavy setting) or 'standard' "
+                         "(random disjoint Split-CIFAR-100, comparable to the literature/PALL reference)")
 parser.add_argument('--n_tasks', default=5, type=int, help='number of tasks in CL')
 parser.add_argument('--n_forget', default=3, type=int, help='number of forget requests by the user to simulate')
 parser.add_argument('--request_schedule_file', default=None, type=str,
@@ -258,10 +262,15 @@ def derive_variant(arg_namespace):
 
 def validate_experiment_args(arg_namespace):
     if arg_namespace.dataset == "cifar100":
-        if arg_namespace.class_per_task != 5:
-            parser.error("CIFAR-100 superclass tasks require --class_per_task 5.")
-        if not (1 <= arg_namespace.n_tasks <= 20):
-            parser.error("CIFAR-100 superclass tasks require --n_tasks in [1, 20].")
+        if getattr(arg_namespace, "cifar100_split", "superclass") == "superclass":
+            if arg_namespace.class_per_task != 5:
+                parser.error("CIFAR-100 superclass tasks require --class_per_task 5 "
+                             "(use --cifar100_split standard for arbitrary class_per_task).")
+            if not (1 <= arg_namespace.n_tasks <= 20):
+                parser.error("CIFAR-100 superclass tasks require --n_tasks in [1, 20].")
+        else:  # standard Split-CIFAR-100: random disjoint class splits
+            if arg_namespace.class_per_task * arg_namespace.n_tasks > 100:
+                parser.error("Standard Split-CIFAR-100 requires --class_per_task * --n_tasks <= 100.")
     if arg_namespace.dataset == "tinyimagenet":
         if arg_namespace.class_per_task * arg_namespace.n_tasks > 200:
             parser.error("TinyImageNet requires --class_per_task * --n_tasks <= 200.")
