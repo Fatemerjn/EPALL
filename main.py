@@ -112,6 +112,10 @@ parser.add_argument('--eval_mia', default=False, action='store_true',
                     help='run a simple membership-inference attack before and after each '
                          'forget event (members=forget-task train samples, non-members=its '
                          'test split); writes AUC and balanced accuracy under metrics "mia"')
+parser.add_argument('--cache_features', default=False, action='store_true',
+                    help='precompute the frozen backbone 512-d features once and train/eval the PEFT '
+                         'head on the cached features (big speedup + memory). Only active for '
+                         'pall_adapter/lora with --pretrained_backbone; features are augmentation-free.')
 parser.add_argument('--adapter_bottleneck', default=16, type=int, help='adapter bottleneck size for pall_adapter')
 parser.add_argument(
     '--adapter_shared_bottleneck',
@@ -1936,6 +1940,26 @@ def main():
             ),
         )
     log_event(logger, f"[INFO] model initialized on {args.device} in {time.perf_counter() - model_start:.2f}s")
+
+    # Frozen-backbone feature caching (pretrained PEFT path only): precompute the
+    # 512-d features once, then train/eval the adapters/classifier on them.
+    if getattr(args, "cache_features", False):
+        peft_pretrained = (
+            args.method in ("pall_adapter", "lora")
+            and getattr(args, "pretrained_backbone", "none") != "none"
+            and getattr(getattr(model, "net", None), "frozen_backbone", None) is not None
+        )
+        if peft_pretrained:
+            import feature_cache
+            cache_start = time.perf_counter()
+            train_datasets, test_datasets = feature_cache.apply_feature_cache(
+                args, model, train_datasets, test_datasets
+            )
+            log_event(logger, f"[INFO] feature caching enabled in {time.perf_counter() - cache_start:.2f}s")
+        else:
+            log_event(logger, "[WARN] --cache_features ignored: only applies to pall_adapter/lora "
+                              "with --pretrained_backbone imagenet_resnet18.")
+
     request_start = time.perf_counter()
     current_stat = process_requests(
         args,

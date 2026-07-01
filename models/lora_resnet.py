@@ -121,6 +121,8 @@ class LoRAResNet(BaseModel):
         return nn.Sequential(*layers)
 
     def extract_backbone_features(self, x):
+        if getattr(self, "features_are_precomputed", False):
+            return x  # x is an already-cached 512-d backbone feature (see feature_cache.py)
         if self.frozen_backbone is not None:
             return self.frozen_backbone(x)
         out = F.relu(self.bn1(self.conv1(x)))
