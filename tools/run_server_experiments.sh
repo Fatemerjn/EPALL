@@ -7,13 +7,15 @@
 #   GROUP 4: pretrained-backbone PEFT (pall_adapter, lora on a frozen ImageNet ResNet-18) -- ON DEMAND, not in `all`
 #   GROUP 5: pretrained PALL-Adapter hyperparameter sweep on CIFAR-100 -- ON DEMAND, not in `all`
 #   GROUP 6 (g6_standard): literature-comparable STANDARD Split-CIFAR, all 9 methods -- ON DEMAND, not in `all`
+#   GROUP 7 (g7_tiny): TinyImageNet main + pretrained PEFT runs -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
-#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard are NOT included)
+#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny are NOT included)
 #   bash tools/run_server_experiments.sh g1         # only group 1
 #   bash tools/run_server_experiments.sh g4         # only the pretrained-backbone PEFT group
 #   bash tools/run_server_experiments.sh g5         # only the pretrained PALL-Adapter tuning sweep
 #   bash tools/run_server_experiments.sh g6_standard # standard Split-CIFAR benchmark (see docs/standard_vs_overlap.md)
+#   bash tools/run_server_experiments.sh g7_tiny    # TinyImageNet main + pretrained PEFT group
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -223,6 +225,43 @@ group6_standard () {
     done
 }
 
+# --------------------------------------------------------------- GROUP 7 tiny
+# TinyImageNet main + pretrained PEFT runs. Run ON DEMAND (g7_tiny) --
+# intentionally NOT part of `all`. Uses the fixed TinyImageNet schedule for
+# seed 0, and seed 1 too if schedules/tinyimagenet_t20_f3_seed1.json exists.
+group7_tiny () {
+    echo "===== GROUP 7: TinyImageNet main + pretrained PEFT ====="
+    local TINY="--dataset tinyimagenet --class_per_task 10 --n_tasks 20 --n_forget 3 --arch resnet18"
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth --cache_features"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    for s in 0 1; do
+        local sch="schedules/tinyimagenet_t20_f3_seed${s}.json"
+        if [[ ! -f "$sch" ]]; then
+            echo "    SKIP tinyimagenet seed ${s}: missing ${sch}"
+            continue
+        fi
+        launch "tiny_pall_original_s${s}" $TINY $COMMON --seed $s \
+               --request_schedule_file $sch --method pall_original \
+               --retrain_steps 50 --experiment_tag tiny_main
+        launch "tiny_pall_modified_grad_s${s}" $TINY $COMMON --seed $s \
+               --request_schedule_file $sch --method pall_modified $PALL_MOD \
+               --experiment_tag tiny_main
+        launch "tiny_clpu_s${s}" $TINY $COMMON --seed $s \
+               --request_schedule_file $sch --method clpu \
+               --experiment_tag tiny_main
+        launch "tiny_pall_adapter_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
+               --request_schedule_file $sch --method pall_adapter $ADAPTER \
+               --experiment_tag tiny_pretrained
+        launch "tiny_lora_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
+               --request_schedule_file $sch --method lora $LORA \
+               --experiment_tag tiny_pretrained
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -231,7 +270,8 @@ case "$WHICH" in
     g4)  group4 ;;
     g5)  group5 ;;
     g6_standard) group6_standard ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard)"; exit 1 ;;
+    g7_tiny) group7_tiny ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny)"; exit 1 ;;
 esac
 
 echo "===================================================================="
