@@ -697,6 +697,7 @@ def compute_average_forgetting(accuracy_history, requests, n_tasks):
 def normalize_unlearning_event(event, availability=None):
     availability = availability or {}
     overlap = event.get("overlap", {}) or {}
+    mia = event.get("mia")
 
     t_reset = to_optional_float(event.get("t_reset")) if availability.get("t_reset", True) else None
     t_retrain = to_optional_float(event.get("t_retrain")) if availability.get("t_retrain", True) else None
@@ -803,6 +804,7 @@ def normalize_unlearning_event(event, availability=None):
                 else None
             ),
         },
+        "mia": json_safe(mia) if isinstance(mia, dict) else None,
     }
 
 
@@ -858,23 +860,50 @@ def _mia_per_sample_scores(model, dataset, task_id, args, max_samples=512):
     return torch.cat(losses).numpy(), torch.cat(confidences).numpy()
 
 
+def _mia_loss_over_confidence_scores(losses, confidences):
+    raw_scores = np.asarray(losses, dtype=np.float64) / np.maximum(
+        np.asarray(confidences, dtype=np.float64),
+        1e-12,
+    )
+    # Lower loss/confidence means a sample looks more member-like, so negate for
+    # the shared AUC/threshold helpers where higher scores mean "member".
+    return -raw_scores
+
+
 def compute_mia(model, member_dataset, nonmember_dataset, task_id, args, max_samples=512):
     """Simple membership-inference attack for one forget target.
 
     Members = the forgotten task's own (training) samples the model was exposed to;
     non-members = that task's held-out test split. Successful unlearning drives the
-    attack toward chance (AUC ~ 0.5). The membership score is the negative
-    per-sample loss (members tend to be lower-loss / higher-confidence); we also
-    report a confidence-based AUC. Model-agnostic: works for pall_modified,
-    pall_original, and pall_adapter via ``model.evaluate``."""
+    attack toward chance (AUC ~ 0.5). The raw score is per-sample loss divided
+    by max-softmax confidence; lower raw scores are more member-like. Model-
+    agnostic: works through ``model.evaluate`` for all methods."""
     m_loss, m_conf = _mia_per_sample_scores(model, member_dataset, task_id, args, max_samples)
     n_loss, n_conf = _mia_per_sample_scores(model, nonmember_dataset, task_id, args, max_samples)
+    member_scores = _mia_loss_over_confidence_scores(m_loss, m_conf)
+    nonmember_scores = _mia_loss_over_confidence_scores(n_loss, n_conf)
     return {
-        "auc_loss": _mia_auc(-m_loss, -n_loss),
-        "auc_confidence": _mia_auc(m_conf, n_conf),
-        "balanced_accuracy": _mia_balanced_accuracy(-m_loss, -n_loss),
+        "auc": _mia_auc(member_scores, nonmember_scores),
+        "acc": _mia_balanced_accuracy(member_scores, nonmember_scores),
+        "score": "loss_over_confidence",
+        "score_definition": "cross_entropy_loss / max_softmax_confidence; lower raw score is more member-like",
         "n_members": int(m_loss.size),
         "n_nonmembers": int(n_loss.size),
+    }
+
+
+def build_mia_event(before, after):
+    if before is None or after is None:
+        return None
+    return {
+        "auc_before": before.get("auc"),
+        "auc_after": after.get("auc"),
+        "acc_before": before.get("acc"),
+        "acc_after": after.get("acc"),
+        "score": "loss_over_confidence",
+        "score_definition": "cross_entropy_loss / max_softmax_confidence; lower raw score is more member-like",
+        "before": before,
+        "after": after,
     }
 
 
@@ -961,6 +990,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
             if getattr(args, "eval_mia", False):
                 mia_after = compute_mia(model, train_datasets[task_id], test_datasets[task_id], task_id, args)
                 log_event(logger, f"[INFO] MIA after forget: task={task_id} {mia_after}")
+            mia_event = build_mia_event(mia_before, mia_after) if getattr(args, "eval_mia", False) else None
 
             avg_after_reset = avg_for_tasks(after_reset_acc, remaining_tasks)
             avg_after_retrain = avg_for_tasks(post_acc, remaining_tasks)
@@ -985,7 +1015,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "Fu": fu,
                 "WorstDrop": worst_drop,
                 "Au": au,
-                "mia": ({"before": mia_before, "after": mia_after} if getattr(args, "eval_mia", False) else None),
+                "mia": mia_event,
                 "t_reset": info.get("t_reset", 0.0) if info.get("t_reset") is not None else 0.0,
                 "t_retrain": info.get("t_retrain", 0.0) if info.get("t_retrain") is not None else 0.0,
                 "t_forget_total": info.get("t_forget_total"),
@@ -1156,6 +1186,7 @@ def write_summary(path, summary, normalized_results):
     final_block = normalized_results.get("final", {})
     final_unlearning = final_block.get("final_unlearning", {})
     final_overlap = final_unlearning.get("overlap", {}) if isinstance(final_unlearning, dict) else {}
+    final_mia = final_unlearning.get("mia", {}) if isinstance(final_unlearning.get("mia"), dict) else {}
 
     lines = [
         f"run_dir: {summary['run_dir']}",
@@ -1176,11 +1207,14 @@ def write_summary(path, summary, normalized_results):
         f"final_avg_forgetting: {summary['final_avg_forgetting']:.4f}",
         (
             "final_unlearning: Fu {fu} WorstDrop {worst_drop} Au {au} "
+            "MIA_AUC {mia_before}->{mia_after} "
             "t_reset {t_reset}s t_retrain {t_retrain}s t_forget_total {t_total}s "
             "updated_params {updated} share_ratio {share_ratio} crit_ratio {crit_ratio}".format(
                 fu=format_optional_float(final_unlearning.get("Fu")),
                 worst_drop=format_optional_float(final_unlearning.get("WorstDrop")),
                 au=format_optional_float(final_unlearning.get("Au")),
+                mia_before=format_optional_float(final_mia.get("auc_before")),
+                mia_after=format_optional_float(final_mia.get("auc_after")),
                 t_reset=format_optional_float(final_unlearning.get("t_reset")),
                 t_retrain=format_optional_float(final_unlearning.get("t_retrain")),
                 t_total=format_optional_float(final_unlearning.get("t_forget_total")),
@@ -1197,10 +1231,11 @@ def write_summary(path, summary, normalized_results):
         lines.append("none")
     for event in unlearning_events:
         overlap = event.get("overlap", {})
+        mia = event.get("mia", {}) if isinstance(event.get("mia"), dict) else {}
         lines.append(
             "step {step} task {task} avg_before {avg_before} "
             "avg_after_reset {avg_after_reset} avg_after_retrain {avg_after_retrain} "
-            "Fu {fu} WorstDrop {worst_drop} Au {au} "
+            "Fu {fu} WorstDrop {worst_drop} Au {au} MIA_AUC {mia_before}->{mia_after} "
             "t_reset {t_reset}s t_retrain {t_retrain}s t_forget_total {t_total}s "
             "updated_params {updated} share_ratio {share_ratio} crit_ratio {crit_ratio}".format(
                 step=format_optional_int(event.get("unlearning_step")),
@@ -1211,6 +1246,8 @@ def write_summary(path, summary, normalized_results):
                 fu=format_optional_float(event.get("Fu")),
                 worst_drop=format_optional_float(event.get("WorstDrop")),
                 au=format_optional_float(event.get("Au")),
+                mia_before=format_optional_float(mia.get("auc_before")),
+                mia_after=format_optional_float(mia.get("auc_after")),
                 t_reset=format_optional_float(event.get("t_reset")),
                 t_retrain=format_optional_float(event.get("t_retrain")),
                 t_total=format_optional_float(event.get("t_forget_total")),
@@ -1386,10 +1423,12 @@ def write_run_report(path, run_dir, config, metrics_state):
         else:
             last = {}
         overlap = last.get("overlap", {}) if isinstance(last.get("overlap"), dict) else {}
+        mia = last.get("mia") if isinstance(last.get("mia"), dict) else None
         final_unlearning = {
             "Fu": last.get("Fu"),
             "WorstDrop": last.get("WorstDrop"),
             "Au": last.get("Au"),
+            "mia": mia,
             "t_reset": last.get("t_reset"),
             "t_retrain": last.get("t_retrain"),
             "t_forget_total": first_non_none(
@@ -1407,6 +1446,7 @@ def write_run_report(path, run_dir, config, metrics_state):
         }
 
     overlap_block = final_unlearning.get("overlap", {}) if isinstance(final_unlearning, dict) else {}
+    mia_block = final_unlearning.get("mia", {}) if isinstance(final_unlearning.get("mia"), dict) else {}
     overlap_csv_path = run_dir / "overlap.csv"
     overlap_csv_summary = summarize_overlap_csv(overlap_csv_path)
     updated_param_ratio = first_non_none(
@@ -1485,6 +1525,10 @@ def write_run_report(path, run_dir, config, metrics_state):
             ("Fu", format_optional_float(final_unlearning.get("Fu"))),
             ("WorstDrop", format_optional_float(final_unlearning.get("WorstDrop"))),
             ("Au", format_optional_float(final_unlearning.get("Au"))),
+            ("mia_auc_before", format_optional_float(mia_block.get("auc_before"))),
+            ("mia_auc_after", format_optional_float(mia_block.get("auc_after"))),
+            ("mia_acc_before", format_optional_float(mia_block.get("acc_before"))),
+            ("mia_acc_after", format_optional_float(mia_block.get("acc_after"))),
             ("unlearning_score", format_optional_float(unlearning_score)),
             ("t_reset", format_optional_float(final_unlearning.get("t_reset"))),
             ("s_t", format_optional_int(overlap_block.get("s_t"))),
@@ -2034,6 +2078,7 @@ def main():
         "Fu": None,
         "WorstDrop": None,
         "Au": None,
+        "mia": None,
         "t_reset": None,
         "t_retrain": None,
         "t_forget_total": None,
@@ -2052,6 +2097,7 @@ def main():
             "Fu": last_event.get("Fu"),
             "WorstDrop": last_event.get("WorstDrop"),
             "Au": last_event.get("Au"),
+            "mia": last_event.get("mia"),
             "t_reset": last_event.get("t_reset"),
             "t_retrain": last_event.get("t_retrain"),
             "t_forget_total": last_event.get("t_forget_total"),
@@ -2083,6 +2129,11 @@ def main():
     summary["Fu"] = final_unlearning.get("Fu")
     summary["WorstDrop"] = final_unlearning.get("WorstDrop")
     summary["Au"] = final_unlearning.get("Au")
+    final_mia = final_unlearning.get("mia") if isinstance(final_unlearning.get("mia"), dict) else {}
+    summary["mia_auc_before"] = final_mia.get("auc_before")
+    summary["mia_auc_after"] = final_mia.get("auc_after")
+    summary["mia_acc_before"] = final_mia.get("acc_before")
+    summary["mia_acc_after"] = final_mia.get("acc_after")
     summary["t_retrain"] = final_unlearning.get("t_retrain")
     summary["t_forget_total"] = final_unlearning.get("t_forget_total")
     summary["num_updated_params"] = final_unlearning.get("num_updated_params")
@@ -2094,6 +2145,10 @@ def main():
         "Fu": final_unlearning.get("Fu"),
         "WorstDrop": final_unlearning.get("WorstDrop"),
         "Au": final_unlearning.get("Au"),
+        "mia_auc_before": final_mia.get("auc_before"),
+        "mia_auc_after": final_mia.get("auc_after"),
+        "mia_acc_before": final_mia.get("acc_before"),
+        "mia_acc_after": final_mia.get("acc_after"),
         "unlearning_score": unlearning_score,
         "t_retrain": final_unlearning.get("t_retrain"),
         "t_forget_total": final_unlearning.get("t_forget_total"),
@@ -2110,6 +2165,10 @@ def main():
     metrics_state["Fu"] = final_unlearning.get("Fu")
     metrics_state["WorstDrop"] = final_unlearning.get("WorstDrop")
     metrics_state["Au"] = final_unlearning.get("Au")
+    metrics_state["mia_auc_before"] = final_mia.get("auc_before")
+    metrics_state["mia_auc_after"] = final_mia.get("auc_after")
+    metrics_state["mia_acc_before"] = final_mia.get("acc_before")
+    metrics_state["mia_acc_after"] = final_mia.get("acc_after")
     metrics_state["t_retrain"] = final_unlearning.get("t_retrain")
     metrics_state["t_forget_total"] = final_unlearning.get("t_forget_total")
     metrics_state["num_updated_params"] = final_unlearning.get("num_updated_params")

@@ -41,6 +41,10 @@ OUTPUT_COLUMNS = [
     "WorstDrop_std",
     "Au_mean",
     "Au_std",
+    "mia_auc_before_mean",
+    "mia_auc_before_std",
+    "mia_auc_after_mean",
+    "mia_auc_after_std",
     "unlearning_score_mean",
     "unlearning_score_std",
     "t_retrain_mean",
@@ -72,6 +76,8 @@ SEED_AGG_METRICS = [
     "Fu",
     "WorstDrop",
     "Au",
+    "mia_auc_before",
+    "mia_auc_after",
     "unlearning_score",
     "t_retrain",
     "t_forget_total",
@@ -343,6 +349,30 @@ def extract_run_row(
         t_reset = to_float(first_non_none(final_unlearning.get("t_reset"), raw_last_event.get("t_reset")))
         if t_reset is not None or t_retrain is not None:
             t_forget_total = float((t_reset or 0.0) + (t_retrain or 0.0))
+    final_mia = final_unlearning.get("mia", {}) if isinstance(final_unlearning.get("mia"), dict) else {}
+    raw_mia = raw_last_event.get("mia", {}) if isinstance(raw_last_event.get("mia"), dict) else {}
+    mia_auc_before = to_float(
+        first_non_none(
+            final_mia.get("auc_before"),
+            nested_get(metrics, "normalized_results", "final", "mia_auc_before"),
+            metrics.get("mia_auc_before"),
+            nested_get(metrics, "summary", "mia_auc_before"),
+            raw_mia.get("auc_before"),
+            nested_get(raw_mia, "before", "auc"),
+            nested_get(raw_mia, "before", "auc_loss"),
+        )
+    )
+    mia_auc_after = to_float(
+        first_non_none(
+            final_mia.get("auc_after"),
+            nested_get(metrics, "normalized_results", "final", "mia_auc_after"),
+            metrics.get("mia_auc_after"),
+            nested_get(metrics, "summary", "mia_auc_after"),
+            raw_mia.get("auc_after"),
+            nested_get(raw_mia, "after", "auc"),
+            nested_get(raw_mia, "after", "auc_loss"),
+        )
+    )
 
     row = {
         "run_path": str(metrics_path.parent),
@@ -405,6 +435,8 @@ def extract_run_row(
                 raw_last_event.get("Au"),
             )
         ),
+        "mia_auc_before": mia_auc_before,
+        "mia_auc_after": mia_auc_after,
         "unlearning_score": derive_unlearning_score(metrics, final_unlearning),
         "t_retrain": t_retrain,
         "t_forget_total": t_forget_total,
@@ -467,6 +499,8 @@ def aggregate_group(rows: List[Dict[str, Any]]) -> Dict[str, Optional[float]]:
     fu_mean, fu_std = mean_std(per_metric["Fu"])
     worst_drop_mean, worst_drop_std = mean_std(per_metric["WorstDrop"])
     au_mean, au_std = mean_std(per_metric["Au"])
+    mia_auc_before_mean, mia_auc_before_std = mean_std(per_metric["mia_auc_before"])
+    mia_auc_after_mean, mia_auc_after_std = mean_std(per_metric["mia_auc_after"])
     unlearning_score_mean, unlearning_score_std = mean_std(per_metric["unlearning_score"])
 
     return {
@@ -480,6 +514,10 @@ def aggregate_group(rows: List[Dict[str, Any]]) -> Dict[str, Optional[float]]:
         "WorstDrop_std": worst_drop_std,
         "Au_mean": au_mean,
         "Au_std": au_std,
+        "mia_auc_before_mean": mia_auc_before_mean,
+        "mia_auc_before_std": mia_auc_before_std,
+        "mia_auc_after_mean": mia_auc_after_mean,
+        "mia_auc_after_std": mia_auc_after_std,
         "unlearning_score_mean": unlearning_score_mean,
         "unlearning_score_std": unlearning_score_std,
         "t_retrain_mean": mean_or_none(per_metric["t_retrain"]),

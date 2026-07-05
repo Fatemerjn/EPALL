@@ -21,6 +21,8 @@ OUTPUT_COLUMNS = [
     "Fu",
     "WorstDrop",
     "Au",
+    "mia_auc_before",
+    "mia_auc_after",
     "updated_param_ratio_mean",
     "adapter_param_ratio_mean",
     "critical_ratio",
@@ -139,6 +141,13 @@ def format_mean_std(row: Dict[str, str], mean_key: str, std_key: str, decimals: 
     return f"{mean_value:.{decimals}f} +/- {std_value:.{decimals}f}"
 
 
+def format_mean_std_or_value(row: Dict[str, str], base_key: str, decimals: int = 4) -> str:
+    formatted = format_mean_std(row, f"{base_key}_mean", f"{base_key}_std", decimals=decimals)
+    if formatted:
+        return formatted
+    return format_number(row.get(base_key), decimals=decimals)
+
+
 def compact_row(row: Dict[str, str]) -> Dict[str, str]:
     return {
         "dataset": str(row.get("dataset", "")).strip(),
@@ -148,6 +157,8 @@ def compact_row(row: Dict[str, str]) -> Dict[str, str]:
         "Fu": format_mean_std(row, "Fu_mean", "Fu_std"),
         "WorstDrop": format_mean_std(row, "WorstDrop_mean", "WorstDrop_std"),
         "Au": format_mean_std(row, "Au_mean", "Au_std"),
+        "mia_auc_before": format_mean_std_or_value(row, "mia_auc_before"),
+        "mia_auc_after": format_mean_std_or_value(row, "mia_auc_after"),
         "updated_param_ratio_mean": format_number(row.get("updated_param_ratio_mean")),
         "adapter_param_ratio_mean": format_number(row.get("adapter_param_ratio_mean")),
         "critical_ratio": format_number(

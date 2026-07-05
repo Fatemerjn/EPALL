@@ -62,6 +62,8 @@ COLUMNS: List[str] = [
     "Fu",
     "WorstDrop",
     "Au",
+    "mia_auc_before",
+    "mia_auc_after",
     "t_reset",
     "t_retrain",
     "t_forget_total",
@@ -156,6 +158,26 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
     t_forget_total = first_non_none(final_unlearning.get("t_forget_total"), raw_last_event.get("t_forget_total"))
     if t_forget_total is None and (t_reset is not None or t_retrain is not None):
         t_forget_total = (t_reset or 0.0) + (t_retrain or 0.0)
+    final_mia = final_unlearning.get("mia", {}) if isinstance(final_unlearning.get("mia"), dict) else {}
+    raw_mia = raw_last_event.get("mia", {}) if isinstance(raw_last_event.get("mia"), dict) else {}
+    mia_auc_before = first_non_none(
+        final_mia.get("auc_before"),
+        nested_get(metrics, "normalized_results", "final", "mia_auc_before"),
+        metrics.get("mia_auc_before"),
+        nested_get(metrics, "summary", "mia_auc_before"),
+        raw_mia.get("auc_before"),
+        nested_get(raw_mia, "before", "auc"),
+        nested_get(raw_mia, "before", "auc_loss"),
+    )
+    mia_auc_after = first_non_none(
+        final_mia.get("auc_after"),
+        nested_get(metrics, "normalized_results", "final", "mia_auc_after"),
+        metrics.get("mia_auc_after"),
+        nested_get(metrics, "summary", "mia_auc_after"),
+        raw_mia.get("auc_after"),
+        nested_get(raw_mia, "after", "auc"),
+        nested_get(raw_mia, "after", "auc_loss"),
+    )
 
     return {
         "run_path": str(run_dir),
@@ -191,6 +213,8 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
         "Fu": first_non_none(final_unlearning.get("Fu"), raw_last_event.get("Fu")),
         "WorstDrop": first_non_none(final_unlearning.get("WorstDrop"), raw_last_event.get("WorstDrop")),
         "Au": first_non_none(final_unlearning.get("Au"), raw_last_event.get("Au")),
+        "mia_auc_before": mia_auc_before,
+        "mia_auc_after": mia_auc_after,
         "t_reset": t_reset,
         "t_retrain": t_retrain,
         "t_forget_total": t_forget_total,

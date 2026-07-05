@@ -8,14 +8,16 @@
 #   GROUP 5: pretrained PALL-Adapter hyperparameter sweep on CIFAR-100 -- ON DEMAND, not in `all`
 #   GROUP 6 (g6_standard): literature-comparable STANDARD Split-CIFAR, all 9 methods -- ON DEMAND, not in `all`
 #   GROUP 7 (g7_tiny): TinyImageNet main + pretrained PEFT runs -- ON DEMAND, not in `all`
+#   GROUP 8 (g8_mia): MIA-enabled proposed/pretrained PEFT + CLPU runs -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
-#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny are NOT included)
+#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia are NOT included)
 #   bash tools/run_server_experiments.sh g1         # only group 1
 #   bash tools/run_server_experiments.sh g4         # only the pretrained-backbone PEFT group
 #   bash tools/run_server_experiments.sh g5         # only the pretrained PALL-Adapter tuning sweep
 #   bash tools/run_server_experiments.sh g6_standard # standard Split-CIFAR benchmark (see docs/standard_vs_overlap.md)
 #   bash tools/run_server_experiments.sh g7_tiny    # TinyImageNet main + pretrained PEFT group
+#   bash tools/run_server_experiments.sh g8_mia     # MIA-enabled proposed/pretrained PEFT + CLPU group
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -262,6 +264,50 @@ group7_tiny () {
     done
 }
 
+# --------------------------------------------------------------- GROUP 8 MIA
+# MIA-enabled reruns for the proposed/full-network and pretrained-PEFT configs.
+# Run ON DEMAND (g8_mia) -- intentionally NOT part of `all`.
+group8_mia () {
+    echo "===== GROUP 8: MIA-enabled proposed/pretrained PEFT + CLPU ====="
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    local C100_R18="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9"
+    for s in 0 1; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        # ---- CIFAR-10 ----
+        launch "mia_c10_pall_modified_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+               --eval_mia --experiment_tag cifar10_mia
+        launch "mia_c10_pall_adapter_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+               --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+               --eval_mia --experiment_tag cifar10_pretrained_mia
+        launch "mia_c10_lora_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+               --request_schedule_file $c10 --method lora $LORA \
+               --eval_mia --experiment_tag cifar10_pretrained_mia
+        launch "mia_c10_clpu_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method clpu \
+               --eval_mia --experiment_tag cifar10_mia
+        # ---- CIFAR-100 ----
+        launch "mia_c100_pall_modified_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_modified $PALL_MOD \
+               --eval_mia --experiment_tag cifar100_mia
+        launch "mia_c100_pall_adapter_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+               --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+               --eval_mia --experiment_tag cifar100_pretrained_mia
+        launch "mia_c100_lora_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+               --request_schedule_file $c100 --method lora $LORA \
+               --eval_mia --experiment_tag cifar100_pretrained_mia
+        launch "mia_c100_clpu_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method clpu \
+               --eval_mia --experiment_tag cifar100_mia
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -271,7 +317,8 @@ case "$WHICH" in
     g5)  group5 ;;
     g6_standard) group6_standard ;;
     g7_tiny) group7_tiny ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny)"; exit 1 ;;
+    g8_mia) group8_mia ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia)"; exit 1 ;;
 esac
 
 echo "===================================================================="
