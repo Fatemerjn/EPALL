@@ -9,15 +9,17 @@
 #   GROUP 6 (g6_standard): literature-comparable STANDARD Split-CIFAR, all 9 methods -- ON DEMAND, not in `all`
 #   GROUP 7 (g7_tiny): TinyImageNet main + pretrained PEFT runs -- ON DEMAND, not in `all`
 #   GROUP 8 (g8_mia): MIA-enabled proposed/pretrained PEFT + CLPU runs -- ON DEMAND, not in `all`
+#   GROUP 9 (g9_extra_baselines): SSD + SalUn baselines -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
-#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia are NOT included)
+#   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
 #   bash tools/run_server_experiments.sh g1         # only group 1
 #   bash tools/run_server_experiments.sh g4         # only the pretrained-backbone PEFT group
 #   bash tools/run_server_experiments.sh g5         # only the pretrained PALL-Adapter tuning sweep
 #   bash tools/run_server_experiments.sh g6_standard # standard Split-CIFAR benchmark (see docs/standard_vs_overlap.md)
 #   bash tools/run_server_experiments.sh g7_tiny    # TinyImageNet main + pretrained PEFT group
 #   bash tools/run_server_experiments.sh g8_mia     # MIA-enabled proposed/pretrained PEFT + CLPU group
+#   bash tools/run_server_experiments.sh g9_extra_baselines # SSD + SalUn baseline group
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -308,6 +310,31 @@ group8_mia () {
     done
 }
 
+# ---------------------------------------------------- GROUP 9 extra baselines
+# Standard machine-unlearning baselines. Run ON DEMAND (g9_extra_baselines) --
+# intentionally NOT part of `all`.
+group9_extra_baselines () {
+    echo "===== GROUP 9: SSD + SalUn extra unlearning baselines ====="
+    local SSD_ARGS="--ssd_alpha 1.0 --ssd_lambda 1.0"
+    local SALUN_ARGS="--salun_mask_ratio 0.1 --salun_target uniform --forget_iters 50"
+    for s in 0 1; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        for m in ssd salun; do
+            local extra="$SSD_ARGS"
+            if [[ "$m" == "salun" ]]; then
+                extra="$SALUN_ARGS"
+            fi
+            launch "c10_${m}_extra_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method $m $extra \
+                   --experiment_tag cifar10_extra_baselines
+            launch "c100_${m}_extra_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method $m $extra \
+                   --experiment_tag cifar100_extra_baselines
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -318,7 +345,8 @@ case "$WHICH" in
     g6_standard) group6_standard ;;
     g7_tiny) group7_tiny ;;
     g8_mia) group8_mia ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia)"; exit 1 ;;
+    g9_extra_baselines) group9_extra_baselines ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines)"; exit 1 ;;
 esac
 
 echo "===================================================================="

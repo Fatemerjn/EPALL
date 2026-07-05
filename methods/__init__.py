@@ -11,3 +11,5 @@ from .pall_original import PALLOriginal
 from .pall import PALL  # backward-compatible alias (PALL = PALLBase)
 from .pall_adapter import PALLAdapter
 from .lora import LoRA
+from .ssd import SSD
+from .salun import SalUn

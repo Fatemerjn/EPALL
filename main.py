@@ -58,6 +58,8 @@ parser.add_argument(
         'derpp',
         'lsf',
         'clpu',
+        'ssd',
+        'salun',
         'pall',            # deprecated alias for pall_modified (warns)
         'pall_original',
         'pall_modified',   # main method (default)
@@ -77,6 +79,15 @@ parser.add_argument('--alpha', default=0.5, type=float, help='DERPP alpha parame
 parser.add_argument('--beta', default=1.0, type=float, help='DERPP beta parameter')
 parser.add_argument('--k_shot', default=1, type=int, help='k-shot finetuning for PALL')
 parser.add_argument('--forget_iters', default=None, type=int, help='forgetting iterations for ER methods')
+parser.add_argument('--ssd_alpha', default=1.0, type=float, help='SSD Fisher ratio threshold for dampening')
+parser.add_argument('--ssd_lambda', default=1.0, type=float, help='SSD dampening strength multiplier')
+parser.add_argument('--salun_mask_ratio', default=0.1, type=float, help='fraction of trainable weights updated by SalUn')
+parser.add_argument(
+    '--salun_target',
+    default='uniform',
+    choices=['uniform', 'random'],
+    help='SalUn forget target for masked updates',
+)
 parser.add_argument('--deterministic', default=False, action='store_true', help='enable deterministic runs')
 # PALL modified-unlearning knobs (all defaults are explicit and serialized in config.json):
 # - Protection selection: protect_ratio takes precedence over protect_threshold when both are provided.
@@ -191,6 +202,7 @@ args = parser.parse_args()
 PALL_METHODS = {"pall", "pall_original", "pall_modified"}
 ADAPTER_METHODS = {"pall_adapter"}
 LORA_METHODS = {"lora"}
+DENSE_UNLEARNING_METHODS = {"ssd", "salun"}
 
 
 def normalize_method(arg_namespace):
@@ -209,6 +221,8 @@ def normalize_method(arg_namespace):
         arg_namespace.method_variant = "original"
     elif arg_namespace.method == "pall_adapter":
         arg_namespace.method_variant = "adapter"
+    elif arg_namespace.method in DENSE_UNLEARNING_METHODS:
+        arg_namespace.method_variant = arg_namespace.method
     else:
         arg_namespace.method_variant = None
     arg_namespace.variant = derive_variant(arg_namespace)
@@ -261,6 +275,16 @@ def derive_variant(arg_namespace):
         return label
     if method == "lora":
         return f"lora_r{getattr(arg_namespace, 'lora_rank', 8)}"
+    if method == "ssd":
+        return (
+            f"ssd_a{getattr(arg_namespace, 'ssd_alpha', 1.0):g}"
+            f"_l{getattr(arg_namespace, 'ssd_lambda', 1.0):g}"
+        )
+    if method == "salun":
+        return (
+            f"salun_{getattr(arg_namespace, 'salun_target', 'uniform')}"
+            f"_m{getattr(arg_namespace, 'salun_mask_ratio', 0.1):g}"
+        )
     return method
 
 
@@ -294,6 +318,14 @@ def validate_experiment_args(arg_namespace):
             and arg_namespace.adapter_shared_forget_lr <= 0.0
         ):
             parser.error("--adapter_shared_forget_lr must be > 0 when provided for pall_adapter.")
+    if arg_namespace.method == "ssd":
+        if arg_namespace.ssd_alpha < 0.0:
+            parser.error("--ssd_alpha must be >= 0.")
+        if arg_namespace.ssd_lambda < 0.0:
+            parser.error("--ssd_lambda must be >= 0.")
+    if arg_namespace.method == "salun":
+        if not (0.0 <= arg_namespace.salun_mask_ratio <= 1.0):
+            parser.error("--salun_mask_ratio must be in [0, 1].")
 
 
 def set_seed(seed, deterministic=False):
@@ -531,6 +563,8 @@ elif args.method in ADAPTER_METHODS:
     args.arch = 'adapter_' + args.arch.lower()
 elif args.method in LORA_METHODS:
     args.arch = 'lora_' + args.arch.lower()
+elif args.method in DENSE_UNLEARNING_METHODS:
+    args.arch = args.arch.lower()
 else:
     args.arch = args.arch.lower()
 args.dim_input = (args.channels, args.image_size, args.image_size)
@@ -1835,6 +1869,8 @@ def main():
         "derpp": Derpp,
         "lsf": LSF,
         "clpu": CLPU,
+        "ssd": SSD,
+        "salun": SalUn,
         "pall": PALLModified,        # deprecated alias -> main method
         "pall_original": PALLOriginal,
         "pall_modified": PALLModified,
