@@ -23,6 +23,9 @@ data/
 
 docs/
 wheels_linux/
+logs/
+thesis*.zip
+.claude/settings.local.json
 # experiment outputs
 comparison_*.csv
 comparison_*.md

@@ -22,6 +22,8 @@
 \usepackage{algpseudocode}
 \usepackage[localise=on,extrafootnotefeatures]{xepersian}
 \usepackage{subcaption}
+% همه‌ی پانویس‌ها چپ‌چین (چپ‌به‌راست) شوند؛ مطابق دستورالعمل نگارش پایان‌نامه
+\setLTRfootnotes
 % \usepackage{array}
 
 \usepackage{pdflscape}
@@ -165,7 +167,9 @@ BoldFont=Sharif1.3-SemiBold,
 \renewcommand{\حذف}{\REM}
 \newcommand{\لر}{\lr}
 \newcommand{\کد}[1]{\lr{\tt #1}}
-\newcommand{\پاورقی}[1]{\footnote{\lr{#1}}}
+% پانویس‌ها به‌صورت چپ‌چین (چپ‌به‌راست) تنظیم می‌شوند تا واژه‌های لاتین
+% مطابق دستورالعمل نگارش، در پایین صفحه از سمت چپ و به خط لاتین درج شوند.
+\newcommand{\پاورقی}[1]{\LTRfootnote{\lr{#1}}}
 
 
 

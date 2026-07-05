@@ -50,9 +50,16 @@
 
 % -------------------- Table of Contents --------------------
 
-\tableofcontents \newpage
-\listoftables \newpage
-\listoffigures \newpage
+\tableofcontents
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{\listtablename}
+\listoftables
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{\listfigurename}
+\listoffigures
+\cleardoublepage
 
 
 % -------------------- Chapters --------------------
@@ -64,6 +71,7 @@
 \include{chapters/proposed}
 \include{chapters/results}
 \include{chapters/conclusions}
+\appendix
 \include{chapters/appendix}
 
 
@@ -71,13 +79,6 @@
 
 \include{bibs/bibs}
 \include{front/dictionary}
-
-
-% -------------------- Appendices --------------------
-
-% \begin{appendix}
-% \include{chapters/appendix}
-% \end{appendix}
 
 
 % -------------------- English Pages --------------------
@@ -92,4 +93,3 @@
 % -------------------- The End! --------------------
 
 \end{document}
-
