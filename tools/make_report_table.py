@@ -16,6 +16,9 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 OUTPUT_COLUMNS = [
     "dataset",
     "method",
+    "regime",
+    "experiment_tag",
+    "config_id",
     "final_avg_acc",
     "avg_forgetting",
     "Fu",
@@ -32,6 +35,18 @@ OUTPUT_COLUMNS = [
     "protected_params",
     "updated_params",
     "t_forget_total_mean",
+]
+
+CONFIG_COLUMNS = [
+    "adapter_bottleneck",
+    "adapter_shared_bottleneck",
+    "adapter_shared_forget_ratio",
+    "adapter_shared_protect_ratio",
+    "adapter_forget_steps",
+    "adapter_shared_forget_lr",
+    "adapter_shared_protect_strength",
+    "retrain_steps",
+    "adapter_train_classifier",
 ]
 
 
@@ -85,10 +100,63 @@ def parse_float(value: Any) -> Optional[float]:
     return number
 
 
+def derive_regime(row: Dict[str, str]) -> str:
+    explicit = str(row.get("regime", "")).strip()
+    if explicit:
+        return explicit
+    tag = str(row.get("experiment_tag", "")).strip().lower()
+    if "standard" in tag:
+        return "standard_split"
+    if "pretrained" in tag or tag in {"tiny_pretrained", "adapter_tune_pretrained_v1"}:
+        return "pretrained_frozen"
+    if tag:
+        return "from_scratch"
+    return ""
+
+
+def normalize_config_value(value: Any) -> str:
+    text = str(value or "").strip()
+    if text == "" or text.lower() in {"none", "nan", "na"}:
+        return ""
+    number = parse_float(text)
+    if number is not None:
+        if abs(number - round(number)) < 1e-10:
+            return str(int(round(number)))
+        return f"{number:.12g}"
+    return text
+
+
+def config_id(row: Dict[str, str]) -> str:
+    parts = []
+    method = str(row.get("method", "")).strip()
+    for column in CONFIG_COLUMNS:
+        value = normalize_config_value(row.get(column))
+        if value == "":
+            continue
+        if column.startswith("adapter_") and method != "pall_adapter":
+            continue
+        if method == "pall_adapter":
+            if column == "adapter_bottleneck" and value == "16":
+                continue
+            if column == "adapter_shared_bottleneck" and value == "0":
+                continue
+            if column in {"adapter_shared_forget_ratio", "adapter_shared_protect_ratio"} and value in {"0", "0.0"}:
+                continue
+            if column == "adapter_forget_steps" and value == "10":
+                continue
+            if column == "adapter_train_classifier" and value.lower() == "false":
+                continue
+        parts.append(f"{column}={value}")
+    return "; ".join(parts) if parts else "default"
+
+
 def dedupe_key(row: Dict[str, str]) -> Tuple[str, ...]:
     return (
         str(row.get("dataset", "")).strip(),
         str(row.get("method", "")).strip(),
+        derive_regime(row),
+        str(row.get("experiment_tag", "")).strip(),
+        config_id(row),
     )
 
 
@@ -107,7 +175,13 @@ def dedupe_rows(rows: Sequence[Dict[str, str]]) -> Tuple[List[Dict[str, str]], i
             best_rows[key] = row
     deduped_rows = sorted(
         best_rows.values(),
-        key=lambda row: (str(row.get("dataset", "")).strip(), str(row.get("method", "")).strip()),
+        key=lambda row: (
+            str(row.get("dataset", "")).strip(),
+            derive_regime(row),
+            str(row.get("method", "")).strip(),
+            str(row.get("experiment_tag", "")).strip(),
+            config_id(row),
+        ),
     )
     removed_count = max(0, len(rows) - len(deduped_rows))
     return deduped_rows, removed_count
@@ -152,6 +226,9 @@ def compact_row(row: Dict[str, str]) -> Dict[str, str]:
     return {
         "dataset": str(row.get("dataset", "")).strip(),
         "method": str(row.get("method", "")).strip(),
+        "regime": derive_regime(row),
+        "experiment_tag": str(row.get("experiment_tag", "")).strip(),
+        "config_id": config_id(row),
         "final_avg_acc": format_mean_std(row, "final_avg_acc_mean", "final_avg_acc_std"),
         "avg_forgetting": format_mean_std(row, "avg_forgetting_mean", "avg_forgetting_std"),
         "Fu": format_mean_std(row, "Fu_mean", "Fu_std"),

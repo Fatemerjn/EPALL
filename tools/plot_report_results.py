@@ -459,8 +459,11 @@ def paper_method_label(row: Any, include_config: bool = True) -> str:
     if include_config and tag == "adapter_tune_pretrained_v1":
         f_ratio = to_float(row.get("adapter_shared_forget_ratio"))
         p_ratio = to_float(row.get("adapter_shared_protect_ratio"))
+        forget_steps = to_float(row.get("adapter_forget_steps"))
         if f_ratio is not None and p_ratio is not None:
             label = f"{label} f={f_ratio:g}, p={p_ratio:g}"
+            if forget_steps is not None:
+                label = f"{label}, fs={forget_steps:g}"
     return label
 
 

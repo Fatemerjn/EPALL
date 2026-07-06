@@ -61,9 +61,11 @@ OUTPUT_COLUMNS = [
 
 CONFIG_GROUP_COLUMNS = [
     "experiment_tag",
+    "adapter_bottleneck",
     "adapter_shared_bottleneck",
     "adapter_shared_forget_ratio",
     "adapter_shared_protect_ratio",
+    "adapter_forget_steps",
     "adapter_shared_forget_lr",
     "adapter_shared_protect_strength",
     "retrain_steps",

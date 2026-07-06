@@ -129,6 +129,50 @@ python3 tools/make_ablation_table.py \
   --out-md results/aggregates/ablation_table.md
 ```
 
+## Reproducibility Workflow
+
+The publication tables and figures are regenerated from existing `runs/`
+artifacts; this does not rerun training:
+
+```bash
+PYTHON=./.venv/bin/python \
+RUNS_ROOT=runs \
+AGG_DIR=results/aggregates \
+PLOTS_DIR=results/thesis/plots_v2 \
+BOOTSTRAP_SAMPLES=1000 \
+BOOTSTRAP_SEED=12345 \
+bash scripts/reproduce_all.sh
+```
+
+This command writes:
+
+- `results/aggregates/seed_completeness_report.{csv,md}`
+- `results/aggregates/server_results.csv`
+- `results/aggregates/results_summary.csv`
+- `results/aggregates/server_thesis_table.{csv,md}` with `--group-by-config`
+- `results/aggregates/server_report_table.{csv,md}` with explicit `regime` and `config_id`
+- `results/aggregates/comparison_table.{csv,md}`
+- `results/aggregates/ablation_table.{csv,md}`
+- reviewer-grade PDF figures under `results/thesis/plots_v2/`
+
+The compact report table intentionally keeps `regime` distinct:
+`from_scratch`, `pretrained_frozen`, and `standard_split`. The group-by-config
+thesis table also includes adapter bottleneck and adapter forget-step settings
+so ablations and pretrained adapter sweeps do not collapse into one row.
+
+Exact server-side training commands for each result set:
+
+| Result set | Command | Key flags/configuration |
+|---|---|---|
+| Overlap-heavy main | `PYTHON=./.venv/bin/python SEEDS="0 1" bash tools/run_server_experiments.sh all` | Runs `g1 + g2 + g3`: CIFAR-10 `schedules/cifar10_t5_f3_fixed_seed{0,1}.json`, CIFAR-100 `schedules/cifar100_t10_f3_seed{0,1}.json`, shared `--k_shot 50 --alpha 0.5 --beta 1.0 --mem_budget 500 --optim sgd --momentum 0.9 --lr 1e-2 --weight_decay 5e-4 --batch_size 32 --n_epochs 3 --deterministic`; methods `ewc,lwf,clpu,pall_original,pall_modified,pall_adapter,lora`. |
+| Extra unlearning baselines | `PYTHON=./.venv/bin/python bash tools/run_server_experiments.sh g9_extra_baselines` | CIFAR-10/CIFAR-100 seeds `0 1`; methods `ssd` with `--ssd_alpha 1.0 --ssd_lambda 1.0`, and `salun` with `--salun_mask_ratio 0.1 --salun_target uniform --forget_iters 50`; tags `cifar10_extra_baselines`, `cifar100_extra_baselines`. |
+| Pretrained PEFT | `PYTHON=./.venv/bin/python SEEDS="0 1" bash tools/run_server_experiments.sh g4` | CIFAR-10/CIFAR-100 `pall_adapter,lora` with frozen ImageNet ResNet-18: `--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth`; tags `cifar10_pretrained`, `cifar100_pretrained`. |
+| Pretrained adapter sweep | `PYTHON=./.venv/bin/python bash tools/run_server_experiments.sh g5` | CIFAR-100 seeds `0 1`, frozen ImageNet ResNet-18, `--n_epochs 5`, `--adapter_bottleneck 16 --adapter_shared_bottleneck 16 --adapter_train_classifier`; Cartesian sweep `--adapter_shared_forget_ratio {0.3,0.5}` x `--adapter_shared_protect_ratio {0.2,0.4}` x `--adapter_forget_steps {10,30}`; tag `adapter_tune_pretrained_v1`. |
+| Standard benchmark | `PYTHON=./.venv/bin/python SEEDS="0 1" bash tools/run_server_experiments.sh g6_standard` | Standard Split-CIFAR benchmark with `--n_epochs 20`; CIFAR-100 uses `--class_per_task 10 --n_tasks 10 --cifar100_split standard`; methods `pall_original,pall_modified,pall_adapter,lora,er,derpp,ewc,lwf,clpu`; tags `cifar10_standard`, `cifar100_standard`. |
+| TinyImageNet | `PYTHON=./.venv/bin/python bash tools/run_server_experiments.sh g7_tiny` | TinyImageNet `--dataset tinyimagenet --class_per_task 10 --n_tasks 20 --n_forget 3 --arch resnet18 --n_epochs 3`; schedule `schedules/tinyimagenet_t20_f3_seed0.json`, plus seed 1 only if `schedules/tinyimagenet_t20_f3_seed1.json` exists; full-network tag `tiny_main`, pretrained PEFT tag `tiny_pretrained`; PEFT adds `--cache_features`. |
+| Bottleneck ablation | `PYTHON=./.venv/bin/python bash tools/run_server_experiments.sh g3` | CIFAR-10 seed `0`, `pall_adapter`, bottlenecks `{4,8,16,32,64,128}`, `--adapter_shared_bottleneck 16 --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10`; tag `adapter_bottleneck_ablation_v1`. |
+| MIA | `PYTHON=./.venv/bin/python bash tools/run_server_experiments.sh g8_mia` | CIFAR-10/CIFAR-100 seeds `0 1`; reruns `pall_modified`, pretrained `pall_adapter`, pretrained `lora`, and `clpu` with `--eval_mia`; tags `cifar10_mia`, `cifar100_mia`, `cifar10_pretrained_mia`, `cifar100_pretrained_mia`. |
+
 ## Adapter Variant
 
 This branch keeps the stable PALL code and adds:
