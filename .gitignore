@@ -17,7 +17,49 @@ checkpoints/
 *.pt
 *.pth
 *.png
+!thesis/front/template/images/besmellah.png
+!thesis/images/*.png
 *.pdf
+!thesis/front/template/images/logo.pdf
+!thesis/images/*.pdf
+!paper/drop_decomposition.pdf
+!paper/overlap_results.pdf
+!paper/tradeoff_results.pdf
+!paper/worstdrop_chart.pdf
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.xdv
+
+# graphify local state and caches
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/.graphify_detect.json
+graphify-out/.graphify_extract.json
+graphify-out/.graphify_ast.json
+graphify-out/.graphify_semantic.json
+graphify-out/.graphify_semantic_new.json
+graphify-out/.graphify_cached.json
+graphify-out/.graphify_uncached.txt
+graphify-out/.graphify_incremental.json
+graphify-out/.graphify_old.json
+graphify-out/.graphify_analysis.json
+graphify-out/.graphify_chunk_*.json
+graphify-out/.needs_update
+graphify-out/.vocab.txt
+graphify-out/cache/
+graphify-out/cost.json
+graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 
 data/
 
