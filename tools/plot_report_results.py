@@ -23,6 +23,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
 try:
     import pandas as pd
@@ -43,6 +45,22 @@ except Exception:  # pragma: no cover
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
     }
+
+try:
+    from make_thesis_table import CONFIG_GROUP_COLUMNS, extract_run_row, values_per_seed
+except Exception:  # pragma: no cover
+    CONFIG_GROUP_COLUMNS = [
+        "experiment_tag",
+        "adapter_shared_bottleneck",
+        "adapter_shared_forget_ratio",
+        "adapter_shared_protect_ratio",
+        "adapter_shared_forget_lr",
+        "adapter_shared_protect_strength",
+        "retrain_steps",
+        "adapter_train_classifier",
+    ]
+    extract_run_row = None
+    values_per_seed = None
 
 
 BAR_PLOTS: Sequence[Tuple[str, str, str]] = (
@@ -80,6 +98,18 @@ def parse_args() -> argparse.Namespace:
         help="Root run directory for ablation and representative heatmap figures.",
     )
     parser.add_argument("--dpi", type=int, default=300, help="DPI used when saving figures.")
+    parser.add_argument(
+        "--bootstrap-samples",
+        type=int,
+        default=1000,
+        help="Bootstrap resamples per method/config for paper-figure confidence intervals.",
+    )
+    parser.add_argument(
+        "--bootstrap-seed",
+        type=int,
+        default=12345,
+        help="Random seed for deterministic bootstrap confidence intervals.",
+    )
     return parser.parse_args()
 
 
@@ -292,11 +322,11 @@ DATASET_LABELS = {
     "tinyimagenet": "TinyImageNet",
 }
 DATASET_ORDER = ["cifar10", "cifar100", "tinyimagenet"]
-REGIME_ORDER = ["from_scratch", "pretrained", "standard"]
+REGIME_ORDER = ["from_scratch", "pretrained_frozen", "standard_split"]
 REGIME_LABELS = {
     "from_scratch": "From scratch",
-    "pretrained": "Frozen ImageNet backbone",
-    "standard": "Standard split",
+    "pretrained_frozen": "Pretrained frozen",
+    "standard_split": "Standard split",
 }
 CHANCE = {"cifar10": 0.5, "cifar100": 0.2, "tinyimagenet": 0.1}
 METHOD_LABELS = {
@@ -338,6 +368,16 @@ CB_PALETTE = [
     "#882255",
     "#44AA99",
 ]
+METHOD_COLORS = {method: CB_PALETTE[idx % len(CB_PALETTE)] for method, idx in METHOD_ORDER.items()}
+FORGET_LINE_COLOR = "#D55E00"
+BOOTSTRAP_CONFIDENCE = 0.95
+AGG_TO_RUN_METRIC = {
+    "final_avg_acc_mean": "final_avg_accuracy",
+    "WorstDrop_mean": "WorstDrop",
+    "Au_mean": "Au",
+    "mia_auc_before_mean": "mia_auc_before",
+    "mia_auc_after_mean": "mia_auc_after",
+}
 
 
 def clean_text(value: Any) -> str:
@@ -373,9 +413,9 @@ def classify_regime(tag: Any) -> Optional[str]:
     if not text or text.startswith(("smoke", "test")):
         return None
     if "standard" in text:
-        return "standard"
+        return "standard_split"
     if "pretrained" in text or text == "tiny_pretrained" or text == "adapter_tune_pretrained_v1":
-        return "pretrained"
+        return "pretrained_frozen"
     if text in {
         "cifar10_main",
         "cifar100_main",
@@ -438,6 +478,146 @@ def load_thesis_table(path: Path) -> Any:
     return df
 
 
+def canonical_group_value(value: Any) -> str:
+    text = clean_text(value)
+    if text == "":
+        return ""
+    lower = text.lower()
+    if lower in {"nan", "none", "na"}:
+        return ""
+    if lower in {"true", "false"}:
+        return lower.capitalize()
+    number = to_float(value)
+    if number is not None:
+        if abs(number - round(number)) < 1e-10:
+            return str(int(round(number)))
+        return f"{number:.12g}"
+    return text
+
+
+def aggregate_group_key(row: Any) -> Tuple[str, ...]:
+    return (
+        canonical_group_value(row.get("dataset")),
+        canonical_group_value(row.get("method")),
+        *(canonical_group_value(row.get(column)) for column in CONFIG_GROUP_COLUMNS),
+    )
+
+
+def load_run_samples(runs_root: Path) -> Dict[Tuple[str, ...], Dict[str, List[float]]]:
+    samples: Dict[Tuple[str, ...], Dict[str, List[float]]] = {}
+    if extract_run_row is None or values_per_seed is None:
+        print("[WARN] make_thesis_table helpers unavailable; CI bootstrap will fall back to aggregate means.", file=sys.stderr)
+        return samples
+    grouped: Dict[Tuple[str, ...], List[Dict[str, Any]]] = {}
+    for metrics_path in sorted(runs_root.rglob("metrics.json")):
+        row = extract_run_row(metrics_path, group_by_config=True)
+        if row is None:
+            continue
+        key = aggregate_group_key(row)
+        grouped.setdefault(key, []).append(row)
+    for key, rows in grouped.items():
+        metric_samples: Dict[str, List[float]] = {}
+        for aggregate_metric, run_metric in AGG_TO_RUN_METRIC.items():
+            values = values_per_seed(rows, run_metric)
+            if values:
+                metric_samples[aggregate_metric] = [float(value) for value in values]
+        if metric_samples:
+            samples[key] = metric_samples
+    return samples
+
+
+def samples_for_row(
+    row: Any,
+    samples_by_key: Dict[Tuple[str, ...], Dict[str, List[float]]],
+    metric: str,
+) -> List[float]:
+    samples = samples_by_key.get(aggregate_group_key(row), {}).get(metric, [])
+    clean_samples = [float(value) for value in samples if to_float(value) is not None]
+    if clean_samples:
+        return clean_samples
+    fallback = to_float(row.get(metric))
+    return [float(fallback)] if fallback is not None else []
+
+
+def bootstrap_mean_ci(
+    values: Sequence[float],
+    *,
+    n_bootstrap: int,
+    rng: np.random.Generator,
+    confidence: float = BOOTSTRAP_CONFIDENCE,
+) -> Tuple[Optional[float], Optional[float], Optional[float]]:
+    finite = np.asarray([float(value) for value in values if np.isfinite(value)], dtype=float)
+    if finite.size == 0:
+        return None, None, None
+    mean_value = float(np.mean(finite))
+    if finite.size == 1:
+        return mean_value, mean_value, mean_value
+    n_bootstrap = max(1000, int(n_bootstrap))
+    indices = rng.integers(0, finite.size, size=(n_bootstrap, finite.size))
+    boot_means = finite[indices].mean(axis=1)
+    alpha = (1.0 - confidence) / 2.0
+    low, high = np.quantile(boot_means, [alpha, 1.0 - alpha])
+    return mean_value, float(low), float(high)
+
+
+def ci_error(center: float, low: Optional[float], high: Optional[float]) -> np.ndarray:
+    if low is None or high is None:
+        return np.array([[0.0], [0.0]])
+    return np.array([[max(0.0, center - low)], [max(0.0, high - center)]])
+
+
+def method_color(method: Any) -> str:
+    method_text = clean_text(method)
+    return METHOD_COLORS.get(method_text, CB_PALETTE[METHOD_ORDER.get(method_text, 99) % len(CB_PALETTE)])
+
+
+def method_sort_key(method: Any) -> Tuple[int, str]:
+    method_text = clean_text(method)
+    return METHOD_ORDER.get(method_text, 99), METHOD_LABELS.get(method_text, method_text)
+
+
+def present_methods(df: Any) -> List[str]:
+    methods = {clean_text(method) for method in df["method"].dropna().tolist() if clean_text(method)}
+    return sorted(methods, key=method_sort_key)
+
+
+def add_global_legend(
+    fig: plt.Figure,
+    methods: Sequence[str],
+    *,
+    marker: bool = False,
+    extra_handles: Optional[Sequence[Any]] = None,
+) -> None:
+    handles: List[Any] = []
+    for method in methods:
+        label = METHOD_LABELS.get(method, method.replace("_", " ").title())
+        if marker:
+            handles.append(
+                Line2D(
+                    [0],
+                    [0],
+                    marker="o",
+                    color="none",
+                    markerfacecolor=method_color(method),
+                    markeredgecolor="black",
+                    markersize=5,
+                    label=label,
+                )
+            )
+        else:
+            handles.append(Patch(facecolor=method_color(method), edgecolor="black", label=label))
+    if extra_handles:
+        handles.extend(extra_handles)
+    if handles:
+        fig.legend(
+            handles=handles,
+            loc="lower center",
+            bbox_to_anchor=(0.5, -0.01),
+            ncol=min(6, max(1, len(handles))),
+            frameon=False,
+        )
+
+
 def sorted_panel_keys(df: Any) -> List[Tuple[str, str]]:
     keys: List[Tuple[str, str]] = []
     for dataset in DATASET_ORDER:
@@ -475,7 +655,7 @@ def make_panel_grid(n_panels: int, row_height: float = 3.0, col_width: float = 4
 
 def save_pdf(fig: plt.Figure, path: Path, dpi: int) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.tight_layout(pad=1.0)
+    fig.tight_layout(pad=1.0, rect=(0.0, 0.055, 1.0, 0.98))
     fig.savefig(path, format="pdf", dpi=dpi, bbox_inches="tight")
     plt.close(fig)
     return path
@@ -488,10 +668,12 @@ def panel_title(dataset: str, regime: str) -> str:
 def plot_metric_bars(
     df: Any,
     metric: str,
-    std_metric: str,
     xlabel: str,
     out_path: Path,
     dpi: int,
+    samples_by_key: Dict[Tuple[str, ...], Dict[str, List[float]]],
+    n_bootstrap: int,
+    rng: np.random.Generator,
     chance_line: bool = False,
 ) -> Optional[Path]:
     plot_df = df[df.apply(is_performance_row, axis=1)].copy()
@@ -504,14 +686,31 @@ def plot_metric_bars(
         rows = sorted_rows(plot_df[(plot_df["dataset"] == dataset) & (plot_df["regime"] == regime)])
         labels = [textwrap.fill(label, 18) for label in rows["plot_label"]]
         values = rows[metric].astype(float).to_numpy()
-        errors = rows[std_metric].fillna(0.0).astype(float).to_numpy() if std_metric in rows else None
-        colors = [CB_PALETTE[i % len(CB_PALETTE)] for i in range(len(rows))]
+        errors: List[List[float]] = [[], []]
+        for center, (_, row) in zip(values, rows.iterrows()):
+            _, ci_low, ci_high = bootstrap_mean_ci(
+                samples_for_row(row, samples_by_key, metric),
+                n_bootstrap=n_bootstrap,
+                rng=rng,
+            )
+            error = ci_error(float(center), ci_low, ci_high)
+            errors[0].append(float(error[0, 0]))
+            errors[1].append(float(error[1, 0]))
+        colors = [method_color(method) for method in rows["method"]]
         y_pos = np.arange(len(rows))
-        ax.barh(y_pos, values, xerr=errors, color=colors, edgecolor="black", linewidth=0.35, capsize=2.5)
+        ax.barh(
+            y_pos,
+            values,
+            xerr=np.asarray(errors),
+            color=colors,
+            edgecolor="black",
+            linewidth=0.35,
+            capsize=2.5,
+        )
         ax.set_yticks(y_pos)
         ax.set_yticklabels(labels)
         ax.invert_yaxis()
-        ax.set_xlabel(xlabel)
+        ax.set_xlabel(f"{xlabel} (mean with 95% bootstrap CI)")
         ax.set_title(panel_title(dataset, regime))
         ax.grid(True, axis="x")
         ax.grid(False, axis="y")
@@ -520,11 +719,41 @@ def plot_metric_bars(
         if chance_line:
             chance = CHANCE.get(dataset)
             if chance is not None:
-                ax.axvline(chance, color="black", linestyle="--", linewidth=1.0, label=f"chance={chance:g}")
-                ax.legend(loc="lower right")
+                ax.axvline(chance, color="black", linestyle="--", linewidth=1.0)
     for ax in axes[len(keys):]:
         ax.set_axis_off()
+    extra_handles = None
+    if chance_line:
+        extra_handles = [Line2D([0], [0], color="black", linestyle="--", linewidth=1.0, label="dataset chance line")]
+    add_global_legend(fig, present_methods(plot_df), extra_handles=extra_handles)
     return save_pdf(fig, out_path, dpi)
+
+
+def top_pareto_indices(rows: Any, limit: int = 3) -> set[int]:
+    valid = rows[rows["final_avg_acc_mean"].notna() & rows["WorstDrop_mean"].notna()].copy()
+    if valid.empty:
+        return set()
+    pareto: List[Tuple[int, float, float]] = []
+    for idx, row in valid.iterrows():
+        accuracy = float(row["final_avg_acc_mean"])
+        worst_drop = float(row["WorstDrop_mean"])
+        dominated = False
+        for other_idx, other in valid.iterrows():
+            if other_idx == idx:
+                continue
+            other_accuracy = float(other["final_avg_acc_mean"])
+            other_worst_drop = float(other["WorstDrop_mean"])
+            if (
+                other_accuracy >= accuracy
+                and other_worst_drop <= worst_drop
+                and (other_accuracy > accuracy or other_worst_drop < worst_drop)
+            ):
+                dominated = True
+                break
+        if not dominated:
+            pareto.append((idx, accuracy, worst_drop))
+    pareto.sort(key=lambda item: (item[1] - item[2], item[1], -item[2]), reverse=True)
+    return {idx for idx, _accuracy, _worst_drop in pareto[:limit]}
 
 
 def plot_tradeoff(df: Any, y_metric: str, ylabel: str, out_path: Path, dpi: int) -> Optional[Path]:
@@ -537,22 +766,24 @@ def plot_tradeoff(df: Any, y_metric: str, ylabel: str, out_path: Path, dpi: int)
     offsets = [(5, 5), (5, -10), (-52, 5), (-52, -10), (8, 14), (-55, 14)]
     for ax, (dataset, regime) in zip(axes, keys):
         rows = sorted_rows(plot_df[(plot_df["dataset"] == dataset) & (plot_df["regime"] == regime)])
+        annotate_indices = top_pareto_indices(rows, limit=3)
         for idx, (_, row) in enumerate(rows.iterrows()):
             method = clean_text(row.get("method"))
-            color = CB_PALETTE[METHOD_ORDER.get(method, idx) % len(CB_PALETTE)]
+            color = method_color(method)
             x_val = float(row["updated_param_ratio_mean"])
             y_val = float(row[y_metric])
             label = paper_method_label(row, include_config=True)
             ax.scatter(x_val, y_val, s=34, color=color, edgecolor="black", linewidth=0.35, zorder=3)
-            dx, dy = offsets[idx % len(offsets)]
-            ax.annotate(
-                textwrap.fill(label, 14),
-                (x_val, y_val),
-                xytext=(dx, dy),
-                textcoords="offset points",
-                fontsize=6.3,
-                bbox={"boxstyle": "round,pad=0.16", "fc": "white", "ec": "0.75", "alpha": 0.9},
-            )
+            if row.name in annotate_indices:
+                dx, dy = offsets[idx % len(offsets)]
+                ax.annotate(
+                    textwrap.fill(label, 14),
+                    (x_val, y_val),
+                    xytext=(dx, dy),
+                    textcoords="offset points",
+                    fontsize=6.3,
+                    bbox={"boxstyle": "round,pad=0.16", "fc": "white", "ec": "0.75", "alpha": 0.9},
+                )
         ax.set_xlabel("Updated parameter ratio")
         ax.set_ylabel(ylabel)
         ax.set_title(panel_title(dataset, regime))
@@ -562,6 +793,7 @@ def plot_tradeoff(df: Any, y_metric: str, ylabel: str, out_path: Path, dpi: int)
             ax.set_xlim(left=0.0, right=xmax)
     for ax in axes[len(keys):]:
         ax.set_axis_off()
+    add_global_legend(fig, present_methods(plot_df), marker=True)
     return save_pdf(fig, out_path, dpi)
 
 
@@ -593,7 +825,13 @@ def extract_final_unlearning(metrics: Dict[str, Any]) -> Dict[str, Any]:
     return {}
 
 
-def plot_bottleneck_ablation(runs_root: Path, out_path: Path, dpi: int) -> Optional[Path]:
+def plot_bottleneck_ablation(
+    runs_root: Path,
+    out_path: Path,
+    dpi: int,
+    n_bootstrap: int,
+    rng: np.random.Generator,
+) -> Optional[Path]:
     rows: List[Dict[str, Optional[float]]] = []
     for config_path in runs_root.rglob("config.json"):
         config = load_json(config_path) or {}
@@ -618,24 +856,55 @@ def plot_bottleneck_ablation(runs_root: Path, out_path: Path, dpi: int) -> Optio
     ablation_df = pd.DataFrame(rows).dropna(subset=["adapter_bottleneck"]).sort_values("adapter_bottleneck")
     if ablation_df.empty:
         return None
-    grouped = ablation_df.groupby("adapter_bottleneck").agg(["mean", "std"])
-    x_vals = grouped.index.to_numpy(dtype=float)
     metrics = [
-        ("final_accuracy", "Final average accuracy"),
-        ("WorstDrop", "WorstDrop"),
-        ("updated_param_ratio", "Updated parameter ratio"),
+        ("final_accuracy", "Final average accuracy", "#0072B2"),
+        ("WorstDrop", "WorstDrop", "#D55E00"),
+        ("updated_param_ratio", "Updated parameter ratio", "#009E73"),
     ]
     fig, axes = plt.subplots(3, 1, figsize=(6.2, 6.9), sharex=True)
-    for ax, (metric, ylabel) in zip(axes, metrics):
-        means = grouped[(metric, "mean")].astype(float).to_numpy()
-        stds = grouped[(metric, "std")].fillna(0.0).astype(float).to_numpy()
-        ax.errorbar(x_vals, means, yerr=stds, marker="o", color="#0072B2", capsize=3)
+    x_reference: Optional[np.ndarray] = None
+    for ax, (metric, ylabel, color) in zip(axes, metrics):
+        plot_rows: List[Tuple[float, float, float, float]] = []
+        for bottleneck, group in ablation_df.groupby("adapter_bottleneck"):
+            values = [float(value) for value in group[metric].dropna().tolist()]
+            mean_value, ci_low, ci_high = bootstrap_mean_ci(values, n_bootstrap=n_bootstrap, rng=rng)
+            if mean_value is None:
+                continue
+            plot_rows.append(
+                (
+                    float(bottleneck),
+                    mean_value,
+                    mean_value if ci_low is None else ci_low,
+                    mean_value if ci_high is None else ci_high,
+                )
+            )
+        if not plot_rows:
+            ax.text(0.5, 0.5, "No valid data", ha="center", va="center", transform=ax.transAxes)
+            continue
+        plot_rows.sort(key=lambda item: item[0])
+        x_vals = np.asarray([row[0] for row in plot_rows], dtype=float)
+        means = np.asarray([row[1] for row in plot_rows], dtype=float)
+        lows = np.asarray([row[2] for row in plot_rows], dtype=float)
+        highs = np.asarray([row[3] for row in plot_rows], dtype=float)
+        x_reference = x_vals
+        if len(x_vals) > 2:
+            x_dense = np.linspace(float(x_vals.min()), float(x_vals.max()), 240)
+            mean_dense = np.interp(x_dense, x_vals, means)
+            low_dense = np.interp(x_dense, x_vals, lows)
+            high_dense = np.interp(x_dense, x_vals, highs)
+            ax.fill_between(x_dense, low_dense, high_dense, color=color, alpha=0.16, linewidth=0)
+            ax.plot(x_dense, mean_dense, color=color, linewidth=1.3)
+        else:
+            ax.fill_between(x_vals, lows, highs, color=color, alpha=0.16, linewidth=0)
+            ax.plot(x_vals, means, color=color, linewidth=1.3)
+        ax.scatter(x_vals, means, color=color, edgecolor="black", linewidth=0.4, s=26, zorder=3)
         ax.set_ylabel(ylabel)
         ax.grid(True)
     axes[-1].set_xlabel("Adapter bottleneck")
-    axes[0].set_title("PALL-Adapter Bottleneck Ablation (CIFAR-10)")
-    axes[-1].set_xticks(x_vals)
-    axes[-1].set_xticklabels([f"{int(x)}" for x in x_vals])
+    axes[0].set_title("PALL-Adapter Bottleneck Ablation (CIFAR-10) | 95% bootstrap CI bands")
+    if x_reference is not None:
+        axes[-1].set_xticks(x_reference)
+        axes[-1].set_xticklabels([f"{int(x)}" for x in x_reference])
     return save_pdf(fig, out_path, dpi)
 
 
@@ -680,15 +949,29 @@ def plot_representative_heatmap(runs_root: Path, out_path: Path, dpi: int) -> Op
     requests = result.get("user_requests_with_active_tasks", [])
     if accuracy is None or not requests:
         return None
-    matrix = accuracy.detach().cpu().numpy().T
+    matrix = accuracy.detach().cpu().numpy().T.astype(float)
+    normalized = np.zeros_like(matrix, dtype=float)
+    for row_idx in range(matrix.shape[0]):
+        row = matrix[row_idx]
+        finite = row[np.isfinite(row)]
+        if finite.size == 0:
+            normalized[row_idx] = 0.0
+            continue
+        row_min = float(np.min(finite))
+        row_max = float(np.max(finite))
+        if row_max - row_min < 1e-12:
+            normalized[row_idx] = 0.5
+        else:
+            normalized[row_idx] = (row - row_min) / (row_max - row_min)
+    normalized = np.nan_to_num(normalized, nan=0.0, posinf=1.0, neginf=0.0)
     labels = [f"{typ}{task}" for task, typ, _active in requests]
     forget_cols = [(idx, task) for idx, (task, typ, _active) in enumerate(requests) if typ == "F"]
     config = load_json(results_path.with_name("config.json")) or {}
 
-    fig, ax = plt.subplots(figsize=(max(6.6, 0.55 * len(labels)), max(3.2, 0.32 * matrix.shape[0])))
-    image = ax.imshow(matrix, aspect="auto", cmap="viridis", vmin=0.0, vmax=1.0)
+    fig, ax = plt.subplots(figsize=(max(6.6, 0.55 * len(labels)), max(3.2, 0.32 * normalized.shape[0])))
+    image = ax.imshow(normalized, aspect="auto", cmap="cividis", vmin=0.0, vmax=1.0, interpolation="nearest")
     ax.set_title(
-        "Per-task Accuracy Timeline | "
+        "Row-normalized Per-task Accuracy Timeline | "
         f"{dataset_label(clean_text(config.get('dataset')))} "
         f"{METHOD_LABELS.get(clean_text(config.get('method')), config.get('method'))}"
     )
@@ -696,18 +979,25 @@ def plot_representative_heatmap(runs_root: Path, out_path: Path, dpi: int) -> Op
     ax.set_ylabel("Task")
     ax.set_xticks(np.arange(len(labels)))
     ax.set_xticklabels(labels, rotation=45, ha="right")
-    ax.set_yticks(np.arange(matrix.shape[0]))
-    ax.set_yticklabels([f"Task {idx}" for idx in range(matrix.shape[0])])
+    ax.set_yticks(np.arange(normalized.shape[0]))
+    ax.set_yticklabels([f"Task {idx}" for idx in range(normalized.shape[0])])
     for col, task in forget_cols:
-        ax.axvline(col, color="#D55E00", linestyle="--", linewidth=1.1)
-        ax.scatter([col], [-0.55], marker="v", color="#D55E00", clip_on=False, s=28)
-        ax.text(col, -0.95, f"F{task}", ha="center", va="top", color="#D55E00", fontsize=7, clip_on=False)
+        ax.axvline(col, color=FORGET_LINE_COLOR, linestyle="--", linewidth=1.1)
+        ax.scatter([col], [-0.55], marker="v", color=FORGET_LINE_COLOR, clip_on=False, s=28)
+        ax.text(col, -0.95, f"F{task}", ha="center", va="top", color=FORGET_LINE_COLOR, fontsize=7, clip_on=False)
     cbar = fig.colorbar(image, ax=ax, fraction=0.025, pad=0.02)
-    cbar.set_label("Accuracy")
+    cbar.set_label("Row-normalized accuracy")
     return save_pdf(fig, out_path, dpi)
 
 
-def plot_mia(df: Any, out_path: Path, dpi: int) -> Optional[Path]:
+def plot_mia(
+    df: Any,
+    out_path: Path,
+    dpi: int,
+    samples_by_key: Dict[Tuple[str, ...], Dict[str, List[float]]],
+    n_bootstrap: int,
+    rng: np.random.Generator,
+) -> Optional[Path]:
     plot_df = df[df["mia_auc_before_mean"].notna() & df["mia_auc_after_mean"].notna()].copy()
     plot_df = plot_df[plot_df["regime"].notna()]
     keys = sorted_panel_keys(plot_df)
@@ -721,33 +1011,132 @@ def plot_mia(df: Any, out_path: Path, dpi: int) -> Optional[Path]:
         width = 0.36
         before = rows["mia_auc_before_mean"].astype(float).to_numpy()
         after = rows["mia_auc_after_mean"].astype(float).to_numpy()
-        ax.bar(x_pos - width / 2, before, width, label="Before", color="#0072B2", edgecolor="black", linewidth=0.35)
-        ax.bar(x_pos + width / 2, after, width, label="After", color="#D55E00", edgecolor="black", linewidth=0.35)
-        ax.axhline(0.5, color="black", linestyle="--", linewidth=1.0, label="chance=0.5")
+        before_errors: List[List[float]] = [[], []]
+        after_errors: List[List[float]] = [[], []]
+        for before_center, after_center, (_, row) in zip(before, after, rows.iterrows()):
+            _, before_low, before_high = bootstrap_mean_ci(
+                samples_for_row(row, samples_by_key, "mia_auc_before_mean"),
+                n_bootstrap=n_bootstrap,
+                rng=rng,
+            )
+            _, after_low, after_high = bootstrap_mean_ci(
+                samples_for_row(row, samples_by_key, "mia_auc_after_mean"),
+                n_bootstrap=n_bootstrap,
+                rng=rng,
+            )
+            before_error = ci_error(float(before_center), before_low, before_high)
+            after_error = ci_error(float(after_center), after_low, after_high)
+            before_errors[0].append(float(before_error[0, 0]))
+            before_errors[1].append(float(before_error[1, 0]))
+            after_errors[0].append(float(after_error[0, 0]))
+            after_errors[1].append(float(after_error[1, 0]))
+        colors = [method_color(method) for method in rows["method"]]
+        ax.bar(
+            x_pos - width / 2,
+            before,
+            width,
+            yerr=np.asarray(before_errors),
+            color=colors,
+            alpha=0.48,
+            edgecolor="black",
+            linewidth=0.35,
+            capsize=2.5,
+        )
+        ax.bar(
+            x_pos + width / 2,
+            after,
+            width,
+            yerr=np.asarray(after_errors),
+            color=colors,
+            hatch="///",
+            edgecolor="black",
+            linewidth=0.35,
+            capsize=2.5,
+        )
+        ax.axhline(0.5, color="black", linestyle="--", linewidth=1.0)
         ax.set_xticks(x_pos)
         ax.set_xticklabels(labels, rotation=25, ha="right")
         ax.set_ylim(0.0, 1.0)
-        ax.set_ylabel("MIA AUC")
+        ax.set_ylabel("MIA AUC (mean with 95% bootstrap CI)")
         ax.set_title(panel_title(dataset, regime))
-        ax.legend(loc="best")
         ax.grid(True, axis="y")
     for ax in axes[len(keys):]:
         ax.set_axis_off()
+    extra_handles = [
+        Patch(facecolor="white", edgecolor="black", alpha=0.48, label="Before"),
+        Patch(facecolor="white", edgecolor="black", hatch="///", label="After"),
+        Line2D([0], [0], color="black", linestyle="--", linewidth=1.0, label="chance=0.5"),
+    ]
+    add_global_legend(fig, present_methods(plot_df), extra_handles=extra_handles)
     return save_pdf(fig, out_path, dpi)
 
 
-def generate_paper_figures(input_csv: Path, runs_root: Path, outdir: Path, dpi: int) -> List[Path]:
+def describe_best_row(row: Any, metric: str) -> str:
+    value = to_float(row.get(metric))
+    value_text = "NA" if value is None else f"{value:.4f}"
+    return f"{paper_method_label(row)} [{row.get('regime')}] = {value_text}"
+
+
+def print_best_summary(df: Any) -> None:
+    plot_df = df[df.apply(is_performance_row, axis=1)].copy()
+    print("[SUMMARY] Best methods by dataset from aggregated CSV")
+    for dataset in DATASET_ORDER:
+        rows = plot_df[plot_df["dataset"] == dataset].copy()
+        if rows.empty:
+            continue
+        print(f"[SUMMARY] {dataset_label(dataset)}")
+        accuracy_rows = rows[rows["final_avg_acc_mean"].notna()]
+        if not accuracy_rows.empty:
+            row = accuracy_rows.loc[accuracy_rows["final_avg_acc_mean"].astype(float).idxmax()]
+            print(f"[SUMMARY]   accuracy: {describe_best_row(row, 'final_avg_acc_mean')}")
+        drop_rows = rows[rows["WorstDrop_mean"].notna()]
+        if not drop_rows.empty:
+            row = drop_rows.loc[drop_rows["WorstDrop_mean"].astype(float).idxmin()]
+            print(f"[SUMMARY]   worstdrop: {describe_best_row(row, 'WorstDrop_mean')}")
+        au_rows = rows[rows["Au_mean"].notna()].copy()
+        if not au_rows.empty:
+            chance = CHANCE.get(dataset)
+            if chance is not None:
+                au_rows["_au_distance"] = (au_rows["Au_mean"].astype(float) - chance).abs()
+                row = au_rows.loc[au_rows["_au_distance"].idxmin()]
+                print(f"[SUMMARY]   au closest to chance ({chance:g}): {describe_best_row(row, 'Au_mean')}")
+            else:
+                row = au_rows.loc[au_rows["Au_mean"].astype(float).idxmin()]
+                print(f"[SUMMARY]   au: {describe_best_row(row, 'Au_mean')}")
+
+
+def generate_paper_figures(
+    input_csv: Path,
+    runs_root: Path,
+    outdir: Path,
+    dpi: int,
+    n_bootstrap: int,
+    bootstrap_seed: int,
+) -> List[Path]:
     setup_paper_style()
     df = load_thesis_table(input_csv)
+    samples_by_key = load_run_samples(runs_root)
+    rng = np.random.default_rng(bootstrap_seed)
+    n_bootstrap = max(1000, int(n_bootstrap))
     outdir.mkdir(parents=True, exist_ok=True)
     outputs: List[Path] = []
     specs = [
-        ("final_avg_acc_mean", "final_avg_acc_std", "Final average accuracy", "final_accuracy_bars_by_dataset_regime.pdf", False),
-        ("WorstDrop_mean", "WorstDrop_std", "WorstDrop", "worstdrop_bars_by_dataset_regime.pdf", False),
-        ("Au_mean", "Au_std", "Au (forgotten-task accuracy)", "au_bars_by_dataset_regime.pdf", True),
+        ("final_avg_acc_mean", "Final average accuracy", "final_accuracy_bars_by_dataset_regime.pdf", False),
+        ("WorstDrop_mean", "WorstDrop", "worstdrop_bars_by_dataset_regime.pdf", False),
+        ("Au_mean", "Au (forgotten-task accuracy)", "au_bars_by_dataset_regime.pdf", True),
     ]
-    for metric, std_metric, xlabel, filename, chance_line in specs:
-        path = plot_metric_bars(df, metric, std_metric, xlabel, outdir / filename, dpi, chance_line=chance_line)
+    for metric, xlabel, filename, chance_line in specs:
+        path = plot_metric_bars(
+            df,
+            metric,
+            xlabel,
+            outdir / filename,
+            dpi,
+            samples_by_key,
+            n_bootstrap,
+            rng,
+            chance_line=chance_line,
+        )
         if path is not None:
             outputs.append(path)
     for y_metric, ylabel, filename in [
@@ -758,20 +1147,37 @@ def generate_paper_figures(input_csv: Path, runs_root: Path, outdir: Path, dpi: 
         if path is not None:
             outputs.append(path)
     for builder in [
-        lambda: plot_bottleneck_ablation(runs_root, outdir / "adapter_bottleneck_ablation.pdf", dpi),
+        lambda: plot_bottleneck_ablation(
+            runs_root,
+            outdir / "adapter_bottleneck_ablation.pdf",
+            dpi,
+            n_bootstrap,
+            rng,
+        ),
         lambda: plot_representative_heatmap(runs_root, outdir / "representative_pall_adapter_accuracy_heatmap.pdf", dpi),
-        lambda: plot_mia(df, outdir / "mia_before_after_by_dataset_regime.pdf", dpi),
+        lambda: plot_mia(df, outdir / "mia_before_after_by_dataset_regime.pdf", dpi, samples_by_key, n_bootstrap, rng),
     ]:
         path = builder()
         if path is not None:
             outputs.append(path)
+    print_best_summary(df)
     return outputs
 
 
 def main() -> int:
     args = parse_args()
     if args.paper_figures:
-        outputs = generate_paper_figures(args.input, args.runs_root, args.outdir, args.dpi)
+        outdir = args.outdir
+        if outdir == Path("results/thesis/report_plots"):
+            outdir = Path("results/thesis/plots_v2")
+        outputs = generate_paper_figures(
+            args.input,
+            args.runs_root,
+            outdir,
+            args.dpi,
+            args.bootstrap_samples,
+            args.bootstrap_seed,
+        )
         for output_path in outputs:
             print(f"[INFO] Wrote plot: {output_path}")
         print(f"[INFO] Figures generated: {len(outputs)}")
