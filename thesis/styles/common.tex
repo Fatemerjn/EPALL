@@ -4,9 +4,9 @@
 % -------------------------------------------------------
 \usepackage{bm}                 % برای \bm
 \usepackage{amssymb,amsmath}
-\usepackage[colorlinks,linkcolor=blue,citecolor=blue]{hyperref}
-\usepackage[usenames,dvipsnames]{pstricks}
-\usepackage{graphicx,subfigure,wrapfig}
+\usepackage[colorlinks,linkcolor=blue,citecolor=blue,hypertexnames=false]{hyperref}
+\usepackage[dvipsnames]{pstricks}
+\usepackage{graphicx,wrapfig}
 \usepackage{geometry}
 \usepackage[mathscr]{euscript}
 \usepackage{multicol}
@@ -15,22 +15,19 @@
 \usepackage{placeins} 
 \usepackage{mathtools} 
 \usepackage[export]{adjustbox}
-\renewcommand{\thesubfigure}{}
 % \usepackage[persian]{babel}
 \usepackage[figureposition=bottom,tableposition=top,font={small,bf},labelfont=bf]{caption}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\usepackage[localise=on,extrafootnotefeatures]{xepersian}
+\usepackage[extrafootnotefeatures]{xepersian}
 \usepackage{subcaption}
-% همه‌ی پانویس‌ها چپ‌چین (چپ‌به‌راست) شوند؛ مطابق دستورالعمل نگارش پایان‌نامه
-\setLTRfootnotes
 % \usepackage{array}
 
 \usepackage{pdflscape}
 % \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 \input{styles/alg-fa}
-\setcounter{secnumdepth}{2}  % تا subparagraph هم شماره می‌خوره
-\setcounter{tocdepth}{2}     % تا subparagraph هم در فهرست میاد
+\setcounter{secnumdepth}{2}  % تا subsection شماره می‌خورد
+\setcounter{tocdepth}{2}     % تا subsection در فهرست می‌آید
 
 
 % -------------------- Page Layout --------------------
@@ -93,24 +90,25 @@ BoldFont=Sharif1.3-SemiBold,
 
 
 \SepMark{-}
-\renewcommand{\labelitemi}{$\small\bullet$}
+\renewcommand{\labelitemi}{$\bullet$}
 
 
 
 % -------------------- Environments --------------------
 
 
-\newtheorem{قضیه}{قضیه‌ی}[chapter]
-\newtheorem{لم}[قضیه]{لم}
-\newtheorem{ادعا}[قضیه]{ادعای}
-\newtheorem{مشاهده}[قضیه]{مشاهده‌ی}
-\newtheorem{نتیجه}[قضیه]{نتیجه‌ی}
-\newtheorem{مسئله}{مسئله‌ی}[chapter]
-\newtheorem{تعریف}{تعریف}[chapter]
-\newtheorem{مثال}{مثال}[chapter]
+\newtheorem{theorem}{قضیه‌ی}[chapter]
+\newtheorem{lemma}[theorem]{لم}
+\newtheorem{claim}[theorem]{ادعای}
+\newtheorem{observation}[theorem]{مشاهده‌ی}
+\newtheorem{corollary}[theorem]{نتیجه‌ی}
+\newtheorem{assumption}[theorem]{فرض}
+\newtheorem{problem}{مسئله‌ی}[chapter]
+\newtheorem{definition}{تعریف}[chapter]
+\newtheorem{example}{مثال}[chapter]
 
 
-\newenvironment{اثبات}
+\newenvironment{proof}
 	{\begin{trivlist}\item[\hskip\labelsep{\em اثبات.}]}
 	{\leavevmode\unskip\nobreak\quad\hspace*{\fill}{\ensuremath{{\square}}}\end{trivlist}}
 
@@ -160,31 +158,16 @@ BoldFont=Sharif1.3-SemiBold,
 \renewcommand{\geq}{\gee}
 \renewcommand{\ge}{\gee}
 
-\newcommand{\مهم}[1]{\textbf{#1}}
-\renewcommand{\برچسب}{\label}
-
-\newcommand{\REM}[1]{}
-\renewcommand{\حذف}{\REM}
-\newcommand{\لر}{\lr}
-\newcommand{\کد}[1]{\lr{\tt #1}}
-% پانویس‌ها به‌صورت چپ‌چین (چپ‌به‌راست) تنظیم می‌شوند تا واژه‌های لاتین
-% مطابق دستورالعمل نگارش، در پایین صفحه از سمت چپ و به خط لاتین درج شوند.
-\newcommand{\پاورقی}[1]{\LTRfootnote{\lr{#1}}}
-
-
-
 % -------------------- Dictionary --------------------
 
 
-\newcommand{\dicalphabet}[1]{
-\begin{minipage}{\columnwidth}
-	\centerline{\noindent\textbf{\large #1 }}
-	\vspace{.5em}
-\end{minipage}
-\nopagebreak[4]
+\newcommand{\dicalphabet}[1]{%
+	\par\noindent{\centering\textbf{\large #1}\par}%
+	\vspace{.5em}%
+	\nopagebreak[4]%
 }
 
-\newcommand{\dic}[2]{\noindent  #2 \dotfill  \lr{#1} \\ }
+\newcommand{\dic}[2]{\par\noindent #2 \dotfill \lr{#1}\par}
 
 
 % ------------------------------ Images and Figures --------------------------
@@ -209,5 +192,3 @@ BoldFont=Sharif1.3-SemiBold,
 \NewDocumentCommand{\img}{m m o}
 	{\begin{wrapfigure}{l}{\IfValueTF{#3}{#3}{#2}}
 	\centering\includegraphics[width=#2]{figs/#1}\end{wrapfigure}}
-
-
