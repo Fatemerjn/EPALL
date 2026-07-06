@@ -30,14 +30,14 @@
     "semantic_hash": "772462c8744c969f075f8dd3b8e38aa2"
   },
   "main.py": {
-    "mtime": 1782864556.3386185,
-    "ast_hash": "8439b803fcbd41c05bce7a09ba87ac3b",
-    "semantic_hash": "8439b803fcbd41c05bce7a09ba87ac3b"
+    "mtime": 1783257479.1708589,
+    "ast_hash": "db87a86a4ab802e8483a8a2f638bc32d",
+    "semantic_hash": ""
   },
   "methods/__init__.py": {
-    "mtime": 1782169813.0335193,
-    "ast_hash": "b937979b90ebc94e790e09f42d80dc6f",
-    "semantic_hash": "b937979b90ebc94e790e09f42d80dc6f"
+    "mtime": 1783257461.0338397,
+    "ast_hash": "dca06e4f22340367769e44378b97f17e",
+    "semantic_hash": ""
   },
   "methods/base.py": {
     "mtime": 1781076142.9132009,
@@ -215,9 +215,9 @@
     "semantic_hash": "160c8203f07e99d82efd98d03f14b281"
   },
   "tools/aggregate_results.py": {
-    "mtime": 1781548105.2071111,
-    "ast_hash": "eb74f81db85516903217e764b5599aa0",
-    "semantic_hash": "eb74f81db85516903217e764b5599aa0"
+    "mtime": 1783243166.4655514,
+    "ast_hash": "663849a69610e72238c509b3cb946a19",
+    "semantic_hash": ""
   },
   "tools/analyze_overlap.py": {
     "mtime": 1776592156.1588974,
@@ -290,14 +290,14 @@
     "semantic_hash": "30ab69aba2fe6b08dba66cf8a07c9ef1"
   },
   "tools/make_report_table.py": {
-    "mtime": 1778067842.9018042,
-    "ast_hash": "66559d5da9f926757167191fbe92cf52",
-    "semantic_hash": "66559d5da9f926757167191fbe92cf52"
+    "mtime": 1783334875.821301,
+    "ast_hash": "079ce7ac793165db3c0288a12caf362f",
+    "semantic_hash": ""
   },
   "tools/make_thesis_table.py": {
-    "mtime": 1778067650.8898654,
-    "ast_hash": "75aaaf3af43a45470e22d9200244065e",
-    "semantic_hash": "75aaaf3af43a45470e22d9200244065e"
+    "mtime": 1783334172.254369,
+    "ast_hash": "e4de85bfb8c4d1f3d4f5af2713242bbe",
+    "semantic_hash": ""
   },
   "tools/md_to_latex_table.py": {
     "mtime": 1777555426.8512897,
@@ -310,9 +310,9 @@
     "semantic_hash": "67ee2f74c90ead55fa7cc1bb638e0966"
   },
   "tools/plot_report_results.py": {
-    "mtime": 1777555426.8514695,
-    "ast_hash": "de56c2502c708102be6450ce2edae008",
-    "semantic_hash": "de56c2502c708102be6450ce2edae008"
+    "mtime": 1783335007.551749,
+    "ast_hash": "9654ba104f24cd250860fdd2059d3f59",
+    "semantic_hash": ""
   },
   "tools/plot_thesis_results.py": {
     "mtime": 1777555426.85172,
@@ -360,9 +360,9 @@
     "semantic_hash": "9bb5f1761a04c9e8c52e639cb7029622"
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1783159492.0583906,
-    "ast_hash": "5a12245ee465d1e73e247a360e62b0c4",
-    "semantic_hash": "5a12245ee465d1e73e247a360e62b0c4"
+    "mtime": 1783257512.556506,
+    "ast_hash": "075c208156d954020af638d9444eee81",
+    "semantic_hash": ""
   },
   "tools/run_small_ablation.py": {
     "mtime": 1776852545.0439727,
@@ -490,9 +490,9 @@
     "semantic_hash": "82efb97a359f5c7290bf2513d14686be"
   },
   "README.md": {
-    "mtime": 1781628867.1530626,
-    "ast_hash": "191133177520c7b076e3ed41841e4c35",
-    "semantic_hash": "191133177520c7b076e3ed41841e4c35"
+    "mtime": 1783334491.4659746,
+    "ast_hash": "c6c0637e86f659bee51dc3e634a8cc42",
+    "semantic_hash": ""
   },
   "configs/README.md": {
     "mtime": 1777381566.0922406,
@@ -510,8 +510,113 @@
     "semantic_hash": "ee97e3bbdc88c3d3d6cdceb8764b55ad"
   },
   "thesis/front/template/images/besmellah.jpg": {
-    "mtime": 1782173032.271283,
-    "ast_hash": "5be842a21719483f48cfb70ce7588ef6",
-    "semantic_hash": "5be842a21719483f48cfb70ce7588ef6"
+    "mtime": 1783339837.0479715,
+    "ast_hash": "3a185ebf8882272f01fe98484e5e1de5",
+    "semantic_hash": ""
+  },
+  "methods/salun.py": {
+    "mtime": 1783257444.1924982,
+    "ast_hash": "8cefc87325e4c76373e58741a07e824d",
+    "semantic_hash": ""
+  },
+  "methods/ssd.py": {
+    "mtime": 1783257396.962085,
+    "ast_hash": "ad4baa80905d5eaca276630ac0c58b54",
+    "semantic_hash": ""
+  },
+  "thesis/thesis.toc": {
+    "mtime": 1783339941.4395754,
+    "ast_hash": "c01531cdd10b3ef88ed03a52520922e5",
+    "semantic_hash": ""
+  },
+  "tools/smoke_extra_baselines.sh": {
+    "mtime": 1783257529.924877,
+    "ast_hash": "7e4f6aff8b3d13b893b8f8b0a1e902cf",
+    "semantic_hash": ""
+  },
+  "scripts/reproduce_all.sh": {
+    "mtime": 1783334374.15177,
+    "ast_hash": "2614bf5bd48c361092449184bca45e1f",
+    "semantic_hash": ""
+  },
+  "tools/audit_seed_completeness.py": {
+    "mtime": 1783334865.4614332,
+    "ast_hash": "c36db807e936b5b1091aa835e34011ae",
+    "semantic_hash": ""
+  },
+  "paper/drop_decomposition.pdf": {
+    "mtime": 1781076268.099957,
+    "ast_hash": "f9629509320a56ae6ad24ee4834de238",
+    "semantic_hash": ""
+  },
+  "paper/overlap_results.pdf": {
+    "mtime": 1781076268.2167299,
+    "ast_hash": "c8a56115de56eb45e94898b86b6af01c",
+    "semantic_hash": ""
+  },
+  "paper/tradeoff_results.pdf": {
+    "mtime": 1781076268.2925398,
+    "ast_hash": "c16df7c0b45b4270a0ca6db4790cdc4b",
+    "semantic_hash": ""
+  },
+  "paper/worstdrop_chart.pdf": {
+    "mtime": 1781076268.1629262,
+    "ast_hash": "118a388adc6ccf2ac97eb8683771a219",
+    "semantic_hash": ""
+  },
+  "thesis/front/template/images/logo.pdf": {
+    "mtime": 1782173032.2721312,
+    "ast_hash": "dabcf367dbfdec94a66281d24194f248",
+    "semantic_hash": ""
+  },
+  "thesis/images/drop_decomposition.pdf": {
+    "mtime": 1783164076.2911062,
+    "ast_hash": "1ddcec4baa9be674e82172caa5263a7c",
+    "semantic_hash": ""
+  },
+  "thesis/images/overlap_results.pdf": {
+    "mtime": 1783164076.4397316,
+    "ast_hash": "47ba99b17afd10569512364be43aa5a8",
+    "semantic_hash": ""
+  },
+  "thesis/images/tradeoff_results.pdf": {
+    "mtime": 1783164076.5135937,
+    "ast_hash": "8bc60c4696194a65a0b3d3e003684e49",
+    "semantic_hash": ""
+  },
+  "thesis/images/worstdrop_chart.pdf": {
+    "mtime": 1783164076.3656967,
+    "ast_hash": "e88f730706ecb49da98ac42c43d4fab1",
+    "semantic_hash": ""
+  },
+  "thesis/front/template/images/besmellah.png": {
+    "mtime": 1783339890.7834983,
+    "ast_hash": "30db40e41607b481ff3437be0e2d8164",
+    "semantic_hash": ""
+  },
+  "thesis/images/critical_overlap_accuracy.png": {
+    "mtime": 1783168792.30116,
+    "ast_hash": "9fbbfeb45b29d891b164455dc0d87ad5",
+    "semantic_hash": ""
+  },
+  "thesis/images/pall_adapter_architecture.png": {
+    "mtime": 1783168792.1453557,
+    "ast_hash": "3de7051c697a9aa2522c49e618f474b7",
+    "semantic_hash": ""
+  },
+  "thesis/images/parameter_overlap_concept.png": {
+    "mtime": 1783168954.885366,
+    "ast_hash": "98719de69b2ec1900f59ba0ac3e981ee",
+    "semantic_hash": ""
+  },
+  "thesis/images/selective_forgetting_pipeline.png": {
+    "mtime": 1783168792.1398158,
+    "ast_hash": "4081ef3b73d7e9042f42c1332b4d4d17",
+    "semantic_hash": ""
+  },
+  "thesis/images/softmask_drop_decomposition.png": {
+    "mtime": 1783168792.3010168,
+    "ast_hash": "958cee584fdc7becb5fefcccd8941cc5",
+    "semantic_hash": ""
   }
 }

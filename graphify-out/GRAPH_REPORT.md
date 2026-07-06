@@ -1,13 +1,18 @@
-# Graph Report - .  (2026-07-05)
+# Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-06)
 
 ## Corpus Check
-- 103 files · ~81,608 words
+- 105 files · ~246,409 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1044 nodes · 2294 edges · 60 communities (51 shown, 9 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.64)
+- 1292 nodes · 2685 edges · 133 communities (62 shown, 71 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 202 edges (avg confidence: 0.62)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `8d9c9fc6`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Subnet Mask Layers|Subnet Mask Layers]]
@@ -69,50 +74,119 @@
 - [[_COMMUNITY_Smoke Test Script|Smoke Test Script]]
 - [[_COMMUNITY_Example Run Script|Example Run Script]]
 - [[_COMMUNITY_Dataset Constraints|Dataset Constraints]]
+- [[_COMMUNITY_What You Must Do When Invoked|What You Must Do When Invoked]]
+- [[_COMMUNITY_SalUn|SalUn]]
+- [[_COMMUNITY_Code Review Notes & Open Decisions (for advisor meeting)|Code Review Notes & Open Decisions (for advisor meeting)]]
+- [[_COMMUNITY_SSD|SSD]]
+- [[_COMMUNITY_graphify reference extra exports and benchmark|graphify reference: extra exports and benchmark]]
+- [[_COMMUNITY_graphify reference extra exports and benchmark|graphify reference: extra exports and benchmark]]
+- [[_COMMUNITY_graphify reference query, path, explain|graphify reference: query, path, explain]]
+- [[_COMMUNITY_graphify reference query, path, explain|graphify reference: query, path, explain]]
+- [[_COMMUNITY_Derpp|Derpp]]
+- [[_COMMUNITY_EWC|EWC]]
+- [[_COMMUNITY_graphify reference add a URL and watch a folder|graphify reference: add a URL and watch a folder]]
+- [[_COMMUNITY_graphify reference commit hook and native CLAUDE.md integration|graphify reference: commit hook and native CLAUDE.md integration]]
+- [[_COMMUNITY_graphify reference incremental update and cluster-only|graphify reference: incremental update and cluster-only]]
+- [[_COMMUNITY_graphify reference add a URL and watch a folder|graphify reference: add a URL and watch a folder]]
+- [[_COMMUNITY_graphify reference commit hook and native CLAUDE.md integration|graphify reference: commit hook and native CLAUDE.md integration]]
+- [[_COMMUNITY_graphify reference incremental update and cluster-only|graphify reference: incremental update and cluster-only]]
+- [[_COMMUNITY_graphify reference GitHub clone and cross-repo merge|graphify reference: GitHub clone and cross-repo merge]]
+- [[_COMMUNITY_graphify reference transcribe video and audio|graphify reference: transcribe video and audio]]
+- [[_COMMUNITY_graphify reference GitHub clone and cross-repo merge|graphify reference: GitHub clone and cross-repo merge]]
+- [[_COMMUNITY_graphify reference transcribe video and audio|graphify reference: transcribe video and audio]]
+- [[_COMMUNITY_smoke_extra_baselines.sh|smoke_extra_baselines.sh]]
+- [[_COMMUNITY_CLAUDE|CLAUDE.md]]
+- [[_COMMUNITY_CLAUDE|CLAUDE.md]]
+- [[_COMMUNITY_extraction-spec|extraction-spec.md]]
+- [[_COMMUNITY_extraction-spec|extraction-spec.md]]
+- [[_COMMUNITY_README|README.md]]
+- [[_COMMUNITY_Graphify Query Path Explain|Graphify Query Path Explain]]
+- [[_COMMUNITY_Graphify Add Watch Flow|Graphify Add Watch Flow]]
+- [[_COMMUNITY_Graphify Export Targets|Graphify Export Targets]]
+- [[_COMMUNITY_Graphify Extraction Schema|Graphify Extraction Schema]]
+- [[_COMMUNITY_Graphify GitHub Merge Flow|Graphify GitHub Merge Flow]]
+- [[_COMMUNITY_Graphify Hook Integration|Graphify Hook Integration]]
+- [[_COMMUNITY_Graphify Query Traversal|Graphify Query Traversal]]
+- [[_COMMUNITY_Graphify Transcription Flow|Graphify Transcription Flow]]
+- [[_COMMUNITY_Graphify Update Flow|Graphify Update Flow]]
+- [[_COMMUNITY_Graphify Skill Pipeline|Graphify Skill Pipeline]]
+- [[_COMMUNITY_Graphify Add Watch Flow|Graphify Add Watch Flow]]
+- [[_COMMUNITY_Graphify Export Targets|Graphify Export Targets]]
+- [[_COMMUNITY_Graphify Extraction Schema|Graphify Extraction Schema]]
+- [[_COMMUNITY_Graphify GitHub Merge Flow|Graphify GitHub Merge Flow]]
+- [[_COMMUNITY_Graphify Hook Integration|Graphify Hook Integration]]
+- [[_COMMUNITY_Graphify Query Traversal|Graphify Query Traversal]]
+- [[_COMMUNITY_Graphify Transcription Flow|Graphify Transcription Flow]]
+- [[_COMMUNITY_Graphify Update Flow|Graphify Update Flow]]
+- [[_COMMUNITY_Graphify Skill Pipeline|Graphify Skill Pipeline]]
+- [[_COMMUNITY_Configs Directory|Configs Directory]]
+- [[_COMMUNITY_Code Review Notes and Open Decisions|Code Review Notes and Open Decisions]]
+- [[_COMMUNITY_Conflict Energy|Conflict Energy]]
+- [[_COMMUNITY_Gradient-Conflict Protection|Gradient-Conflict Protection]]
+- [[_COMMUNITY_Gradient-Magnitude Importance Resolution|Gradient-Magnitude Importance Resolution]]
+- [[_COMMUNITY_Method Taxonomy|Method Taxonomy]]
+- [[_COMMUNITY_Phase-3 Iterative Uniform-Target Loop|Phase-3 Iterative Uniform-Target Loop]]
+- [[_COMMUNITY_Requirements Fix|Requirements Fix]]
+- [[_COMMUNITY_Adapter Protected|Adapter Protected]]
+- [[_COMMUNITY_Adapter Reset|Adapter Reset]]
+- [[_COMMUNITY_Adapter Shared|Adapter Shared]]
+- [[_COMMUNITY_Baseline Methods|Baseline Methods]]
+- [[_COMMUNITY_CIFAR-100 Constraint|CIFAR-100 Constraint]]
+- [[_COMMUNITY_overlap_analysis|overlap_analysis]]
+- [[_COMMUNITY_Overlap-Aware Forgetting|Overlap-Aware Forgetting]]
+- [[_COMMUNITY_PALL-Adapter|PALL-Adapter]]
+- [[_COMMUNITY_PALL-Modified|PALL-Modified]]
+- [[_COMMUNITY_PALL-Modified Conflict|PALL-Modified Conflict]]
+- [[_COMMUNITY_PALL-Modified Gradient Importance|PALL-Modified Gradient Importance]]
+- [[_COMMUNITY_PALL-Modified Weight Ablation|PALL-Modified Weight Ablation]]
+- [[_COMMUNITY_PALL-Original|PALL-Original]]
+- [[_COMMUNITY_Privacy-Aware Lifelong Learning ICLR 2025 Paper|Privacy-Aware Lifelong Learning ICLR 2025 Paper]]
+- [[_COMMUNITY_Privacy-Aware Lifelong Learning Repository|Privacy-Aware Lifelong Learning Repository]]
+- [[_COMMUNITY_protected_ratio|protected_ratio]]
+- [[_COMMUNITY_results aggregates|results aggregates]]
+- [[_COMMUNITY_S_share_crit|S_share_crit]]
+- [[_COMMUNITY_EWC|EWC]]
+- [[_COMMUNITY_reproduce_all.sh|reproduce_all.sh]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `PALLBase` - 40 edges
-2. `SubnetVisionTransformer` - 38 edges
+1. `SubnetVisionTransformer` - 44 edges
+2. `PALLBase` - 40 edges
 3. `PALLAdapter` - 37 edges
-4. `main()` - 32 edges
-5. `Base` - 32 edges
-6. `VisionTransformer` - 30 edges
-7. `SubnetLinear` - 26 edges
-8. `SubnetConv2d` - 26 edges
-9. `LoRAResNet` - 23 edges
-10. `AdapterResNet` - 22 edges
+4. `Base` - 36 edges
+5. `VisionTransformer` - 36 edges
+6. `main()` - 34 edges
+7. `RehearsalMemory` - 26 edges
+8. `SubnetLinear` - 26 edges
+9. `SubnetConv2d` - 26 edges
+10. `LoRAResNet` - 23 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Method Taxonomy` --semantically_similar_to--> `Implemented Methods`  [INFERRED] [semantically similar]
-  paper/REVIEW_NOTES.md → README.md
-- `Phase-3 Iterative Uniform-Target Loop` --semantically_similar_to--> `PALL-Adapter`  [INFERRED] [semantically similar]
-  paper/REVIEW_NOTES.md → README.md
-- `Graphify Instructions` --semantically_similar_to--> `Graphify Instructions`  [INFERRED] [semantically similar]
-  AGENTS.md → CLAUDE.md
-- `Gradient-Magnitude Importance Resolution` --semantically_similar_to--> `PALL-Modified Gradient Importance`  [INFERRED] [semantically similar]
-  paper/REVIEW_NOTES.md → README.md
-- `Gradient-Conflict Protection` --semantically_similar_to--> `PALL-Modified Conflict`  [INFERRED] [semantically similar]
-  paper/REVIEW_NOTES.md → README.md
+- `main()` --indirect_call--> `CLPU`  [INFERRED]
+  main.py → methods/clpu.py
+- `main()` --indirect_call--> `Derpp`  [INFERRED]
+  main.py → methods/derpp.py
+- `main()` --indirect_call--> `ER`  [INFERRED]
+  main.py → methods/er.py
+- `main()` --indirect_call--> `EWC`  [INFERRED]
+  main.py → methods/ewc.py
+- `main()` --indirect_call--> `LoRA`  [INFERRED]
+  main.py → methods/lora.py
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Graphify Navigation Contract** — agents_graphify, claude_graphify, agents_graphify_query_path_explain [INFERRED 0.95]
-- **PALL Method Taxonomy** — readme_pall_original, readme_pall_modified, readme_pall_adapter, readme_baseline_methods, paper_review_notes_method_taxonomy [INFERRED 0.95]
-- **Overlap Protection Mechanisms** — readme_overlap_aware_forgetting, readme_pall_modified_conflict, readme_s_share_crit, paper_review_notes_gradient_conflict_protection, paper_review_notes_conflict_energy, paper_review_notes_phase3_iterative_uniform_target_loop [INFERRED 0.85]
 - **Besmellah Calligraphic Invocation** — thesis_front_template_images_besmellah_image, thesis_front_template_images_besmellah_bismillah_al_rahman_al_rahim, thesis_front_template_images_besmellah_arabic_calligraphy, thesis_front_template_images_besmellah_islamic_invocation [INFERRED 0.85]
-- **Graphify Instruction Runbooks** — claude_claude_claude_graphify_claude_instructions, claude_skills_graphify_skill_graphify_skill_pipeline, claude_skills_graphify_references_add_watch_graphify_add_watch_flow, claude_skills_graphify_references_exports_graphify_export_targets, claude_skills_graphify_references_extraction_spec_graphify_extraction_schema, claude_skills_graphify_references_github_and_merge_graphify_github_merge_flow, claude_skills_graphify_references_hooks_graphify_hook_integration, claude_skills_graphify_references_query_graphify_query_traversal, claude_skills_graphify_references_transcribe_graphify_transcription_flow, claude_skills_graphify_references_update_graphify_update_flow, codex_skills_graphify_skill_graphify_skill_pipeline, codex_skills_graphify_references_add_watch_graphify_add_watch_flow [INFERRED 0.85]
 
-## Communities (60 total, 9 thin omitted)
+## Communities (133 total, 71 thin omitted)
 
 ### Community 0 - "Subnet Mask Layers"
-Cohesion: 0.07
-Nodes (22): MaskByScores, SubnetClassifier, SubnetConv2d, SubnetLinear, maskedSequential, subnet_conv1x1(), subnet_conv3x3(), subnet_resnet18() (+14 more)
+Cohesion: 0.09
+Nodes (17): MaskByScores, SubnetClassifier, SubnetConv2d, SubnetLinear, maskedSequential, subnet_conv1x1(), subnet_conv3x3(), subnet_resnet18() (+9 more)
 
 ### Community 1 - "Training Main Metrics"
 Cohesion: 0.08
-Nodes (51): acc_list_to_dict(), avg_for_tasks(), build_requests_with_active_tasks(), _coerce_float_or_none(), _coerce_int_or_none(), compute_average_forgetting(), compute_mia(), compute_unlearning_score() (+43 more)
+Nodes (53): acc_list_to_dict(), avg_for_tasks(), build_mia_event(), build_requests_with_active_tasks(), _coerce_float_or_none(), _coerce_int_or_none(), compute_average_forgetting(), compute_mia() (+45 more)
 
 ### Community 2 - "Swift Overlap Plots"
 Cohesion: 0.08
@@ -131,11 +205,11 @@ Cohesion: 0.17
 Nodes (35): Select an execution device with macOS MPS support., resolve_device(), RuntimeError, build_correlation_summary(), build_row(), canonicalize_method_variant(), extract_overlap_analysis(), extract_overlap_from_csv() (+27 more)
 
 ### Community 6 - "Method Review Docs"
-Cohesion: 0.07
-Nodes (34): Configs Directory, Code Review Notes and Open Decisions, Conflict Energy, Gradient-Conflict Protection, Gradient-Magnitude Importance Resolution, Method Taxonomy, Phase-3 Iterative Uniform-Target Loop, Requirements Fix (+26 more)
+Cohesion: 0.20
+Nodes (10): methods and models, Tools, Deep-Learning Stack, matplotlib 3.10.9, numpy 2.4.1, pandas 2.3.3, Analysis Results Stack, torch 2.9.1 (+2 more)
 
 ### Community 7 - "PALL Base Forgetting"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (7): PALLBase, Subnet-mask PALL with overlap-aware selective forgetting (shared base).      Thi, Select the *critical* subset of the forget/retain shared parameters.          Th, Fresh, data-independent reinit sample for the masked positions.          Used by, Per-parameter SIGNED gradient of the summed CE loss over the given         tasks, Per-parameter |grad L_retain| over the rehearsal buffer (S_active).          Abs, Per-parameter gradient-CONFLICT energy on the rehearsal buffer.          For eac
 
 ### Community 8 - "Paper Figures"
@@ -143,36 +217,28 @@ Cohesion: 0.12
 Nodes (31): _betacf(), _betai(), _find_col(), _linregress(), _load_metric_by_method(), _load_overlap_points(), main(), _make_localizer() (+23 more)
 
 ### Community 9 - "Thesis Table Builder"
-Cohesion: 0.21
-Nodes (31): aggregate_group(), build_table(), canonicalize_method_variant(), config_group_value(), derive_adapter_param_ratio(), derive_unlearning_score(), derive_updated_param_ratio(), extract_run_row() (+23 more)
+Cohesion: 0.12
+Nodes (47): adapter_config(), audit(), config_label(), expected_specs(), ExpectedSpec, find_partial_dirs(), load_actual_runs(), main() (+39 more)
 
 ### Community 10 - "Overlap Summaries"
 Cohesion: 0.22
 Nodes (30): aggregate_group(), build_row(), build_summary(), canonicalize_method_variant(), derive_adapter_param_ratio(), derive_updated_param_ratio(), extract_legacy_overlap_counts(), extract_method_variant() (+22 more)
 
 ### Community 11 - "Base Model Wrapper"
-Cohesion: 0.14
-Nodes (4): Base, Deterministically reseed NumPy/Python RNGs inside each DataLoader worker.      P, Lazily build a CPU generator seeded from the run seed.          Passing an expli, _seed_worker()
+Cohesion: 0.08
+Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 12 - "Report Plotting"
-Cohesion: 0.24
-Nodes (22): Figure, build_forgetting_quality_points(), build_tradeoff_points(), dedup_legend(), group_by_dataset(), main(), make_bar_plot(), make_forgetting_quality_scatter() (+14 more)
+Cohesion: 0.12
+Nodes (60): Figure, add_global_legend(), aggregate_group_key(), bootstrap_mean_ci(), build_forgetting_quality_points(), build_tradeoff_points(), canonical_group_value(), ci_error() (+52 more)
 
 ### Community 13 - "Regularization Methods"
 Cohesion: 0.18
-Nodes (8): EWC, Sequential, subnet_vit_t_16(), subnet_vit_t_8(), SubnetVisionTransformer, VisionTransformer, vit_t_16(), vit_t_8()
+Nodes (8): LwF, modified_kl_div(), smooth(), subnet_vit_t_16(), subnet_vit_t_8(), SubnetVisionTransformer, inputs:                 Q: (batch_size, n_head, seq_len1, d_k)                 K, ScaledDotProductAttention
 
 ### Community 14 - "Experiment Summaries"
 Cohesion: 0.21
 Nodes (20): build_metric_table(), build_observations(), build_overlap_table(), describe_difference(), fmt_mean_std(), fmt_number(), group_means(), group_results() (+12 more)
-
-### Community 15 - "Replay Methods"
-Cohesion: 0.16
-Nodes (3): Derpp, ER, RehearsalMemory
-
-### Community 16 - "Graphify Instruction Docs"
-Cohesion: 0.15
-Nodes (19): Graphify Claude Instructions, Graphify Add Watch Flow, Graphify Export Targets, Graphify Extraction Schema, Graphify GitHub Merge Flow, Graphify Hook Integration, Graphify Query Traversal, Graphify Transcription Flow (+11 more)
 
 ### Community 17 - "Adapter Ablation Summary"
 Cohesion: 0.22
@@ -191,20 +257,20 @@ Cohesion: 0.25
 Nodes (17): choose_best_adapter_rows(), compact_adapter_row(), compact_report_row(), format_mean_std(), format_number(), main(), normalize_report_value(), parse_args() (+9 more)
 
 ### Community 21 - "Report Table Builder"
-Cohesion: 0.24
-Nodes (17): compact_row(), dedupe_key(), dedupe_rows(), first_present_value(), format_mean_std(), format_number(), main(), markdown_cell() (+9 more)
+Cohesion: 0.23
+Nodes (21): compact_row(), config_id(), dedupe_key(), dedupe_rows(), derive_regime(), first_present_value(), format_mean_std(), format_mean_std_or_value() (+13 more)
 
 ### Community 22 - "Method Modules"
-Cohesion: 0.24
-Nodes (5): PALLModified, PALL-Modified -- the MAIN overlap-aware selective-forgetting method.  Identifies, PALLOriginal, PALL-Original -- the PALL baseline (no overlap protection).  Forgetting resets t, Backward-compatibility shim.  The PALL implementation was split into:   * ``meth
+Cohesion: 0.19
+Nodes (6): RehearsalMemory, PALLModified, PALL-Modified -- the MAIN overlap-aware selective-forgetting method.  Identifies, PALLOriginal, PALL-Original -- the PALL baseline (no overlap protection).  Forgetting resets t, Backward-compatibility shim.  The PALL implementation was split into:   * ``meth
 
 ### Community 23 - "Model Factories"
-Cohesion: 0.21
-Nodes (9): adapter_resnet18(), adapter_resnet34(), adapter_resnet50(), TaskBottleneckAdapter, lora_resnet18(), lora_resnet34(), lora_resnet50(), BasicBlock (+1 more)
+Cohesion: 0.27
+Nodes (8): adapter_resnet18(), adapter_resnet34(), adapter_resnet50(), lora_resnet18(), lora_resnet34(), lora_resnet50(), BasicBlock, Bottleneck
 
 ### Community 24 - "Lifelong Baselines"
-Cohesion: 0.22
-Nodes (4): LSF, LwF, modified_kl_div(), smooth()
+Cohesion: 0.20
+Nodes (5): LSF, Sequential, VisionTransformer, vit_t_16(), vit_t_8()
 
 ### Community 26 - "Project Cleanup"
 Cohesion: 0.33
@@ -222,8 +288,12 @@ Nodes (13): apply_tag_suffix(), build_commands(), DatasetPreset, main(), method_
 Cohesion: 0.40
 Nodes (12): AblationConfig, build_command(), build_commands(), DatasetPreset, main(), parse_args(), print_command(), Namespace (+4 more)
 
+### Community 31 - "LoRA Method Logic"
+Cohesion: 0.10
+Nodes (6): Base, Deterministically reseed NumPy/Python RNGs inside each DataLoader worker.      P, Lazily build a CPU generator seeded from the run seed.          Passing an expli, _seed_worker(), LoRA, Parameter-efficient LoRA baseline for continual learning + task unlearning.
+
 ### Community 32 - "LoRA Modules"
-Cohesion: 0.23
+Cohesion: 0.21
 Nodes (4): Per-task LoRA module: x + (alpha/r) * B(A x), no nonlinearity.      Mirrors ``Ta, Optional shared LoRA applied to the feature for all tasks., SharedLoRA, TaskLoRA
 
 ### Community 33 - "ResNet Backbone"
@@ -260,11 +330,11 @@ Nodes (10): build_payload(), build_requests(), load_main_schedule_validator(), m
 
 ### Community 41 - "Forgetting Regression Plot"
 Cohesion: 0.33
-Nodes (9): DataFrame, ndarray, compute_regression_band(), main(), parse_args(), plot_publication_figure(), Namespace, Path (+1 more)
+Nodes (9): DataFrame, compute_regression_band(), main(), parse_args(), plot_publication_figure(), Namespace, ndarray, Path (+1 more)
 
 ### Community 42 - "Server Experiment Script"
-Cohesion: 0.51
-Nodes (9): group1(), group2(), group3(), group4(), group5(), group6_standard(), group7_tiny(), launch() (+1 more)
+Cohesion: 0.44
+Nodes (11): group1(), group2(), group3(), group4(), group5(), group6_standard(), group7_tiny(), group8_mia() (+3 more)
 
 ### Community 44 - "Baseline Runner"
 Cohesion: 0.53
@@ -290,10 +360,6 @@ Nodes (7): build_commands(), main(), parse_args(), Namespace, Path, run_commands
 Cohesion: 0.43
 Nodes (6): generate_user_requests(), main(), parse_args(), Namespace, Mirror main.py request generation behavior., with_active_tasks()
 
-### Community 52 - "Overlap Metrics"
-Cohesion: 0.50
-Nodes (4): critical_ratio, overlap_analysis, protected_ratio, S_share_crit
-
 ### Community 53 - "Thesis Invocation Image"
 Cohesion: 0.67
 Nodes (4): Arabic Calligraphy, Bismillah al-Rahman al-Rahim, Besmellah Image, Islamic Invocation
@@ -302,33 +368,81 @@ Nodes (4): Arabic Calligraphy, Bismillah al-Rahman al-Rahim, Besmellah Image, Is
 Cohesion: 0.83
 Nodes (3): launch(), run_dataset(), run_paper_experiments.sh script
 
-### Community 55 - "Graphify Root Instructions"
-Cohesion: 0.67
-Nodes (3): Graphify Instructions, Graphify Query Path Explain, Graphify Instructions
+### Community 58 - "Dataset Constraints"
+Cohesion: 0.14
+Nodes (13): Acknowledgments, Adapter Variant, Implemented Methods, Method taxonomy (which is the main method?), Overlap-Aware Adapter Unlearning, Paper-oriented interpretation, Privacy-Aware Lifelong Learning, Reference (+5 more)
 
-## Ambiguous Edges - Review These
-- `results aggregates` → `Configs Directory`  [AMBIGUOUS]
-  configs/README.md · relation: conceptually_related_to
+### Community 60 - "What You Must Do When Invoked"
+Cohesion: 0.08
+Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
+
+### Community 62 - "Code Review Notes & Open Decisions (for advisor meeting)"
+Cohesion: 0.14
+Nodes (13): 1. RESOLVED (implemented 2026-06-10): `pall_modified` now uses gradient-magnitude importance, 2. RESOLVED (2026-06-16): `pall_adapter` Phase-3 is now the iterative uniform-target loop, 3. The two "overlap-aware" methods use DIFFERENT overlap definitions, 4. `pall_adapter` defaults make it a reset-only prototype, 5. `pall_adapter` overlap matrix is degenerate, 6. `shared_protect_strength` semantics, 7. FIXED in this pass (engineering / reproducibility), 8. Stale documentation (+5 more)
+
+### Community 64 - "graphify reference: extra exports and benchmark"
+Cohesion: 0.22
+Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
+
+### Community 65 - "graphify reference: extra exports and benchmark"
+Cohesion: 0.22
+Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
+
+### Community 66 - "graphify reference: query, path, explain"
+Cohesion: 0.33
+Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
+
+### Community 67 - "graphify reference: query, path, explain"
+Cohesion: 0.33
+Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
+
+### Community 69 - "EWC"
+Cohesion: 0.28
+Nodes (3): EncoderBlock, MultiHeadAttention, inputs:                 Q: (batch_size, seq_len1, d_model)                 K: (b
+
+### Community 70 - "graphify reference: add a URL and watch a folder"
+Cohesion: 0.50
+Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
+
+### Community 71 - "graphify reference: commit hook and native CLAUDE.md integration"
+Cohesion: 0.50
+Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
+
+### Community 72 - "graphify reference: incremental update and cluster-only"
+Cohesion: 0.50
+Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
+
+### Community 73 - "graphify reference: add a URL and watch a folder"
+Cohesion: 0.50
+Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
+
+### Community 74 - "graphify reference: commit hook and native CLAUDE.md integration"
+Cohesion: 0.50
+Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
+
+### Community 75 - "graphify reference: incremental update and cluster-only"
+Cohesion: 0.50
+Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ## Knowledge Gaps
-- **21 isolated node(s):** `example_run.sh script`, `DatasetPreset`, `DatasetPreset`, `Graphify Query Path Explain`, `Graphify Instructions` (+16 more)
+- **161 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `DatasetPreset`, `DatasetPreset`, `graphify` (+156 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **71 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `results aggregates` and `Configs Directory`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `main()` connect `Training Main Metrics` to `PALL Adapter Logic`, `CLPU Method`, `Regularization Methods`, `Replay Methods`, `Method Modules`, `Lifelong Baselines`, `LoRA Method Logic`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
-- **Why does `SubnetVisionTransformer` connect `Regularization Methods` to `Subnet Mask Layers`, `PALL Base Forgetting`, `CLPU Method`, `Replay Methods`, `Base Model Params`, `Method Modules`, `Lifelong Baselines`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
-- **Why does `PALLAdapter` connect `PALL Adapter Logic` to `Training Main Metrics`, `Base Model Wrapper`, `Method Modules`, `Replay Methods`?**
-  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+- **Why does `SubnetVisionTransformer` connect `Regularization Methods` to `Subnet Mask Layers`, `EWC`, `Derpp`, `PALL Base Forgetting`, `CLPU Method`, `Replay Methods`, `Base Model Params`, `Method Modules`, `Lifelong Baselines`, `SalUn`, `SSD`?**
+  _High betweenness centrality (0.080) - this node is a cross-community bridge._
+- **Why does `RehearsalMemory` connect `Method Modules` to `Derpp`, `PALL Adapter Logic`, `PALL Base Forgetting`, `Regularization Methods`, `Replay Methods`, `SSD`, `Lifelong Baselines`, `SalUn`, `LoRA Method Logic`?**
+  _High betweenness centrality (0.076) - this node is a cross-community bridge._
+- **Why does `PALLAdapter` connect `PALL Adapter Logic` to `Training Main Metrics`, `Method Modules`, `LoRA Method Logic`?**
+  _High betweenness centrality (0.060) - this node is a cross-community bridge._
+- **Are the 25 inferred relationships involving `SubnetVisionTransformer` (e.g. with `CLPU` and `.learn()`) actually correct?**
+  _`SubnetVisionTransformer` has 25 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 6 inferred relationships involving `PALLBase` (e.g. with `RehearsalMemory` and `.__init__()`) actually correct?**
   _`PALLBase` has 6 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 21 inferred relationships involving `SubnetVisionTransformer` (e.g. with `CLPU` and `.learn()`) actually correct?**
-  _`SubnetVisionTransformer` has 21 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `PALLAdapter` (e.g. with `main()` and `RehearsalMemory`) actually correct?**
   _`PALLAdapter` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 4 inferred relationships involving `Base` (e.g. with `.__init__()` and `SalUn`) actually correct?**
+  _`Base` has 4 INFERRED edges - model-reasoned connections that need verification._
