@@ -10,6 +10,7 @@
 #   GROUP 7 (g7_tiny): TinyImageNet main + pretrained PEFT runs -- ON DEMAND, not in `all`
 #   GROUP 8 (g8_mia): MIA-enabled proposed/pretrained PEFT + CLPU runs -- ON DEMAND, not in `all`
 #   GROUP 9 (g9_extra_baselines): SSD + SalUn baselines -- ON DEMAND, not in `all`
+#   GROUP 9b (g9b_ssd_tune): SSD alpha/lambda tuning sweep (CIFAR-10) -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -20,6 +21,7 @@
 #   bash tools/run_server_experiments.sh g7_tiny    # TinyImageNet main + pretrained PEFT group
 #   bash tools/run_server_experiments.sh g8_mia     # MIA-enabled proposed/pretrained PEFT + CLPU group
 #   bash tools/run_server_experiments.sh g9_extra_baselines # SSD + SalUn baseline group
+#   bash tools/run_server_experiments.sh g9b_ssd_tune # SSD alpha/lambda tuning sweep (9 configs, CIFAR-10, seed 0)
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -340,6 +342,34 @@ group9_extra_baselines () {
     done
 }
 
+# ------------------------------------------------------- GROUP 9b SSD tuning
+# SSD alpha/lambda tuning sweep. Run ON DEMAND (g9b_ssd_tune) -- intentionally
+# NOT part of `all`. Motivation: at the default --ssd_alpha 1.0 / --ssd_lambda 1.0
+# the SSD baseline barely forgets (Au ~0.93 on CIFAR-10, chance 0.5). A 1-epoch
+# CIFAR-10 diagnostic (T5_F1, seed 0) shows selection coverage
+# (updated_params/ssd_total_params) is actually substantial and monotonic in
+# alpha: alpha=1.0 -> 0.485, 0.5 -> 0.653, 0.2 -> 0.817, 0.05 -> 0.937. So the
+# weak forgetting is NOT from tiny coverage; it is the dampening STRENGTH: the
+# factor clamp(lambda/ratio, 0, 1) sits near 1.0 for the bulk of selected params
+# (ratio just above 1.0) when lambda=1.0, so weights are barely reduced. Lowering
+# alpha widens coverage AND lowering lambda deepens the dampening. Sweep both on
+# CIFAR-10 (T5_F3, seed 0) to pick a config whose Au approaches chance (0.5) with
+# the smallest WorstDrop. Same schedule/epochs as cifar10_extra_baselines so the
+# tuned cell is directly comparable to the default SSD run.
+group9b_ssd_tune () {
+    echo "===== GROUP 9b: SSD alpha/lambda tuning sweep (CIFAR-10, seed 0) ====="
+    local s=0
+    local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+    for a in 0.05 0.2 0.5; do
+        for l in 0.1 0.5 1.0; do
+            launch "c10_ssd_tune_a${a}_l${l}_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method ssd \
+                   --ssd_alpha $a --ssd_lambda $l \
+                   --experiment_tag ssd_tune_v1
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -351,7 +381,8 @@ case "$WHICH" in
     g7_tiny) group7_tiny ;;
     g8_mia) group8_mia ;;
     g9_extra_baselines) group9_extra_baselines ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines)"; exit 1 ;;
+    g9b_ssd_tune) group9b_ssd_tune ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune)"; exit 1 ;;
 esac
 
 echo "===================================================================="
