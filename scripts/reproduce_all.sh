@@ -25,6 +25,8 @@ echo "==> Auditing seed completeness"
 echo "==> Aggregating per-run metrics"
 "$PY" tools/aggregate_results.py \
   --root "$RUNS_ROOT" \
+  --require-metrics \
+  --seed-policy latest \
   --out "$AGG_DIR/server_results.csv"
 
 cp "$AGG_DIR/server_results.csv" "$AGG_DIR/results_summary.csv"
@@ -33,6 +35,7 @@ echo "==> Building group-by-config thesis tables"
 "$PY" tools/make_thesis_table.py \
   --root "$RUNS_ROOT" \
   --group-by-config \
+  --seed-policy latest \
   --out-csv "$AGG_DIR/server_thesis_table.csv" \
   --out-md "$AGG_DIR/server_thesis_table.md"
 

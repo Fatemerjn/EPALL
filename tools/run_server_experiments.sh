@@ -351,8 +351,10 @@ esac
 
 echo "===================================================================="
 echo "AGGREGATING TABLES ..."
-$PY tools/aggregate_results.py --root runs --out results/aggregates/server_results.csv || true
+$PY tools/aggregate_results.py --root runs --require-metrics --seed-policy latest \
+    --out results/aggregates/server_results.csv || true
 $PY tools/make_thesis_table.py --root runs --group-by-config \
+    --seed-policy latest \
     --out-csv results/aggregates/server_thesis_table.csv \
     --out-md  results/aggregates/server_thesis_table.md || true
 $PY tools/make_report_table.py \

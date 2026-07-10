@@ -47,10 +47,13 @@ except Exception:  # pragma: no cover
     }
 
 try:
-    from make_thesis_table import CONFIG_GROUP_COLUMNS, extract_run_row, values_per_seed
+    from make_thesis_table import CONFIG_GROUP_COLUMNS, dedupe_latest_rows, extract_run_row, values_per_seed
 except Exception:  # pragma: no cover
     CONFIG_GROUP_COLUMNS = [
         "experiment_tag",
+        "protect_importance",
+        "protect_ratio",
+        "lambda_protect",
         "adapter_shared_bottleneck",
         "adapter_shared_forget_ratio",
         "adapter_shared_protect_ratio",
@@ -59,6 +62,7 @@ except Exception:  # pragma: no cover
         "retrain_steps",
         "adapter_train_classifier",
     ]
+    dedupe_latest_rows = None
     extract_run_row = None
     values_per_seed = None
 
@@ -471,8 +475,9 @@ def load_thesis_table(path: Path) -> Any:
     if pd is None:
         raise RuntimeError("pandas is required for --paper-figures mode")
     df = pd.read_csv(path)
+    non_numeric_columns = {"dataset", "method", "experiment_tag", "protect_importance", "adapter_train_classifier"}
     for column in df.columns:
-        if column not in {"dataset", "method", "experiment_tag", "adapter_train_classifier"}:
+        if column not in non_numeric_columns:
             df[column] = pd.to_numeric(df[column], errors="coerce")
     df["dataset"] = df["dataset"].astype(str)
     df["method"] = df["method"].astype(str)
@@ -519,6 +524,8 @@ def load_run_samples(runs_root: Path) -> Dict[Tuple[str, ...], Dict[str, List[fl
         key = aggregate_group_key(row)
         grouped.setdefault(key, []).append(row)
     for key, rows in grouped.items():
+        if dedupe_latest_rows is not None:
+            rows, _ = dedupe_latest_rows(rows, group_by_config=True)
         metric_samples: Dict[str, List[float]] = {}
         for aggregate_metric, run_metric in AGG_TO_RUN_METRIC.items():
             values = values_per_seed(rows, run_metric)

@@ -70,4 +70,5 @@ if [ "$WHICH" = "all" ] || [ "$WHICH" = "cifar100" ]; then run_dataset cifar100 
 
 echo "===================================================================="
 echo "DONE. Aggregate the results with:"
-echo "  $PY tools/aggregate_results.py --root runs --out results/aggregates/paper_results.csv"
+echo "  $PY tools/aggregate_results.py --root runs --require-metrics --seed-policy latest --out results/aggregates/paper_results.csv"
+echo "  $PY tools/make_thesis_table.py --root runs --group-by-config --seed-policy latest --out-csv results/aggregates/paper_thesis_table.csv --out-md results/aggregates/paper_thesis_table.md"

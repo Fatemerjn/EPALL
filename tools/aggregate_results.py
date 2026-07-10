@@ -31,6 +31,11 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+try:
+    from run_selection import select_latest_seed_rows
+except ImportError:  # pragma: no cover - supports package-style imports
+    from tools.run_selection import select_latest_seed_rows
+
 
 COLUMNS: List[str] = [
     "run_path",
@@ -73,6 +78,31 @@ COLUMNS: List[str] = [
     "overlap_s_share_crit",
     "overlap_s_share_ratio",
     "overlap_s_share_crit_ratio",
+]
+
+DEDUP_GROUP_COLUMNS: List[str] = [
+    "experiment_tag",
+    "dataset",
+    "method",
+    "method_variant",
+    "variant",
+    "arch",
+    "class_per_task",
+    "n_tasks",
+    "n_forget",
+    "n_epochs",
+    "adapter_bottleneck",
+    "adapter_train_classifier",
+    "adapter_location",
+    "adapter_shared_bottleneck",
+    "adapter_shared_forget_ratio",
+    "adapter_shared_protect_ratio",
+    "adapter_shared_protect_strength",
+    "protect_ratio",
+    "protect_importance",
+    "lambda_protect",
+    "retrain_steps",
+    "request_schedule_file",
 ]
 
 
@@ -277,10 +307,17 @@ def aggregate_runs(root: Path, args: argparse.Namespace) -> List[Dict[str, Any]]
         if config is None:
             print(f"[WARN] Skipping run without valid config.json: {run_dir}", file=sys.stderr)
             continue
-        metrics = load_json(run_dir / "metrics.json") or {}
+        metrics = load_json(run_dir / "metrics.json")
+        if metrics is None:
+            if getattr(args, "require_metrics", False):
+                continue
+            metrics = {}
         row = extract_row(run_dir, config, metrics)
         if row_matches_filters(row, args):
             rows.append(row)
+    if getattr(args, "seed_policy", "all") == "latest":
+        rows, removed = select_latest_seed_rows(rows, DEDUP_GROUP_COLUMNS)
+        print(f"[INFO] Duplicate completed runs removed by seed policy: {removed}")
     return rows
 
 
@@ -307,6 +344,17 @@ def parse_args() -> argparse.Namespace:
         "--include-smoke",
         action="store_true",
         help="Include smoke/test runs (experiment_tag starting with 'smoke'/'test'); excluded by default.",
+    )
+    parser.add_argument(
+        "--require-metrics",
+        action="store_true",
+        help="Skip config-only partial run directories that do not contain metrics.json.",
+    )
+    parser.add_argument(
+        "--seed-policy",
+        choices=("all", "latest"),
+        default="all",
+        help="Use 'latest' to keep only the newest timestamped run per duplicate group+seed.",
     )
     return parser.parse_args()
 

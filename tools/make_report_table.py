@@ -38,6 +38,9 @@ OUTPUT_COLUMNS = [
 ]
 
 CONFIG_COLUMNS = [
+    "protect_importance",
+    "protect_ratio",
+    "lambda_protect",
     "adapter_bottleneck",
     "adapter_shared_bottleneck",
     "adapter_shared_forget_ratio",
@@ -132,6 +135,10 @@ def config_id(row: Dict[str, str]) -> str:
     for column in CONFIG_COLUMNS:
         value = normalize_config_value(row.get(column))
         if value == "":
+            continue
+        if column == "protect_importance" and value == "gradient":
+            continue
+        if column == "lambda_protect" and value == "0":
             continue
         if column.startswith("adapter_") and method != "pall_adapter":
             continue

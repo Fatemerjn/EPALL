@@ -21,11 +21,20 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+try:
+    from run_selection import seed_key as canonical_seed_key
+    from run_selection import select_latest_seed_rows
+except ImportError:  # pragma: no cover - supports package-style imports
+    from tools.run_selection import seed_key as canonical_seed_key
+    from tools.run_selection import select_latest_seed_rows
+
 
 CANONICAL_METHOD_VARIANTS = {
     "adapter_hard_critical_mask": "pall_adapter_hard_mask",
     "adapter_explicit_critical_mask": "pall_adapter_soft_mask",
 }
+
+_SMOKE_TAG_PREFIXES = ("smoke", "test")
 
 
 OUTPUT_COLUMNS = [
@@ -61,6 +70,9 @@ OUTPUT_COLUMNS = [
 
 CONFIG_GROUP_COLUMNS = [
     "experiment_tag",
+    "protect_importance",
+    "protect_ratio",
+    "lambda_protect",
     "adapter_bottleneck",
     "adapter_shared_bottleneck",
     "adapter_shared_forget_ratio",
@@ -158,6 +170,12 @@ def config_group_value(config: Dict[str, Any], key: str) -> str:
     if value is None:
         return ""
     return str(value)
+
+
+def is_smoke_tag(value: Any) -> bool:
+    if value is None:
+        return False
+    return str(value).strip().lower().startswith(_SMOKE_TAG_PREFIXES)
 
 
 def get_last_unlearning_event(metrics: Dict[str, Any]) -> Dict[str, Any]:
@@ -472,13 +490,14 @@ def mean_std(values: List[float]) -> Tuple[Optional[float], Optional[float]]:
 
 
 def seed_key(row: Dict[str, Any]) -> str:
-    seed = row.get("seed")
-    if seed is None:
-        return f"run:{row['run_path']}"
-    seed_text = str(seed).strip()
-    if seed_text == "":
-        return f"run:{row['run_path']}"
-    return seed_text
+    return canonical_seed_key(row)
+
+
+def dedupe_latest_rows(rows: List[Dict[str, Any]], group_by_config: bool) -> Tuple[List[Dict[str, Any]], int]:
+    group_columns = ["dataset", "method"]
+    if group_by_config:
+        group_columns.extend(CONFIG_GROUP_COLUMNS)
+    return select_latest_seed_rows(rows, group_columns)
 
 
 def values_per_seed(rows: List[Dict[str, Any]], metric: str) -> List[float]:
@@ -643,6 +662,21 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Only include runs whose config.json experiment_tag matches one of these values.",
     )
+    parser.add_argument(
+        "--seed-policy",
+        choices=("mean", "latest"),
+        default="mean",
+        help=(
+            "How to handle duplicate completed runs for the same group+seed. "
+            "'mean' preserves the legacy seed-mean behavior; 'latest' keeps only "
+            "the newest timestamped run per group+seed."
+        ),
+    )
+    parser.add_argument(
+        "--include-smoke",
+        action="store_true",
+        help="Include smoke/test runs (experiment_tag starting with 'smoke'/'test'); excluded by default.",
+    )
     parser.add_argument("--decimals", type=int, default=4, help="Decimal precision for numeric outputs.")
     return parser.parse_args()
 
@@ -665,6 +699,8 @@ def main() -> int:
             include_tags=include_tags,
         )
         if row is not None:
+            if not args.include_smoke and is_smoke_tag(row.get("experiment_tag")):
+                continue
             run_rows.append(row)
         elif include_tags is not None:
             config = load_json(metrics_path.with_name("config.json")) or {}
@@ -672,12 +708,17 @@ def main() -> int:
             if experiment_tag not in include_tags:
                 skipped_by_tag += 1
 
+    deduped_runs = 0
+    if args.seed_policy == "latest":
+        run_rows, deduped_runs = dedupe_latest_rows(run_rows, group_by_config=args.group_by_config)
+
     table = build_table(run_rows, group_by_config=args.group_by_config)
     write_csv_table(args.out_csv, table, args.decimals, group_by_config=args.group_by_config)
     write_markdown_table(args.out_md, table, args.decimals, group_by_config=args.group_by_config)
 
     print(f"[INFO] Scanned metrics files: {total_metrics_files}")
     print(f"[INFO] Runs included: {len(run_rows)}")
+    print(f"[INFO] Duplicate completed runs removed by seed policy: {deduped_runs}")
     print(f"[INFO] Runs skipped by tag filter: {skipped_by_tag}")
     print(f"[INFO] Wrote CSV table: {args.out_csv}")
     print(f"[INFO] Wrote Markdown table: {args.out_md}")

@@ -47,6 +47,9 @@ class ExpectedSpec:
             "dataset": self.dataset,
             "method": self.method,
             "experiment_tag": self.experiment_tag,
+            "protect_importance": "gradient",
+            "protect_ratio": "",
+            "lambda_protect": 0.0,
             "adapter_bottleneck": 16,
             "adapter_shared_bottleneck": 0,
             "adapter_shared_forget_ratio": 0.0,
@@ -91,6 +94,8 @@ def adapter_config(
     forget_steps: int = 10,
 ) -> Dict[str, Any]:
     return {
+        "protect_importance": "gradient",
+        "lambda_protect": 0.0,
         "adapter_bottleneck": bottleneck,
         "adapter_shared_bottleneck": shared_bottleneck,
         "adapter_shared_forget_ratio": forget_ratio,
@@ -102,7 +107,16 @@ def adapter_config(
 
 
 def retrain_config() -> Dict[str, Any]:
-    return {"retrain_steps": 50}
+    return {"protect_importance": "gradient", "lambda_protect": 0.0, "retrain_steps": 50}
+
+
+def protected_retrain_config() -> Dict[str, Any]:
+    return {
+        "protect_importance": "gradient",
+        "protect_ratio": 0.2,
+        "lambda_protect": 1.0,
+        "retrain_steps": 50,
+    }
 
 
 def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
@@ -148,7 +162,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             "from_scratch",
             configs={
                 "pall_original": retrain_config(),
-                "pall_modified": retrain_config(),
+                "pall_modified": protected_retrain_config(),
                 "pall_adapter": adapter_config(),
             },
         )
@@ -167,7 +181,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             "standard_split",
             configs={
                 "pall_original": retrain_config(),
-                "pall_modified": retrain_config(),
+                "pall_modified": protected_retrain_config(),
                 "pall_adapter": adapter_config(),
             },
         )
@@ -177,7 +191,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             ("pall_modified", "clpu"),
             f"{prefix}_mia",
             "from_scratch",
-            configs={"pall_modified": retrain_config()},
+            configs={"pall_modified": protected_retrain_config()},
         )
         add(
             "MIA pretrained PEFT",
@@ -238,7 +252,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
         "tiny_main",
         "from_scratch",
         seeds=tiny_seeds,
-        configs={"pall_original": retrain_config(), "pall_modified": retrain_config()},
+        configs={"pall_original": retrain_config(), "pall_modified": protected_retrain_config()},
     )
     add(
         "TinyImageNet pretrained PEFT",

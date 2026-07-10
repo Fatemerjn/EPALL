@@ -112,7 +112,11 @@ python3 tools/run_pall_ablation.py \
 Aggregate and format results into `results/aggregates/`:
 
 ```bash
-python3 tools/aggregate_results.py --root runs --out results/aggregates/results_summary.csv
+python3 tools/aggregate_results.py \
+  --root runs \
+  --require-metrics \
+  --seed-policy latest \
+  --out results/aggregates/results_summary.csv
 ```
 
 ```bash
@@ -155,10 +159,17 @@ This command writes:
 - `results/aggregates/ablation_table.{csv,md}`
 - reviewer-grade PDF figures under `results/thesis/plots_v2/`
 
+The reproducibility workflow keeps raw run directories read-only but writes
+canonical aggregate artifacts: config-only partial runs are excluded from
+`server_results.csv`, and duplicate completed runs for the same group/seed use
+the newest timestamped run (`--seed-policy latest`).
+
 The compact report table intentionally keeps `regime` distinct:
 `from_scratch`, `pretrained_frozen`, and `standard_split`. The group-by-config
 thesis table also includes adapter bottleneck and adapter forget-step settings
-so ablations and pretrained adapter sweeps do not collapse into one row.
+plus protection settings (`protect_importance`, `protect_ratio`, and
+`lambda_protect`) so ablations, pretrained adapter sweeps, and
+gradient/conflict protection variants do not collapse into one row.
 
 Exact server-side training commands for each result set:
 
