@@ -11,6 +11,7 @@
 #   GROUP 8 (g8_mia): MIA-enabled proposed/pretrained PEFT + CLPU runs -- ON DEMAND, not in `all`
 #   GROUP 9 (g9_extra_baselines): SSD + SalUn baselines -- ON DEMAND, not in `all`
 #   GROUP 9b (g9b_ssd_tune): SSD alpha/lambda tuning sweep (CIFAR-10) -- ON DEMAND, not in `all`
+#   GROUP 10 (g10_anchor): PALL-Modified anchor ablation, protect_anchor old vs reinit -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -22,6 +23,7 @@
 #   bash tools/run_server_experiments.sh g8_mia     # MIA-enabled proposed/pretrained PEFT + CLPU group
 #   bash tools/run_server_experiments.sh g9_extra_baselines # SSD + SalUn baseline group
 #   bash tools/run_server_experiments.sh g9b_ssd_tune # SSD alpha/lambda tuning sweep (9 configs, CIFAR-10, seed 0)
+#   bash tools/run_server_experiments.sh g10_anchor # PALL-Modified anchor ablation (old vs reinit, MIA on), both datasets/seeds
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -370,6 +372,33 @@ group9b_ssd_tune () {
     done
 }
 
+# ---------------------------------------------------- GROUP 10 anchor ablation
+# Directly answers the advisor's main theoretical objection (docs/review.tex
+# Issue 1): PALL-Modified's L2 protection anchors critical shared weights to
+# their pre-forget values w_old, which STILL encode the forgotten task. The
+# corrected alternative anchors instead to a fresh reinitialization
+# (--protect_anchor reinit, methods/pall_base._reinit_anchor_values). No full
+# runs with reinit exist yet. This group re-runs pall_modified with the SAME
+# base config as cifar10_main/cifar100_main, sweeping protect_anchor in
+# {old, reinit} with MIA enabled for both so the leakage difference is
+# measurable. Run ON DEMAND (g10_anchor) -- intentionally NOT part of `all`.
+group10_anchor () {
+    echo "===== GROUP 10: anchor ablation (pall_modified old vs reinit, MIA on) ====="
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    for s in $SEEDS; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        for anchor in old reinit; do
+            launch "anchor_c10_pall_modified_${anchor}_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+                   --protect_anchor $anchor --eval_mia --experiment_tag anchor_ablation_v1
+            launch "anchor_c100_pall_modified_${anchor}_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method pall_modified $PALL_MOD \
+                   --protect_anchor $anchor --eval_mia --experiment_tag anchor_ablation_v1
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -382,7 +411,8 @@ case "$WHICH" in
     g8_mia) group8_mia ;;
     g9_extra_baselines) group9_extra_baselines ;;
     g9b_ssd_tune) group9b_ssd_tune ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune)"; exit 1 ;;
+    g10_anchor) group10_anchor ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor)"; exit 1 ;;
 esac
 
 echo "===================================================================="
