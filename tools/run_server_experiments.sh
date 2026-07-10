@@ -26,6 +26,7 @@
 #   bash tools/run_server_experiments.sh g9b_ssd_tune # SSD alpha/lambda tuning sweep (9 configs, CIFAR-10, seed 0)
 #   bash tools/run_server_experiments.sh g10_anchor # PALL-Modified anchor ablation (old vs reinit, MIA on), both datasets/seeds
 #   bash tools/run_server_experiments.sh g11_vit # ViT-T/8 cross-architecture (pall_original + pall_modified), both datasets/seeds
+#   bash tools/run_server_experiments.sh g12_agreement # model agreement rate (pall_modified + pall_adapter, T5_F1, seeds 0/1)
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -436,6 +437,31 @@ group11_vit () {
     done
 }
 
+# ---------------------------------------------------- GROUP 12 agreement rate
+# Model Agreement Rate (reviewer metric). EXPENSIVE: --eval_agreement trains a
+# from-scratch Sequential REFERENCE per forget event on the same schedule with
+# the forgotten task never trained, then reports the fraction of test predictions
+# that match the unlearned model. Gated to single-forget runs (n_forget==1), so
+# this group uses the T5_F1 candidate-forget schedule (forget task 0). Run ON
+# DEMAND (g12_agreement) -- intentionally NOT part of `all`.
+group12_agreement () {
+    echo "===== GROUP 12: model agreement rate (pall_modified + pall_adapter, n_forget=1) ====="
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local C10_F1="--dataset cifar10 --class_per_task 2 --n_tasks 5 --n_forget 1 --arch resnet18 --sparsity 0.8"
+    for s in $SEEDS; do
+        local c10="schedules/cifar10_candidate_forget_task0_seed${s}.json"
+        launch "agree_c10_pall_modified_s${s}" $C10_F1 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+               --eval_agreement --experiment_tag agreement_v1
+        launch "agree_c10_pall_adapter_s${s}" $C10_F1 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+               --eval_agreement --experiment_tag agreement_v1
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -450,7 +476,8 @@ case "$WHICH" in
     g9b_ssd_tune) group9b_ssd_tune ;;
     g10_anchor) group10_anchor ;;
     g11_vit) group11_vit ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit)"; exit 1 ;;
+    g12_agreement) group12_agreement ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement)"; exit 1 ;;
 esac
 
 echo "===================================================================="

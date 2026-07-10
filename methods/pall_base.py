@@ -543,6 +543,7 @@ class PALLBase(Base):
             "t_reset": 0.0,
             "t_retrain": 0.0,
             "num_updated_params": 0,
+            "grad_norm_ratio": None,
         }
 
         # (1) Backup the masks of the task to be forgotten from the list
@@ -571,6 +572,14 @@ class PALLBase(Base):
         if self.method_variant == "modified" and self.args.protect_importance == "conflict":
             forget_grads = self._compute_signed_grads([task_id])
 
+        # Gradient Norm Ratio (reviewer metric): capture the SIGNED forget-task
+        # gradient on the subnet while the forget buffer is still present. Reuse
+        # the conflict grads when already computed, else compute once here. This
+        # runs for pall_original and pall_modified alike, independent of
+        # protect_importance / protect_ratio; the retain-side grads are taken
+        # below (after active_tasks is known) and the ratio stored in info.
+        metric_forget_grads = forget_grads if forget_grads else self._compute_signed_grads([task_id])
+
         # (2) Remove the masks of the task to be forgotten from the list as well as the rehearsal samples from memory
         self.memory.remove(task_id)
         assert task_id not in self.memory.buffer, (
@@ -590,6 +599,12 @@ class PALLBase(Base):
 
         if self.per_task_masks != {}:
             active_tasks = list(remaining_tasks) if remaining_tasks is not None else list(self.per_task_masks.keys())
+
+            # Gradient Norm Ratio: retain-task signed grads over the same subnet,
+            # combined with the forget grads captured above. No dependence on
+            # protect settings, so pall_original/pall_modified both populate it.
+            metric_active_grads = self._compute_signed_grads(active_tasks)
+            info["grad_norm_ratio"] = grad_l2_norm_ratio(metric_forget_grads, metric_active_grads)
 
             # (3) Create combined masks for until task_id
             prev_tasks = [t for t in self.per_task_masks.keys() if task_id > t]

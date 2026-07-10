@@ -696,7 +696,20 @@ class PALLAdapter(Base):
                 )
             )
 
+        # Gradient Norm Ratio (reviewer metric): forget-vs-retain shared-adapter
+        # gradient L2 norms, reusing deleted_grads/active_grads already computed
+        # above. Only defined when both shared forget and protect ratios are > 0
+        # (otherwise active_grads is not populated); None otherwise.
+        grad_norm_ratio = None
+        if (
+            total_shared_params > 0
+            and self.args.adapter_shared_forget_ratio > 0.0
+            and self.args.adapter_shared_protect_ratio > 0.0
+        ):
+            grad_norm_ratio = grad_l2_norm_ratio(deleted_grads, active_grads)
+
         info = {
+            "grad_norm_ratio": grad_norm_ratio,
             "s_t": int(total_overlap_scope),
             "s_share": int(shared_param_count),
             "s_share_crit": int(shared_critical_count),

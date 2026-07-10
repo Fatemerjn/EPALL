@@ -123,6 +123,12 @@ parser.add_argument('--eval_mia', default=False, action='store_true',
                     help='run a simple membership-inference attack before and after each '
                          'forget event (members=forget-task train samples, non-members=its '
                          'test split); writes AUC and balanced accuracy under metrics "mia"')
+parser.add_argument('--eval_agreement', default=False, action='store_true',
+                    help='EXPENSIVE: after a forget event, train a from-scratch reference model '
+                         '(Sequential) on the same schedule with the forgotten task never trained, '
+                         'and report the fraction of test samples whose argmax prediction matches '
+                         'the unlearned model, under metrics "agreement". Requires n_forget==1 '
+                         '(one reference retrain per run); skipped with a log message otherwise.')
 parser.add_argument('--cache_features', default=False, action='store_true',
                     help='precompute the frozen backbone 512-d features once and train/eval the PEFT '
                          'head on the cached features (big speedup + memory). Only active for '
@@ -732,6 +738,7 @@ def normalize_unlearning_event(event, availability=None):
     availability = availability or {}
     overlap = event.get("overlap", {}) or {}
     mia = event.get("mia")
+    agreement = event.get("agreement")
 
     t_reset = to_optional_float(event.get("t_reset")) if availability.get("t_reset", True) else None
     t_retrain = to_optional_float(event.get("t_retrain")) if availability.get("t_retrain", True) else None
@@ -746,6 +753,7 @@ def normalize_unlearning_event(event, availability=None):
         "Fu": to_optional_float(event.get("Fu")),
         "WorstDrop": to_optional_float(event.get("WorstDrop")),
         "Au": to_optional_float(event.get("Au")),
+        "grad_norm_ratio": to_optional_float(event.get("grad_norm_ratio")),
         "avg_before": to_optional_float(event.get("avg_before")),
         "avg_after_reset": to_optional_float(event.get("avg_after_reset")),
         "avg_after_retrain": to_optional_float(event.get("avg_after_retrain")),
@@ -839,6 +847,7 @@ def normalize_unlearning_event(event, availability=None):
             ),
         },
         "mia": json_safe(mia) if isinstance(mia, dict) else None,
+        "agreement": json_safe(agreement) if isinstance(agreement, dict) else None,
     }
 
 
@@ -979,6 +988,72 @@ def build_mia_event(before, after):
     }
 
 
+def _agreement_argmax_preds(model, dataset, task, args):
+    """Argmax predictions of ``model`` over ``dataset`` for one task (eval order,
+    no shuffle) — used to compare two models sample-by-sample."""
+    model.eval_mode()
+    loader = model.build_dataloader(dataset, batch_size=args.batch_size, shuffle=False,
+                                    context=f"agreement_task_{task}")
+    preds = []
+    with torch.no_grad():
+        for x, _y in loader:
+            x = x.to(args.device)
+            preds.append(model.evaluate(x, task).argmax(-1).detach().cpu())
+    if not preds:
+        return torch.zeros(0, dtype=torch.long)
+    return torch.cat(preds)
+
+
+def compute_model_agreement(unlearned_model, args, requests, train_datasets, test_datasets,
+                            forgotten_task_id, active_tasks, logger):
+    """Model Agreement Rate (reviewer metric): fraction of test samples whose
+    argmax prediction under the unlearned model matches a from-scratch REFERENCE
+    trained (Sequential) on the same request schedule with the forgotten task
+    never trained. Reported per forget event; the caller gates this to n_forget==1
+    because it triggers a full extra sequential training run."""
+    from methods.sequential import Sequential
+
+    # Reference: same seed/arch/epochs; re-seed so its init/training match a fresh run.
+    set_seed(args.seed, getattr(args, "deterministic", False))
+    reference = Sequential(args).to(args.device)
+
+    # Train on every "T"-request task in schedule order, except the forgotten one.
+    train_task_ids = []
+    for task_id, learn_type, _active in requests:
+        if learn_type == "T" and task_id != forgotten_task_id and task_id not in train_task_ids:
+            train_task_ids.append(task_id)
+    log_event(
+        logger,
+        f"[INFO] agreement: training reference (sequential) on tasks={train_task_ids} "
+        f"(forgotten task {forgotten_task_id} never trained)",
+    )
+    for task_id in train_task_ids:
+        reference.learn(task_id, train_datasets[task_id])
+
+    def _agree(task):
+        pred_unlearned = _agreement_argmax_preds(unlearned_model, test_datasets[task], task, args)
+        pred_reference = _agreement_argmax_preds(reference, test_datasets[task], task, args)
+        n = min(pred_unlearned.numel(), pred_reference.numel())
+        if n == 0:
+            return None
+        return float((pred_unlearned[:n] == pred_reference[:n]).float().mean().item())
+
+    agreement_forget = _agree(forgotten_task_id)
+    retained_vals = [value for value in (_agree(t) for t in active_tasks) if value is not None]
+    agreement_retained_mean = float(np.mean(retained_vals)) if retained_vals else None
+
+    unlearned_model.train_mode()
+    del reference
+    return {
+        "agreement_forget": agreement_forget,
+        "agreement_retained_mean": agreement_retained_mean,
+        "reference": "sequential_retrain_without_forget",
+        "reference_trained_tasks": train_task_ids,
+        "forgotten_task_id": int(forgotten_task_id),
+        "n_retained": len(retained_vals),
+    }
+
+
 def process_requests(args, model, train_datasets, test_datasets, requests, run_context):
     forgotten_tasks = []
     loss = torch.zeros(len(requests), args.n_tasks)
@@ -1066,6 +1141,22 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 log_event(logger, f"[INFO] MIA after forget: task={task_id} {mia_after}")
             mia_event = build_mia_event(mia_before, mia_after) if getattr(args, "eval_mia", False) else None
 
+            agreement_block = None
+            if getattr(args, "eval_agreement", False):
+                if int(getattr(args, "n_forget", 0)) == 1:
+                    agreement_block = compute_model_agreement(
+                        model, args, requests, train_datasets, test_datasets,
+                        task_id, remaining_tasks, logger,
+                    )
+                    log_event(logger, f"[INFO] agreement after forget: task={task_id} {agreement_block}")
+                else:
+                    log_event(
+                        logger,
+                        f"[INFO] agreement skipped: --eval_agreement requires n_forget==1 "
+                        f"(got n_forget={getattr(args, 'n_forget', None)}); a reference retrain would "
+                        f"repeat for every forget event.",
+                    )
+
             avg_after_reset = avg_for_tasks(after_reset_acc, remaining_tasks)
             avg_after_retrain = avg_for_tasks(post_acc, remaining_tasks)
             fu = avg_before - avg_after_retrain
@@ -1089,7 +1180,9 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "Fu": fu,
                 "WorstDrop": worst_drop,
                 "Au": au,
+                "grad_norm_ratio": info.get("grad_norm_ratio"),
                 "mia": mia_event,
+                "agreement": agreement_block,
                 "t_reset": info.get("t_reset", 0.0) if info.get("t_reset") is not None else 0.0,
                 "t_retrain": info.get("t_retrain", 0.0) if info.get("t_retrain") is not None else 0.0,
                 "t_forget_total": info.get("t_forget_total"),

@@ -24,6 +24,28 @@ def _seed_worker(worker_id):
     random.seed(worker_seed)
 
 
+def grad_l2_norm_ratio(deleted_grads, active_grads, eps=1e-12):
+    """Gradient Norm Ratio metric (reviewer item): the L2 norm of the forget-task
+    gradient over the retain-task gradient, both taken over the same set of shared
+    parameters. ``deleted_grads``/``active_grads`` are dicts {param_name: tensor}
+    (as produced by the PALL gradient-importance helpers). No new backward passes:
+    it reuses tensors already computed during forgetting. Returns a float, or
+    ``None`` if either gradient dict is empty/unavailable."""
+    def _concat_norm(grads):
+        if not grads:
+            return None
+        flats = [g.reshape(-1) for g in grads.values() if g is not None]
+        if not flats:
+            return None
+        return float(torch.cat(flats).norm(p=2).item())
+
+    deleted_norm = _concat_norm(deleted_grads)
+    active_norm = _concat_norm(active_grads)
+    if deleted_norm is None or active_norm is None:
+        return None
+    return deleted_norm / (active_norm + eps)
+
+
 class Base(nn.Module):
     def __init__(self, args):
         super(Base, self).__init__()

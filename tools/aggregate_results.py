@@ -68,6 +68,7 @@ COLUMNS: List[str] = [
     "Fu",
     "WorstDrop",
     "Au",
+    "grad_norm_ratio",
     "mia_auc_before",
     "mia_auc_after",
     "t_reset",
@@ -246,6 +247,9 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
         "Fu": first_non_none(final_unlearning.get("Fu"), raw_last_event.get("Fu")),
         "WorstDrop": first_non_none(final_unlearning.get("WorstDrop"), raw_last_event.get("WorstDrop")),
         "Au": first_non_none(final_unlearning.get("Au"), raw_last_event.get("Au")),
+        "grad_norm_ratio": first_non_none(
+            final_unlearning.get("grad_norm_ratio"), raw_last_event.get("grad_norm_ratio")
+        ),
         "mia_auc_before": mia_auc_before,
         "mia_auc_after": mia_auc_after,
         "t_reset": t_reset,
