@@ -918,6 +918,113 @@ def plot_bottleneck_ablation(
     return save_pdf(fig, out_path, dpi)
 
 
+def _overlap_critical_ratio(metrics: Dict[str, Any], final: Dict[str, Any]) -> Optional[float]:
+    """overlap_shared_critical_ratio == overlap_analysis['critical_ratio'], read
+    from the same nested metrics.json locations as
+    tools/make_thesis_table.get_overlap_analysis."""
+    candidates = (
+        nested_get(metrics, "normalized_results", "final", "overlap_analysis"),
+        nested_get(metrics, "normalized_results", "final", "protection", "overlap_analysis"),
+        final.get("overlap_analysis") if isinstance(final, dict) else None,
+        nested_get(final, "protection", "overlap_analysis"),
+        nested_get(metrics, "overlap_analysis"),
+        nested_get(metrics, "protection", "overlap_analysis"),
+    )
+    for candidate in candidates:
+        if isinstance(candidate, dict) and candidate.get("critical_ratio") is not None:
+            return to_float(candidate.get("critical_ratio"))
+    return None
+
+
+def plot_shared_bottleneck_ablation(
+    runs_root: Path,
+    out_path: Path,
+    dpi: int,
+    n_bootstrap: int,
+    rng: np.random.Generator,
+) -> Optional[Path]:
+    rows: List[Dict[str, Optional[float]]] = []
+    for config_path in runs_root.rglob("config.json"):
+        config = load_json(config_path) or {}
+        if config.get("experiment_tag") != "shared_bottleneck_ablation_v1":
+            continue
+        metrics = load_json(config_path.with_name("metrics.json")) or {}
+        final = extract_final_unlearning(metrics)
+        rows.append(
+            {
+                "adapter_shared_bottleneck": to_float(config.get("adapter_shared_bottleneck")),
+                "final_accuracy": to_float(nested_get(metrics, "normalized_results", "final", "final_avg_accuracy")),
+                "WorstDrop": to_float(final.get("WorstDrop")),
+                "updated_param_ratio": to_float(
+                    nested_get(metrics, "normalized_results", "final", "updated_param_ratio")
+                    or metrics.get("updated_param_ratio")
+                    or nested_get(metrics, "summary", "updated_param_ratio")
+                ),
+                "overlap_shared_critical_ratio": _overlap_critical_ratio(metrics, final),
+            }
+        )
+    if pd is None or not rows:
+        return None
+    ablation_df = (
+        pd.DataFrame(rows)
+        .dropna(subset=["adapter_shared_bottleneck"])
+        .sort_values("adapter_shared_bottleneck")
+    )
+    if ablation_df.empty:
+        return None
+    metrics_spec = [
+        ("final_accuracy", "Final average accuracy", "#0072B2"),
+        ("WorstDrop", "WorstDrop", "#D55E00"),
+        ("updated_param_ratio", "Updated parameter ratio", "#009E73"),
+        ("overlap_shared_critical_ratio", "Shared critical-overlap ratio", "#CC79A7"),
+    ]
+    fig, axes = plt.subplots(4, 1, figsize=(6.2, 9.0), sharex=True)
+    x_reference: Optional[np.ndarray] = None
+    for ax, (metric, ylabel, color) in zip(axes, metrics_spec):
+        plot_rows: List[Tuple[float, float, float, float]] = []
+        for bottleneck, group in ablation_df.groupby("adapter_shared_bottleneck"):
+            values = [float(value) for value in group[metric].dropna().tolist()]
+            mean_value, ci_low, ci_high = bootstrap_mean_ci(values, n_bootstrap=n_bootstrap, rng=rng)
+            if mean_value is None:
+                continue
+            plot_rows.append(
+                (
+                    float(bottleneck),
+                    mean_value,
+                    mean_value if ci_low is None else ci_low,
+                    mean_value if ci_high is None else ci_high,
+                )
+            )
+        if not plot_rows:
+            ax.text(0.5, 0.5, "No valid data", ha="center", va="center", transform=ax.transAxes)
+            continue
+        plot_rows.sort(key=lambda item: item[0])
+        x_vals = np.asarray([row[0] for row in plot_rows], dtype=float)
+        means = np.asarray([row[1] for row in plot_rows], dtype=float)
+        lows = np.asarray([row[2] for row in plot_rows], dtype=float)
+        highs = np.asarray([row[3] for row in plot_rows], dtype=float)
+        x_reference = x_vals
+        if len(x_vals) > 2:
+            x_dense = np.linspace(float(x_vals.min()), float(x_vals.max()), 240)
+            mean_dense = np.interp(x_dense, x_vals, means)
+            low_dense = np.interp(x_dense, x_vals, lows)
+            high_dense = np.interp(x_dense, x_vals, highs)
+            ax.fill_between(x_dense, low_dense, high_dense, color=color, alpha=0.16, linewidth=0)
+            ax.plot(x_dense, mean_dense, color=color, linewidth=1.3)
+        else:
+            ax.fill_between(x_vals, lows, highs, color=color, alpha=0.16, linewidth=0)
+            ax.plot(x_vals, means, color=color, linewidth=1.3)
+        ax.scatter(x_vals, means, color=color, edgecolor="black", linewidth=0.4, s=26, zorder=3)
+        ax.set_ylabel(ylabel)
+        ax.grid(True)
+    axes[-1].set_xlabel("Shared adapter bottleneck")
+    axes[0].set_title("PALL-Adapter Shared-Bottleneck Ablation (CIFAR-10) | 95% bootstrap CI bands")
+    if x_reference is not None:
+        axes[-1].set_xticks(x_reference)
+        axes[-1].set_xticklabels([f"{int(x)}" for x in x_reference])
+    return save_pdf(fig, out_path, dpi)
+
+
 def pick_heatmap_run(runs_root: Path) -> Optional[Path]:
     priority = {
         "cifar10_main": 0,
@@ -1160,6 +1267,13 @@ def generate_paper_figures(
         lambda: plot_bottleneck_ablation(
             runs_root,
             outdir / "adapter_bottleneck_ablation.pdf",
+            dpi,
+            n_bootstrap,
+            rng,
+        ),
+        lambda: plot_shared_bottleneck_ablation(
+            runs_root,
+            outdir / "shared_bottleneck_ablation.pdf",
             dpi,
             n_bootstrap,
             rng,

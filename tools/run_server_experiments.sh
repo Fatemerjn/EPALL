@@ -27,6 +27,7 @@
 #   bash tools/run_server_experiments.sh g10_anchor # PALL-Modified anchor ablation (old vs reinit, MIA on), both datasets/seeds
 #   bash tools/run_server_experiments.sh g11_vit # ViT-T/8 cross-architecture (pall_original + pall_modified), both datasets/seeds
 #   bash tools/run_server_experiments.sh g12_agreement # model agreement rate (pall_modified + pall_adapter, T5_F1, seeds 0/1)
+#   bash tools/run_server_experiments.sh g13_bottleneck # task-bottleneck seed1 + shared-bottleneck sweep (also: g3b_bottleneck_seed1, g13_shared_bottleneck)
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -462,6 +463,46 @@ group12_agreement () {
     done
 }
 
+# ------------------------------------------------- GROUP 3b task bottleneck s1
+# Seed-1 half of the PALL-Adapter TASK-bottleneck ablation (group3 is seed 0).
+# Same {4,8,16,32,64,128} sweep, same experiment_tag adapter_bottleneck_ablation_v1
+# so plot_bottleneck_ablation merges both seeds into one bootstrap-CI figure with
+# NO plot code change. Run ON DEMAND -- intentionally NOT part of `all`.
+group3b_bottleneck_seed1 () {
+    echo "===== GROUP 3b: PALL-Adapter task-bottleneck ablation (CIFAR-10, seed 1) ====="
+    local sch="schedules/cifar10_t5_f3_fixed_seed1.json"
+    for b in 4 8 16 32 64 128; do
+        launch "c10_adapter_bottleneck_${b}_s1" $C10 $COMMON --seed 1 \
+               --request_schedule_file $sch --method pall_adapter \
+               --adapter_bottleneck $b --adapter_shared_bottleneck 16 \
+               --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+               --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10 \
+               --experiment_tag adapter_bottleneck_ablation_v1
+    done
+}
+
+# ------------------------------------------------- GROUP 13 shared bottleneck
+# SHARED-adapter bottleneck ablation -- the sweep that matters for cross-task
+# overlap (docs/review.tex Lemma: the shared adapter bottleneck bounds critical
+# overlap). Vary --adapter_shared_bottleneck in {4,8,16,32} with the TASK
+# bottleneck FIXED at 16 (all other adapter knobs at the main-group defaults),
+# CIFAR-10, seeds 0 1, tag shared_bottleneck_ablation_v1. Consumed by
+# plot_shared_bottleneck_ablation(). Run ON DEMAND -- intentionally NOT in `all`.
+group13_shared_bottleneck () {
+    echo "===== GROUP 13: PALL-Adapter shared-bottleneck ablation (CIFAR-10, seeds 0 1) ====="
+    for s in $SEEDS; do
+        local sch="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        for sb in 4 8 16 32; do
+            launch "c10_adapter_shared_bottleneck_${sb}_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $sch --method pall_adapter \
+                   --adapter_bottleneck 16 --adapter_shared_bottleneck $sb \
+                   --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+                   --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10 \
+                   --experiment_tag shared_bottleneck_ablation_v1
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -477,7 +518,10 @@ case "$WHICH" in
     g10_anchor) group10_anchor ;;
     g11_vit) group11_vit ;;
     g12_agreement) group12_agreement ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement)"; exit 1 ;;
+    g3b_bottleneck_seed1) group3b_bottleneck_seed1 ;;
+    g13_shared_bottleneck) group13_shared_bottleneck ;;
+    g13_bottleneck) group3b_bottleneck_seed1; group13_shared_bottleneck ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck)"; exit 1 ;;
 esac
 
 echo "===================================================================="
