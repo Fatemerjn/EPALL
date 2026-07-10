@@ -921,12 +921,17 @@ def plot_bottleneck_ablation(
 def _overlap_critical_ratio(metrics: Dict[str, Any], final: Dict[str, Any]) -> Optional[float]:
     """overlap_shared_critical_ratio == overlap_analysis['critical_ratio'], read
     from the same nested metrics.json locations as
-    tools/make_thesis_table.get_overlap_analysis."""
+    tools/make_thesis_table.get_overlap_analysis (the actual dump lives at
+    unlearning_events[-1].protection.overlap_analysis)."""
+    events = metrics.get("unlearning_events")
+    raw_last = events[-1] if isinstance(events, list) and events and isinstance(events[-1], dict) else {}
     candidates = (
         nested_get(metrics, "normalized_results", "final", "overlap_analysis"),
         nested_get(metrics, "normalized_results", "final", "protection", "overlap_analysis"),
         final.get("overlap_analysis") if isinstance(final, dict) else None,
         nested_get(final, "protection", "overlap_analysis"),
+        raw_last.get("overlap_analysis") if isinstance(raw_last, dict) else None,
+        nested_get(raw_last, "protection", "overlap_analysis"),
         nested_get(metrics, "overlap_analysis"),
         nested_get(metrics, "protection", "overlap_analysis"),
     )
