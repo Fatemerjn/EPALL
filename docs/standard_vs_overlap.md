@@ -116,3 +116,55 @@ through the random-disjoint-split path (`data.py`) and relaxes the
 > Mammoth/DER++/PALL convention, and it matches the existing 10-task forget
 > schedule). If the reference you compare against uses 20×5, regenerate a
 > 20-task schedule and set `--class_per_task 5 --n_tasks 20 --cifar100_split standard`.
+
+---
+
+## Known issue: LoRA diverges on standard Split-CIFAR-100 (fixed, footnote required)
+
+**Symptom.** In `g6_standard`, `lora` on `cifar100_standard` collapsed to chance
+(`final_avg_acc = 0.1000` for **both** seeds), while the same method reached
+`0.305` on our overlap-heavy CIFAR-100 (`cifar100_main`, 3 epochs) and `0.832` on
+`cifar10_standard`.
+
+**Root cause — learning-rate divergence, not a modelling bug.** The LoRA baseline
+trains a per-task low-rank module + the classifier **on top of a frozen,
+randomly-initialised ResNet backbone** (`methods/lora.py` calls
+`self.net.freeze_backbone(train_classifier=True)`; the from-scratch stem in
+`models/lora_resnet.py` is built but never trained, and its BatchNorms run with
+`norm_params=False`, i.e. affine off / no running stats, so feature scale is
+uncontrolled). At the default `--lr 1e-2` sustained over the reference
+`--n_epochs 20`, the 10-way CIFAR-100 logits blow up during **task 0**: the eval
+loss becomes `nan` and accuracy pins to exactly `0.1000` (10-way chance). Because
+the shared classifier weights are now `nan`, **every subsequent task also reads
+0.1000** — hence the whole-run collapse. This is visible directly in the run logs
+(`logs/std_c100_lora_s{0,1}.log`):
+
+```
+[INFO] loss:  tensor([nan, nan, nan, nan, nan, nan, nan, nan, nan, nan])
+[INFO] acc.:  tensor([0.1000, 0.1000, ...])
+```
+
+Why only this cell diverges:
+- `cifar100_main` uses `--n_epochs 3` (our overlap runs), so training stops **before**
+  the blow-up — it stays finite (per-task acc ≈ 0.20–0.38, above the 5-way chance 0.20).
+- `cifar10_standard` is only **2-way**, so the same 20-epoch/`1e-2` schedule produces
+  much gentler gradients and never diverges (0.832).
+- The frozen random backbone alone does **not** explain it (both `main` and `standard`
+  use it); the extra ingredient is the **20-epoch × `1e-2` on 10-way** combination.
+
+**Reproduction (CPU, 1 task is enough).** Running the exact `g6_standard` cifar100
+lora command on CPU reproduces the collapse — after task 0's 20 epochs the eval is
+`loss=nan`, `acc=0.1000`. Lowering only the learning rate to `1e-3` keeps the loss
+finite (~2.1, below `ln 10 ≈ 2.30`) and task 0 reaches `acc ≈ 0.239` (above chance).
+
+**Fix (minimal, LoRA-only).** The `std_c100_lora` launch in
+`tools/run_server_experiments.sh` now appends `--lr 1e-3`, overriding
+`COMMON_E20`'s `1e-2` **for this one command only** (argparse keeps the last
+`--lr`; no other method, dataset, or run changes). CIFAR-10 LoRA and every other
+method keep `--lr 1e-2`.
+
+> **Paper footnote:** *LoRA on standard Split-CIFAR-100 uses a learning rate of
+> 1e-3 (all other methods/datasets use 1e-2). At 1e-2 the LoRA baseline diverges
+> to NaN over the 20-epoch reference schedule on the frozen random backbone,
+> collapsing to chance; 1e-3 trains stably. This affects only the LoRA baseline
+> cell and does not touch our proposed method or any other baseline.*

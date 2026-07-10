@@ -220,7 +220,12 @@ group6_standard () {
         launch "std_c100_pall_original_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_original --retrain_steps 50 --experiment_tag cifar100_standard
         launch "std_c100_pall_modified_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_modified $PALL_MOD --experiment_tag cifar100_standard
         launch "std_c100_pall_adapter_s${s}"  $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_adapter $ADAPTER --experiment_tag cifar100_standard
-        launch "std_c100_lora_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lora $LORA --experiment_tag cifar100_standard
+        # LoRA on standard Split-CIFAR-100 diverges to NaN at the default lr=1e-2 over
+        # 20 epochs (frozen RANDOM backbone + 10-way tasks -> logits blow up on task 0,
+        # collapsing every task to chance=0.1000 for both seeds). It needs lr=1e-3; the
+        # trailing --lr overrides COMMON_E20's 1e-2 for this one command only (argparse
+        # keeps the last value). See docs/standard_vs_overlap.md. Paper footnote required.
+        launch "std_c100_lora_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lora $LORA --lr 1e-3 --experiment_tag cifar100_standard
         launch "std_c100_er_s${s}"            $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method er $FI --experiment_tag cifar100_standard
         launch "std_c100_derpp_s${s}"         $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method derpp $FI --experiment_tag cifar100_standard
         launch "std_c100_ewc_s${s}"           $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method ewc --experiment_tag cifar100_standard
