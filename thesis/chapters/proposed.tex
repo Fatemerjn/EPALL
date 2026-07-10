@@ -11,7 +11,7 @@
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.86\columnwidth]{selective_forgetting_pipeline.png}
+    \includegraphics[width=0.68\columnwidth]{selective_forgetting_pipeline.png}
     \caption[جریان کلی فراموشی انتخابی]{جریان کلی فراموشی انتخابی آگاه از هم‌پوشانی. مسیر قرمز عملیات حذف و بازنشانی را نشان می‌دهد و مسیر سبز سازوکارهای حفظ دانش مشترک و محافظت از وظایف فعال را نمایش می‌دهد.}
     \label{fig:selective-forgetting-pipeline}
 \end{figure}
@@ -47,7 +47,7 @@ S_{\mathrm{crit}} \;\triangleq\; S_{\mathrm{forget}} \,\cap\, S_{\mathrm{active}
 % ---- شکل ۱: نمودار مفهومی هم‌پوشانی بحرانی ----
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.92\columnwidth]{parameter_overlap_concept.png}
+    \includegraphics[width=0.88\columnwidth]{parameter_overlap_concept.png}
     \caption[هم‌پوشانی پارامتری و ناحیه بحرانی]{نمایش مفهومی هم‌پوشانی پارامتری. مجموعه‌ی $S_{\mathrm{forget}}$ پارامترهای حساس به وظیفه‌ی فراموش‌شونده و $S_{\mathrm{active}}$ پارامترهای مهم وظایف فعال را نشان می‌دهد. اشتراک آن‌ها، یعنی $S_{\mathrm{crit}}$، همان ناحیه‌ای است که باید با مقیاس‌دهی نرم یا لنگر محافظت شود تا فراموشی وظیفه‌ی هدف به وظایف باقی‌مانده آسیب نزند.}
     \label{fig:overlap-concept}
 \end{figure}
@@ -172,7 +172,7 @@ w|_{\mathrm{to\_reset}} \;\sim\; \mathrm{Kaiming}.
 \subsection{انگیزه و کارآیی پارامتری}
 \label{subsec:adapter-motivation}
 
-ایده‌ی محوری آن است که بدنه‌ی عمیق استخراج ویژگی ($\theta_{\mathrm{base}}$) به‌طور کامل {منجمد\LTRfootnote{\lr{Frozen}}} شود و یادگیری و فراموشی تنها از طریق ماژول‌های کوچک {آداپتر\LTRfootnote{\lr{Adapter}}} هدایت شوند. این کار دو فایده دارد: نخست، تعداد پارامترهای آموزش‌پذیر—و در نتیجه پارامترهای به‌روزرسانی‌شده در هر درخواست فراموشی—به‌شدت کم می‌شود؛ دوم، جداسازی دانش وظایف به‌صورت ساختاری و از طریق آداپترهای مجزا تأمین می‌شود و دیگر نیازی به سازوکار صفرکردن گرادیان ماسکی \lr{PALL-Modified} نیست. در پیکربندی ارزیابی‌شده، این طراحی نسبت پارامترهای به‌روزرسانی‌شده را تا حدود ۸۷ درصد نسبت به نسخه‌های تمام‌شبکه کاهش می‌دهد.
+ایده‌ی محوری آن است که بدنه‌ی عمیق استخراج ویژگی ($\theta_{\mathrm{base}}$) به‌طور کامل {منجمد\LTRfootnote{\lr{Frozen}}} شود و یادگیری و فراموشی تنها از طریق ماژول‌های کوچک {آداپتر\LTRfootnote{\lr{Adapter}}} هدایت شوند. این کار دو فایده دارد: نخست، تعداد پارامترهای آموزش‌پذیر—و در نتیجه پارامترهای به‌روزرسانی‌شده در هر درخواست فراموشی—به‌شدت کم می‌شود؛ دوم، جداسازی دانش وظایف به‌صورت ساختاری و از طریق آداپترهای مجزا تأمین می‌شود و دیگر نیازی به سازوکار صفرکردن گرادیان ماسکی \lr{PALL-Modified} نیست. در پیکربندی \lr{CIFAR-10} از صفر، این طراحی نسبت پارامترهای به‌روزرسانی‌شده را از $0.0360$ به $0.0045$ کاهش می‌دهد.
 
 \subsection{ساختار آداپتر گلوگاهی}
 \label{subsec:adapter-bottleneck}
@@ -205,7 +205,7 @@ z_{\mathrm{final}} &= z_{\mathrm{shared}} + W_{\mathrm{up}}^{(t)}\,\mathrm{ReLU}
 % ---- شکل ۲: معماری PALL-Adapter ----
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.88\columnwidth]{pall_adapter_architecture.png}
+    \includegraphics[width=0.68\columnwidth]{pall_adapter_architecture.png}
     \caption[معماری \lr{PALL-Adapter}]{معماری پیشنهادی \lr{PALL-Adapter}. بدنه‌ی عمیق ($\theta_{\mathrm{base}}$) منجمد است و نمایش‌ها ابتدا از آداپتر مشترک ($\phi_s$) و سپس از آداپتر مخصوص وظیفه ($\phi_t$) عبور می‌کنند. این جداسازی باعث می‌شود دانش اختصاصی هر وظیفه با بازنشانی آداپتر همان وظیفه حذف شود و بخش مشترک فقط با ماسک نرم به‌روزرسانی گردد.}
     \label{fig:architecture}
 \end{figure}
@@ -469,7 +469,7 @@ E^{\mathrm{crit}}_{t} \triangleq \eta\!\!\sum_{i\in S_{\mathrm{crit}}}\!\!\big|\
 % ---- شکل ۳: تجزیه‌ی بودجه‌ی افت ----
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.94\columnwidth]{softmask_drop_decomposition.png}
+    \includegraphics[width=0.78\columnwidth]{softmask_drop_decomposition.png}
     \caption[تجزیه افت عملکرد در ماسک نرم]{تجزیه‌ی بودجه‌ی افت یک وظیفه‌ی فعال به سه منبع مجزا. ناحیه‌ی اختصاصی فراموشی آزادانه به‌روزرسانی می‌شود، ناحیه‌ی محافظت‌شده دست‌نخورده می‌ماند، و ناحیه‌ی بحرانی $S_{\mathrm{crit}}$ با ضریب نرم $(1-p)$ محدود می‌شود. میله‌های خاکستری خط پایه‌ی بدون مقیاس‌دهی و میله‌های آبی روش پیشنهادی را نشان می‌دهند.}
     \label{fig:drop-decomposition}
 \end{figure}
