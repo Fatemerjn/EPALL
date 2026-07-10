@@ -904,18 +904,56 @@ def _mia_loss_over_confidence_scores(losses, confidences):
     return -raw_scores
 
 
-def compute_mia(model, member_dataset, nonmember_dataset, task_id, args, max_samples=512):
+def _dump_mia_scores(args, task_id, phase, unlearning_step, member_scores, nonmember_scores):
+    """Persist the raw per-sample membership scores for an empirical privacy audit.
+
+    Writes ``{run_dir}/mia_scores/step{unlearning_step}_task{task_id}_{phase}.json``
+    (phase is ``before``/``after``). Gated by the caller behind ``--eval_mia``; the
+    aggregated auc/acc "mia" block in metrics.json is unaffected. Scores are the
+    (higher == more member-like) arrays from ``_mia_loss_over_confidence_scores``.
+    """
+    run_dir = getattr(args, "run_dir", None)
+    if not run_dir:
+        return None
+    out_dir = os.path.join(run_dir, "mia_scores")
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"step{unlearning_step}_task{task_id}_{phase}.json")
+    payload = {
+        "unlearning_step": int(unlearning_step) if unlearning_step is not None else None,
+        "task_id": int(task_id),
+        "phase": phase,
+        "score": "loss_over_confidence",
+        "score_definition": "cross_entropy_loss / max_softmax_confidence; higher stored score is more member-like",
+        "n_members": int(np.asarray(member_scores).size),
+        "n_nonmembers": int(np.asarray(nonmember_scores).size),
+        "member_scores": [float(v) for v in np.asarray(member_scores, dtype=np.float64).ravel()],
+        "nonmember_scores": [float(v) for v in np.asarray(nonmember_scores, dtype=np.float64).ravel()],
+    }
+    with open(out_path, "w") as handle:
+        json.dump(payload, handle)
+    return out_path
+
+
+def compute_mia(model, member_dataset, nonmember_dataset, task_id, args, max_samples=512,
+                dump_phase=None, unlearning_step=None):
     """Simple membership-inference attack for one forget target.
 
     Members = the forgotten task's own (training) samples the model was exposed to;
     non-members = that task's held-out test split. Successful unlearning drives the
     attack toward chance (AUC ~ 0.5). The raw score is per-sample loss divided
     by max-softmax confidence; lower raw scores are more member-like. Model-
-    agnostic: works through ``model.evaluate`` for all methods."""
+    agnostic: works through ``model.evaluate`` for all methods.
+
+    When ``dump_phase`` is set ("before"/"after") the raw per-sample member/
+    non-member scores are also written to ``{run_dir}/mia_scores/`` for the
+    empirical privacy audit (tools/audit_privacy.py); the returned aggregate dict
+    is unchanged."""
     m_loss, m_conf = _mia_per_sample_scores(model, member_dataset, task_id, args, max_samples)
     n_loss, n_conf = _mia_per_sample_scores(model, nonmember_dataset, task_id, args, max_samples)
     member_scores = _mia_loss_over_confidence_scores(m_loss, m_conf)
     nonmember_scores = _mia_loss_over_confidence_scores(n_loss, n_conf)
+    if dump_phase is not None:
+        _dump_mia_scores(args, task_id, dump_phase, unlearning_step, member_scores, nonmember_scores)
     return {
         "auc": _mia_auc(member_scores, nonmember_scores),
         "acc": _mia_balanced_accuracy(member_scores, nonmember_scores),
@@ -975,7 +1013,8 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
 
             mia_before = None
             if getattr(args, "eval_mia", False):
-                mia_before = compute_mia(model, train_datasets[task_id], test_datasets[task_id], task_id, args)
+                mia_before = compute_mia(model, train_datasets[task_id], test_datasets[task_id], task_id, args,
+                                         dump_phase="before", unlearning_step=unlearning_step)
                 log_event(logger, f"[INFO] MIA before forget: task={task_id} {mia_before}")
 
             def eval_callback(stage):
@@ -1022,7 +1061,8 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
 
             mia_after = None
             if getattr(args, "eval_mia", False):
-                mia_after = compute_mia(model, train_datasets[task_id], test_datasets[task_id], task_id, args)
+                mia_after = compute_mia(model, train_datasets[task_id], test_datasets[task_id], task_id, args,
+                                        dump_phase="after", unlearning_step=unlearning_step)
                 log_event(logger, f"[INFO] MIA after forget: task={task_id} {mia_after}")
             mia_event = build_mia_event(mia_before, mia_after) if getattr(args, "eval_mia", False) else None
 
