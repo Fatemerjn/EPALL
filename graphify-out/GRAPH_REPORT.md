@@ -1,7 +1,7 @@
 # Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-10)
 
 ## Corpus Check
-- 110 files · ~250,349 words
+- 110 files · ~250,519 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6f1ecd69`
+- Built from commit: `c47e7817`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

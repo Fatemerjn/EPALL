@@ -531,6 +531,11 @@ class PALLBase(Base):
 
     def _forget_impl(self, task_id, eval_fn=None, debug_context=None, remaining_tasks=None, return_info=False):
         assert task_id in self.per_task_masks, f"[ERROR] {task_id} is not learned yet (no per_task_mask found)"
+        assert hasattr(self.memory, "buffer") and task_id in self.memory.buffer, (
+            "[PALLBase] Forget-data access contract violated: the forget task's "
+            "rehearsal buffer must be present until S_forget/forget-gradient "
+            "estimation finishes. No raw-train or held-out fallback is used."
+        )
         forget_start = time.perf_counter()
         self.log_progress(f"forget phase start: task={task_id}")
 
@@ -558,15 +563,20 @@ class PALLBase(Base):
             for key, mask in s_t_masks.items()
         }
 
-        # Capture the SIGNED forget-task gradient on its own rehearsal buffer
-        # BEFORE the buffer and mask are removed below. Only conflict-based
-        # protection needs it; for other modes this stays empty (no extra cost).
+        # Data-access contract: any forget-task gradient used by this unlearning
+        # request is computed from the task's rehearsal-buffer exemplars while
+        # the buffer is still present. The buffer is deleted immediately below;
+        # this path never falls back to a raw training set or a held-out set.
         forget_grads = {}
         if self.method_variant == "modified" and self.args.protect_importance == "conflict":
             forget_grads = self._compute_signed_grads([task_id])
 
         # (2) Remove the masks of the task to be forgotten from the list as well as the rehearsal samples from memory
         self.memory.remove(task_id)
+        assert task_id not in self.memory.buffer, (
+            "[PALLBase] Forget-task rehearsal buffer must be deleted immediately "
+            "after the pre-delete forget-gradient access window."
+        )
         del self.per_task_masks[task_id]
         if isinstance(self.net, SubnetVisionTransformer):
             nn.init.zeros_(self.net.class_tokens[task_id])

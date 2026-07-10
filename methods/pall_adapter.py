@@ -592,6 +592,12 @@ class PALLAdapter(Base):
     def _forget_impl(self, task_id, eval_fn=None, remaining_tasks=None, return_info=False):
         if task_id not in self.prev_tasks:
             raise AssertionError(f"[ERROR] {task_id} is not learned yet")
+        assert hasattr(self.memory, "buffer") and task_id in self.memory.buffer, (
+            "[PALLAdapter] Forget-data access contract violated: S_forget "
+            "estimation and Phase-3 forgetting consume only the forget task's "
+            "rehearsal buffer before deletion. No raw-train or held-out fallback "
+            "is used."
+        )
 
         self._log_method_note()
         forget_start = time.perf_counter()
@@ -619,6 +625,10 @@ class PALLAdapter(Base):
         active_importance = self._zeros_like_shared_adapter()
         active_grads = self._zeros_like_shared_adapter()
         classifier_deleted_grads = self._zeros_like_classifier()
+        # Data-access contract: the forget-task rehearsal buffer is still present
+        # here. S_forget, classifier forget gradients, and the default iterative
+        # uniform-target Phase 3 sample from that buffer only; after those
+        # forget-data-dependent steps, the buffer is deleted before retained repair.
         if total_shared_params > 0 and self.args.adapter_shared_forget_ratio > 0.0:
             deleted_importance, deleted_grads, classifier_deleted_grads, _ = self._compute_shared_importance(
                 [task_id],
@@ -844,6 +854,10 @@ class PALLAdapter(Base):
 
         if task_id in self.memory.buffer:
             self.memory.remove(task_id)
+        assert task_id not in self.memory.buffer, (
+            "[PALLAdapter] Forget-task rehearsal buffer must be deleted after "
+            "S_forget/Phase-3 access and before retained-task repair."
+        )
         if task_id in self.prev_tasks:
             self.prev_tasks.remove(task_id)
 
