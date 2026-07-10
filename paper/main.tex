@@ -498,6 +498,109 @@ Theorem~\ref{thm:worstdrop} once the second-order and forget-exclusive
 residuals are accounted for.
 \end{remark}
 
+% Persian counterpart title: از فراموشی تقریبی تا کران (ε,δ)
+\subsection{From Approximate Unlearning to a $(\varepsilon,\delta)$ Bound}
+\label{subsec:approx-to-ed}
+
+The guarantee above should not be read as an exact-unlearning claim.
+PALL-Adapter resets the task-specific adapter and the corresponding
+classifier head, but the shared adapter
+$\phi_s\equiv\phi_{shared}$ is still updated by gradients computed
+from the forget request. In the notation of our algorithm, the Phase~3
+update uses
+$g_D^{(k)}\triangleq
+\nabla_{\phi_s}\mathcal{L}_{unlearn}(D_{forget};\phi_s^{(k)})$ and
+is written as
+\begin{equation}
+\label{eq:privacy-update}
+\phi_s^{(k+1)}
+=
+\phi_s^{(k)}
+-\eta\big(m_{soft}\odot g_D^{(k)}\big),
+\qquad
+k=0,\ldots,N_{forget}-1,
+\end{equation}
+where $m_{soft}=1-p$ on the critical overlap
+$S_{share\_crit}$, $m_{soft}=1$ on
+$S_{forget}\setminus S_{active}$, and $m_{soft}=0$ elsewhere.
+
+\begin{theorem}[No exact unlearning for the shared adapter]
+\label{thm:shared-adapter-impossibility}
+If some coordinate $i$ of $\phi_s$ has $m_{soft,i}>0$ and
+$\partial_i\mathcal{L}_{unlearn}(D_{forget};\phi_s)$ depends
+non-trivially on the forget data, then the final shared adapter
+$\phi_s^{(N_{forget})}$ is not statistically independent of
+$D_{forget}$. Hence the shared-adapter component of PALL-Adapter does
+not satisfy exact unlearning.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Summing \eqref{eq:privacy-update} gives
+\begin{equation}
+\phi_s^{(N_{forget})}
+=
+\phi_s^{(0)}
+-\eta\sum_{k=0}^{N_{forget}-1}
+m_{soft}\odot g_D^{(k)}.
+\end{equation}
+For a fixed initialization and random seed, the right-hand side is a
+measurable function of $D_{forget}$. On $S_{share\_crit}$ the
+dependence is attenuated by $1-p$, but for $p<1$ it is not removed; on
+forget-exclusive coordinates the multiplier is still one. Exact
+distributional equivalence would therefore require reinitializing the
+shared adapter, zeroing every data-dependent coordinate, or adding a
+separate randomized certification mechanism.
+\end{proof}
+
+This motivates an approximate, certificate-oriented view. Following
+certified removal and differential-privacy analyses
+\cite{guo2020certified,dwork2014algorithmic}, a randomized unlearning
+mechanism $\mathcal{M}$ would be $(\varepsilon,\delta)$-unlearning if,
+for neighboring inputs $D,D'$ that differ only in the forget data and
+for every measurable event $A$,
+\begin{equation}
+\label{eq:ed-def}
+\Pr[\mathcal{M}(D)\in A]
+\le
+e^\varepsilon \Pr[\mathcal{M}(D')\in A]+\delta.
+\end{equation}
+Assume the coordinate-wise gradient difference along the unlearning
+trajectory is bounded by $G$. Since the critical coordinates move with
+multiplier $1-p$, their accumulated sensitivity is, up to constants,
+\begin{equation}
+\label{eq:crit-sensitivity}
+\Delta_{crit}
+\lesssim
+\eta\,N_{forget}\,G\,(1-p)\,|S_{share\_crit}|.
+\end{equation}
+If Gaussian noise with scale $\sigma$ is added to the released shared
+adapter update, the Gaussian-mechanism calculation yields the roadmap
+bound
+\begin{equation}
+\label{eq:epsilon-roadmap}
+\varepsilon
+=
+\mathcal{O}\!\left(
+\frac{\eta\,N_{forget}\,G\,(1-p)\,|S_{share\_crit}|}{\sigma}
+\sqrt{\log(1/\delta)}
+\right).
+\end{equation}
+The constants depend on the privacy accountant, the chosen sensitivity
+norm, and whether noise is injected per step or only at release.
+
+The same design variable therefore controls both results. The soft
+mask provably shrinks the sensitivity of the unlearning update by the
+factor $(1-p)$ on the critical set, exactly the factor that appears in
+the WorstDrop contraction of Theorem~\ref{thm:worstdrop}. Likewise,
+reducing $|S_{share\_crit}|$ through sharper overlap selection lowers
+both the interference budget and the prospective privacy budget. This
+paper does not claim a certified numerical $\varepsilon$: our current
+experiments add no calibrated Gaussian noise, so $\sigma=0$ and the
+bound is vacuous. The empirical evidence is instead the reported
+membership-inference behavior, while \eqref{eq:epsilon-roadmap}
+specifies the path toward future certification and privacy auditing
+\cite{steinke2024privacy}.
+
 \section{Experimental Setup}
 
 We conduct extensive evaluations simulating multi-task continual unlearning over three benchmarks:
@@ -592,6 +695,15 @@ Y. Cao and A. F. Yang, ``Towards making systems forget with machine unlearning,'
 
 \bibitem{bourtoule2021machine}
 L. Bourtoule et al., ``Machine unlearning,'' in \textit{2021 IEEE Symposium on Security and Privacy (SP)}, IEEE, 2021, pp. 141--159.
+
+\bibitem{guo2020certified}
+C. Guo, T. Goldstein, A. Hannun, and L. van der Maaten, ``Certified data removal from machine learning models,'' in \textit{International Conference on Machine Learning}, PMLR, 2020, pp. 3832--3842.
+
+\bibitem{dwork2014algorithmic}
+C. Dwork and A. Roth, \textit{The Algorithmic Foundations of Differential Privacy}. Now Publishers, 2014.
+
+\bibitem{steinke2024privacy}
+T. Steinke, M. Nasr, and M. Jagielski, ``Privacy auditing with one (1) training run,'' \textit{arXiv preprint arXiv:2305.08846}, 2023.
 
 \bibitem{buzzega2020dark}
 P. Buzzega et al., ``Dark experience for general continual learning: a strong, simple baseline,'' \textit{Advances in Neural Information Processing Systems}, vol. 33, pp. 15920--15930, 2020.

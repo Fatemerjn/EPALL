@@ -68,7 +68,6 @@
   "66": "graphify reference: query, path, explain",
   "67": "graphify reference: query, path, explain",
   "68": "Derpp",
-  "69": "EWC",
   "70": "graphify reference: add a URL and watch a folder",
   "71": "graphify reference: commit hook and native CLAUDE.md integration",
   "72": "graphify reference: incremental update and cluster-only",
@@ -132,6 +131,5 @@
   "130": "S_share_crit",
   "131": "پرامپت‌های پیشنهادی برای بازطراحی شکل‌های مفهومی پایان‌نامه",
   "132": "audit_seed_completeness.py",
-  "133": "reproduce_all.sh",
-  "134": "EWC"
+  "133": "reproduce_all.sh"
 }

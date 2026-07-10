@@ -4,7 +4,7 @@ from .vit import ScaledDotProductAttention
 from .subnet_layers import SubnetConv2d, SubnetLinear, SubnetClassifier
 
 
-__all__ = ['SubnetVisionTransformer', 'subnet_vit_t_8', 'subnet_vit_t_16']
+__all__ = ['SubnetVisionTransformer', 'subnet_vit_t8', 'subnet_vit_t_8', 'subnet_vit_t_16']
 
 
 class maskedSequentialViT(nn.Sequential):
@@ -288,6 +288,20 @@ class SubnetVisionTransformer(BaseModel):
                         fan_in, _ = nn.init._calculate_fan_in_and_fan_out(module.weight)
                         bound = 1 / math.sqrt(fan_in)
                         module.bias.data = nn.init.uniform_(torch.zeros_like(module.bias), -bound, bound)
+
+
+def subnet_vit_t8(num_classes, n_tasks=1, sparsity=0.0, norm_params=True):
+    """ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).
+
+    Distinct from ``subnet_vit_t_8`` below, which is sized for 64x64
+    (TinyImageNet). This CIFAR-native config is used by the cross-architecture
+    evaluation (g11_vit). Reached for the subnet PALL methods via
+    ``--arch vit_t8`` (main.py prefixes ``subnet_``); passing
+    ``--arch subnet_vit_t8`` would double-prefix and fail.
+    """
+    return SubnetVisionTransformer(image_size=32, patch_size=8, num_layers=12, num_heads=3, hidden_dim=192,
+                                   mlp_dim=768, num_classes=num_classes, norm_params=norm_params,
+                                   n_tasks=n_tasks, sparsity=sparsity)
 
 
 def subnet_vit_t_8(num_classes, norm_params=False, n_tasks=1, sparsity=0.0):

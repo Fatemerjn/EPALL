@@ -12,6 +12,7 @@
 #   GROUP 9 (g9_extra_baselines): SSD + SalUn baselines -- ON DEMAND, not in `all`
 #   GROUP 9b (g9b_ssd_tune): SSD alpha/lambda tuning sweep (CIFAR-10) -- ON DEMAND, not in `all`
 #   GROUP 10 (g10_anchor): PALL-Modified anchor ablation, protect_anchor old vs reinit -- ON DEMAND, not in `all`
+#   GROUP 11 (g11_vit): ViT-T/8 cross-architecture, pall_original + pall_modified -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -24,6 +25,7 @@
 #   bash tools/run_server_experiments.sh g9_extra_baselines # SSD + SalUn baseline group
 #   bash tools/run_server_experiments.sh g9b_ssd_tune # SSD alpha/lambda tuning sweep (9 configs, CIFAR-10, seed 0)
 #   bash tools/run_server_experiments.sh g10_anchor # PALL-Modified anchor ablation (old vs reinit, MIA on), both datasets/seeds
+#   bash tools/run_server_experiments.sh g11_vit # ViT-T/8 cross-architecture (pall_original + pall_modified), both datasets/seeds
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -399,6 +401,41 @@ group10_anchor () {
     done
 }
 
+# --------------------------------------------------------- GROUP 11 ViT arch
+# Cross-architecture evaluation (mandatory reviewer item): run the subnet PALL
+# methods on a ViT-T/8 backbone (models.subnet_vit_t8, sized for 32x32 CIFAR:
+# 16 patches + cls) instead of ResNet. --arch is passed as vit_t8 and main.py
+# prefixes 'subnet_' for PALL methods -> subnet_vit_t8 (passing subnet_vit_t8
+# directly would DOUBLE-prefix to subnet_subnet_vit_t8 and fail). Only
+# pall_original + pall_modified are in scope: pall_adapter is OUT (there is no
+# adapter_vit model / adapter insertion into ViT blocks is a separate effort).
+# n_epochs 5. Run ON DEMAND (g11_vit) -- intentionally NOT part of `all`.
+group11_vit () {
+    echo "===== GROUP 11: ViT-T/8 cross-architecture (pall_original / pall_modified) ====="
+    local COMMON_E5="${COMMON/--n_epochs 3/--n_epochs 5}"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local VIT_C10="--dataset cifar10  --class_per_task 2 --n_tasks 5  --n_forget 3 --arch vit_t8 --sparsity 0.8"
+    local VIT_C100="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch vit_t8 --sparsity 0.9"
+    for s in $SEEDS; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        # ---- CIFAR-10 (ViT-T/8) ----
+        launch "vit_c10_pall_original_s${s}" $VIT_C10 $COMMON_E5 --seed $s \
+               --request_schedule_file $c10 --method pall_original --retrain_steps 50 \
+               --experiment_tag cifar10_vit_v1
+        launch "vit_c10_pall_modified_s${s}" $VIT_C10 $COMMON_E5 --seed $s \
+               --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+               --experiment_tag cifar10_vit_v1
+        # ---- CIFAR-100 (ViT-T/8) ----
+        launch "vit_c100_pall_original_s${s}" $VIT_C100 $COMMON_E5 --seed $s \
+               --request_schedule_file $c100 --method pall_original --retrain_steps 50 \
+               --experiment_tag cifar100_vit_v1
+        launch "vit_c100_pall_modified_s${s}" $VIT_C100 $COMMON_E5 --seed $s \
+               --request_schedule_file $c100 --method pall_modified $PALL_MOD \
+               --experiment_tag cifar100_vit_v1
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -412,7 +449,8 @@ case "$WHICH" in
     g9_extra_baselines) group9_extra_baselines ;;
     g9b_ssd_tune) group9b_ssd_tune ;;
     g10_anchor) group10_anchor ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor)"; exit 1 ;;
+    g11_vit) group11_vit ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit)"; exit 1 ;;
 esac
 
 echo "===================================================================="
