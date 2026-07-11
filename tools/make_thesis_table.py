@@ -56,6 +56,10 @@ OUTPUT_COLUMNS = [
     "mia_auc_before_std",
     "mia_auc_after_mean",
     "mia_auc_after_std",
+    "probe_acc_before_mean",
+    "probe_acc_before_std",
+    "probe_acc_after_mean",
+    "probe_acc_after_std",
     "unlearning_score_mean",
     "unlearning_score_std",
     "t_retrain_mean",
@@ -97,6 +101,8 @@ SEED_AGG_METRICS = [
     "grad_norm_ratio",
     "mia_auc_before",
     "mia_auc_after",
+    "probe_acc_before",
+    "probe_acc_after",
     "unlearning_score",
     "t_retrain",
     "t_forget_total",
@@ -398,6 +404,10 @@ def extract_run_row(
             nested_get(raw_mia, "after", "auc_loss"),
         )
     )
+    final_probe = final_unlearning.get("probe", {}) if isinstance(final_unlearning.get("probe"), dict) else {}
+    raw_probe = raw_last_event.get("probe", {}) if isinstance(raw_last_event.get("probe"), dict) else {}
+    probe_acc_before = to_float(first_non_none(final_probe.get("acc_before"), raw_probe.get("acc_before")))
+    probe_acc_after = to_float(first_non_none(final_probe.get("acc_after"), raw_probe.get("acc_after")))
 
     row = {
         "run_path": str(metrics_path.parent),
@@ -469,6 +479,8 @@ def extract_run_row(
         ),
         "mia_auc_before": mia_auc_before,
         "mia_auc_after": mia_auc_after,
+        "probe_acc_before": probe_acc_before,
+        "probe_acc_after": probe_acc_after,
         "unlearning_score": derive_unlearning_score(metrics, final_unlearning),
         "t_retrain": t_retrain,
         "t_forget_total": t_forget_total,
@@ -535,6 +547,8 @@ def aggregate_group(rows: List[Dict[str, Any]]) -> Dict[str, Optional[float]]:
     grad_norm_ratio_mean, grad_norm_ratio_std = mean_std(per_metric["grad_norm_ratio"])
     mia_auc_before_mean, mia_auc_before_std = mean_std(per_metric["mia_auc_before"])
     mia_auc_after_mean, mia_auc_after_std = mean_std(per_metric["mia_auc_after"])
+    probe_acc_before_mean, probe_acc_before_std = mean_std(per_metric["probe_acc_before"])
+    probe_acc_after_mean, probe_acc_after_std = mean_std(per_metric["probe_acc_after"])
     unlearning_score_mean, unlearning_score_std = mean_std(per_metric["unlearning_score"])
 
     return {
@@ -554,6 +568,10 @@ def aggregate_group(rows: List[Dict[str, Any]]) -> Dict[str, Optional[float]]:
         "mia_auc_before_std": mia_auc_before_std,
         "mia_auc_after_mean": mia_auc_after_mean,
         "mia_auc_after_std": mia_auc_after_std,
+        "probe_acc_before_mean": probe_acc_before_mean,
+        "probe_acc_before_std": probe_acc_before_std,
+        "probe_acc_after_mean": probe_acc_after_mean,
+        "probe_acc_after_std": probe_acc_after_std,
         "unlearning_score_mean": unlearning_score_mean,
         "unlearning_score_std": unlearning_score_std,
         "t_retrain_mean": mean_or_none(per_metric["t_retrain"]),

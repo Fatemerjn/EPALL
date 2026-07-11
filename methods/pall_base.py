@@ -90,6 +90,19 @@ class PALLBase(Base):
         else:
             return self.forward(x, task, mask=None, mode="no_mask")
 
+    def evaluate_features(self, x, task):
+        """Penultimate (masked-backbone) features on the SAME forward path as
+        ``evaluate``: the task's subnet mask while that mask still exists, else the
+        mask-free full-network features (mode='no_mask') that the deployed model
+        actually exposes once the task's subnet has been removed by unlearning.
+        This is exactly the representation the linear-probe leakage audit reads
+        before vs after forgetting -- before: task-masked subnet; after: no_mask."""
+        if task in self.per_task_masks:
+            _out, features = self.forward_with_features(x, task, mask=self.per_task_masks[task], mode="test")
+        else:
+            _out, features = self.forward_with_features(x, task, mask=None, mode="no_mask")
+        return features
+
     def extract_logits_and_features(self, data_loader, task_id, norm_features=True):
         features, logits, targets = [], [], []
         with torch.no_grad():

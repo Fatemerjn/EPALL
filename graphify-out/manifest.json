@@ -30,8 +30,8 @@
     "semantic_hash": "772462c8744c969f075f8dd3b8e38aa2"
   },
   "main.py": {
-    "mtime": 1783716197.597674,
-    "ast_hash": "f89b0aa5aa400f301085555eba82b466",
+    "mtime": 1783770525.1779537,
+    "ast_hash": "57cd59e6744fce921d12ad2009b15c90",
     "semantic_hash": ""
   },
   "methods/__init__.py": {
@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "methods/base.py": {
-    "mtime": 1783715691.0615642,
-    "ast_hash": "0ed6ca009717c5b8d00d708c7de2dbaa",
+    "mtime": 1783770130.654883,
+    "ast_hash": "119bdd71b032d37c594ebe5b90c2879d",
     "semantic_hash": ""
   },
   "methods/clpu.py": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "methods/pall_base.py": {
-    "mtime": 1783715805.1192904,
-    "ast_hash": "966f1ed766bcac8cf2140319a9cdf4e1",
+    "mtime": 1783770140.9707017,
+    "ast_hash": "6c04017fb5354c7407a203a1a7d5743f",
     "semantic_hash": ""
   },
   "methods/pall_modified.py": {
@@ -215,8 +215,8 @@
     "semantic_hash": "160c8203f07e99d82efd98d03f14b281"
   },
   "tools/aggregate_results.py": {
-    "mtime": 1783752382.1667259,
-    "ast_hash": "207be9fb0066b01eb07f7a2c3f144362",
+    "mtime": 1783770312.600856,
+    "ast_hash": "a5b2579d3109c16fb7211935f949b2e3",
     "semantic_hash": ""
   },
   "tools/analyze_overlap.py": {
@@ -290,13 +290,13 @@
     "semantic_hash": "30ab69aba2fe6b08dba66cf8a07c9ef1"
   },
   "tools/make_report_table.py": {
-    "mtime": 1783688340.3500154,
-    "ast_hash": "fd88db2e7bcb03a5e5d8d923161e1e0f",
+    "mtime": 1783770486.32728,
+    "ast_hash": "f74974663fdc1c39b40ef5b70e8a9338",
     "semantic_hash": ""
   },
   "tools/make_thesis_table.py": {
-    "mtime": 1783752382.167214,
-    "ast_hash": "c2ceac11dc27ec50b607cb33a2ba981d",
+    "mtime": 1783770461.4401317,
+    "ast_hash": "4b66808cbbe89d3292715ece2c659389",
     "semantic_hash": ""
   },
   "tools/md_to_latex_table.py": {
@@ -355,12 +355,12 @@
     "semantic_hash": "5a9aafc30ee686c4ea2b34983904e957"
   },
   "tools/run_paper_experiments.sh": {
-    "mtime": 1783622027.0076332,
+    "mtime": 1783758357.49598,
     "ast_hash": "700532fb8d268e9703b3e8aab4e822e8",
     "semantic_hash": ""
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1783752382.167561,
+    "mtime": 1783758357.495807,
     "ast_hash": "bb0a22da8218c4cf0d91c2380f56ad16",
     "semantic_hash": ""
   },
@@ -677,6 +677,16 @@
   "tools/check_thesis_numbers.py": {
     "mtime": 1783725129.7852056,
     "ast_hash": "5c57fa019f052210e8575b1779d7d177",
+    "semantic_hash": ""
+  },
+  "scripts/sync_from_server.sh": {
+    "mtime": 1783769388.6590285,
+    "ast_hash": "c34de93aacb91077d301852404636521",
+    "semantic_hash": ""
+  },
+  "scripts/sync_to_server.sh": {
+    "mtime": 1783769379.837804,
+    "ast_hash": "f7227b39bf4304cae3450adcf9961290",
     "semantic_hash": ""
   }
 }

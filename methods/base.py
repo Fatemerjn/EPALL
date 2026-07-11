@@ -204,6 +204,14 @@ class Base(nn.Module):
     def evaluate(self, x, task):
         return self.forward(x, task)  # default to the forward pass
 
+    def evaluate_features(self, x, task):
+        """Penultimate representation feeding this method's classifier head, on the
+        same forward path as ``evaluate``. For adapter/PEFT methods this is the
+        backbone + shared/task adapter output. Used by the linear-probe leakage
+        audit (--eval_probe)."""
+        _out, features = self.forward_with_features(x, task)
+        return features
+
     def eval_mode(self):
         self.eval()
 

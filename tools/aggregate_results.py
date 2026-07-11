@@ -72,6 +72,8 @@ COLUMNS: List[str] = [
     "grad_norm_ratio",
     "mia_auc_before",
     "mia_auc_after",
+    "probe_acc_before",
+    "probe_acc_after",
     "t_reset",
     "t_retrain",
     "t_forget_total",
@@ -213,6 +215,10 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
         nested_get(raw_mia, "after", "auc"),
         nested_get(raw_mia, "after", "auc_loss"),
     )
+    final_probe = final_unlearning.get("probe", {}) if isinstance(final_unlearning.get("probe"), dict) else {}
+    raw_probe = raw_last_event.get("probe", {}) if isinstance(raw_last_event.get("probe"), dict) else {}
+    probe_acc_before = first_non_none(final_probe.get("acc_before"), raw_probe.get("acc_before"))
+    probe_acc_after = first_non_none(final_probe.get("acc_after"), raw_probe.get("acc_after"))
 
     return {
         "run_path": str(run_dir),
@@ -255,6 +261,8 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
         ),
         "mia_auc_before": mia_auc_before,
         "mia_auc_after": mia_auc_after,
+        "probe_acc_before": probe_acc_before,
+        "probe_acc_after": probe_acc_after,
         "t_reset": t_reset,
         "t_retrain": t_retrain,
         "t_forget_total": t_forget_total,

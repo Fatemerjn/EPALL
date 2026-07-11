@@ -129,6 +129,12 @@ parser.add_argument('--eval_agreement', default=False, action='store_true',
                          'and report the fraction of test samples whose argmax prediction matches '
                          'the unlearned model, under metrics "agreement". Requires n_forget==1 '
                          '(one reference retrain per run); skipped with a log message otherwise.')
+parser.add_argument('--eval_probe', default=False, action='store_true',
+                    help='linear-probe leakage audit: before and after each forget event, freeze the '
+                         'model, extract the penultimate representation the deployed model exposes for '
+                         'the forgotten task, train a fresh logistic-regression probe on that task\'s '
+                         'TRAIN-split features, and report probe_acc_before/after on its held-out TEST '
+                         'split (vs the 1/class_per_task chance level) under metrics "probe".')
 parser.add_argument('--cache_features', default=False, action='store_true',
                     help='precompute the frozen backbone 512-d features once and train/eval the PEFT '
                          'head on the cached features (big speedup + memory). Only active for '
@@ -739,6 +745,7 @@ def normalize_unlearning_event(event, availability=None):
     overlap = event.get("overlap", {}) or {}
     mia = event.get("mia")
     agreement = event.get("agreement")
+    probe = event.get("probe")
 
     t_reset = to_optional_float(event.get("t_reset")) if availability.get("t_reset", True) else None
     t_retrain = to_optional_float(event.get("t_retrain")) if availability.get("t_retrain", True) else None
@@ -848,6 +855,7 @@ def normalize_unlearning_event(event, availability=None):
         },
         "mia": json_safe(mia) if isinstance(mia, dict) else None,
         "agreement": json_safe(agreement) if isinstance(agreement, dict) else None,
+        "probe": json_safe(probe) if isinstance(probe, dict) else None,
     }
 
 
@@ -988,6 +996,114 @@ def build_mia_event(before, after):
     }
 
 
+def _probe_extract_features(model, dataset, task_id, args, max_samples):
+    """Frozen penultimate features (flattened) + labels for ``dataset`` under the
+    model's DEPLOYED forward path (``model.evaluate_features``). No gradients."""
+    model.eval_mode()
+    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
+    feats, labels, seen = [], [], 0
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(args.device)
+            f = model.evaluate_features(x, task_id)
+            feats.append(f.detach().float().reshape(f.shape[0], -1).cpu())
+            labels.append(y.detach().cpu())
+            seen += int(x.size(0))
+            if seen >= max_samples:
+                break
+    if not feats:
+        return np.zeros((0, 0), dtype=np.float64), np.zeros(0, dtype=np.int64)
+    return torch.cat(feats).numpy().astype(np.float64), torch.cat(labels).numpy()
+
+
+def _sgd_logreg_predict(x_tr, y_tr, x_te, n_classes, epochs=200, lr=0.1):
+    """Fallback multinomial logistic regression: 200 epochs of full-batch SGD."""
+    x_train = torch.tensor(x_tr, dtype=torch.float32)
+    y_train = torch.tensor(y_tr, dtype=torch.long)
+    x_test = torch.tensor(x_te, dtype=torch.float32)
+    weight = torch.zeros(x_train.shape[1], n_classes, requires_grad=True)
+    bias = torch.zeros(n_classes, requires_grad=True)
+    opt = torch.optim.SGD([weight, bias], lr=lr, weight_decay=1e-4)
+    loss_fn = torch.nn.CrossEntropyLoss()
+    for _ in range(epochs):
+        opt.zero_grad()
+        loss_fn(x_train @ weight + bias, y_train).backward()
+        opt.step()
+    with torch.no_grad():
+        return (x_test @ weight + bias).argmax(dim=1).numpy()
+
+
+def _train_linear_probe(x_train, y_train, x_test, y_test):
+    """Fit a fresh logistic-regression probe on frozen (standardized) train
+    features; return its accuracy on held-out test features. sklearn if available,
+    else a 200-epoch SGD logistic regression."""
+    classes = sorted(int(v) for v in set(int(v) for v in y_train))
+    remap = {c: i for i, c in enumerate(classes)}
+    y_tr = np.asarray([remap[int(v)] for v in y_train], dtype=np.int64)
+    y_te = np.asarray([remap.get(int(v), -1) for v in y_test], dtype=np.int64)  # unseen -> never matches
+    mean = x_train.mean(axis=0)
+    std = x_train.std(axis=0) + 1e-8
+    # standardize, then sanitize any non-finite feature values so the probe solver
+    # never sees inf/nan (real penultimate features can occasionally be extreme).
+    x_tr = np.nan_to_num((x_train - mean) / std, nan=0.0, posinf=0.0, neginf=0.0)
+    x_te = np.nan_to_num((x_test - mean) / std, nan=0.0, posinf=0.0, neginf=0.0)
+    try:
+        from sklearn.linear_model import LogisticRegression
+        clf = LogisticRegression(max_iter=1000)
+        clf.fit(x_tr, y_tr)
+        pred = clf.predict(x_te)
+        backend = "sklearn"
+    except Exception:
+        pred = _sgd_logreg_predict(x_tr, y_tr, x_te, len(classes))
+        backend = "sgd200"
+    acc = float((pred == y_te).mean()) if len(y_te) else None
+    return acc, backend
+
+
+def compute_probe(model, train_dataset, test_dataset, task_id, args,
+                  max_train=2000, max_test=1000):
+    """Linear-probe leakage audit for one forget target: how linearly-decodable the
+    forgotten task's labels remain in the frozen penultimate representation. A fresh
+    probe is trained on the task's TRAIN-split features and scored on its held-out
+    TEST split (so this measures generalizable leakage, not probe memorization).
+    Chance = 1/class_per_task; successful unlearning drives probe_acc toward it."""
+    x_tr, y_tr = _probe_extract_features(model, train_dataset, task_id, args, max_train)
+    x_te, y_te = _probe_extract_features(model, test_dataset, task_id, args, max_test)
+    if x_tr.shape[0] == 0 or x_te.shape[0] == 0:
+        return None
+    acc, backend = _train_linear_probe(x_tr, y_tr, x_te, y_te)
+    n_classes = len(set(int(v) for v in y_tr))
+    return {
+        "probe_acc": acc,
+        "chance": 1.0 / max(1, n_classes),
+        "n_classes": int(n_classes),
+        "n_train": int(x_tr.shape[0]),
+        "n_test": int(x_te.shape[0]),
+        "feature_dim": int(x_tr.shape[1]),
+        "backend": backend,
+        "eval_split": "task_test",
+        "representation": (
+            "deployed penultimate features via model.evaluate_features: "
+            "pall_adapter = backbone + shared/task adapter output; subnet methods = "
+            "task-masked subnet before forgetting, mask-free (no_mask) full-network after"
+        ),
+    }
+
+
+def build_probe_event(before, after):
+    if before is None or after is None:
+        return None
+    return {
+        "acc_before": before.get("probe_acc"),
+        "acc_after": after.get("probe_acc"),
+        "chance": first_non_none(before.get("chance"), after.get("chance")),
+        "eval_split": before.get("eval_split"),
+        "representation": before.get("representation"),
+        "before": before,
+        "after": after,
+    }
+
+
 def _agreement_argmax_preds(model, dataset, task, args):
     """Argmax predictions of ``model`` over ``dataset`` for one task (eval order,
     no shuffle) — used to compare two models sample-by-sample."""
@@ -1092,6 +1208,11 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                                          dump_phase="before", unlearning_step=unlearning_step)
                 log_event(logger, f"[INFO] MIA before forget: task={task_id} {mia_before}")
 
+            probe_before = None
+            if getattr(args, "eval_probe", False):
+                probe_before = compute_probe(model, train_datasets[task_id], test_datasets[task_id], task_id, args)
+                log_event(logger, f"[INFO] linear probe before forget: task={task_id} {probe_before}")
+
             def eval_callback(stage):
                 return evaluate(test_datasets, args, model, return_logits=False, verbose=False)
 
@@ -1141,6 +1262,12 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 log_event(logger, f"[INFO] MIA after forget: task={task_id} {mia_after}")
             mia_event = build_mia_event(mia_before, mia_after) if getattr(args, "eval_mia", False) else None
 
+            probe_after = None
+            if getattr(args, "eval_probe", False):
+                probe_after = compute_probe(model, train_datasets[task_id], test_datasets[task_id], task_id, args)
+                log_event(logger, f"[INFO] linear probe after forget: task={task_id} {probe_after}")
+            probe_event = build_probe_event(probe_before, probe_after) if getattr(args, "eval_probe", False) else None
+
             agreement_block = None
             if getattr(args, "eval_agreement", False):
                 if int(getattr(args, "n_forget", 0)) == 1:
@@ -1183,6 +1310,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "grad_norm_ratio": info.get("grad_norm_ratio"),
                 "mia": mia_event,
                 "agreement": agreement_block,
+                "probe": probe_event,
                 "t_reset": info.get("t_reset", 0.0) if info.get("t_reset") is not None else 0.0,
                 "t_retrain": info.get("t_retrain", 0.0) if info.get("t_retrain") is not None else 0.0,
                 "t_forget_total": info.get("t_forget_total"),

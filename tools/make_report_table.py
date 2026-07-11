@@ -26,6 +26,8 @@ OUTPUT_COLUMNS = [
     "Au",
     "mia_auc_before",
     "mia_auc_after",
+    "probe_acc_before",
+    "probe_acc_after",
     "updated_param_ratio_mean",
     "adapter_param_ratio_mean",
     "critical_ratio",
@@ -244,6 +246,8 @@ def compact_row(row: Dict[str, str]) -> Dict[str, str]:
         "Au": format_mean_std(row, "Au_mean", "Au_std"),
         "mia_auc_before": format_mean_std_or_value(row, "mia_auc_before"),
         "mia_auc_after": format_mean_std_or_value(row, "mia_auc_after"),
+        "probe_acc_before": format_mean_std_or_value(row, "probe_acc_before"),
+        "probe_acc_after": format_mean_std_or_value(row, "probe_acc_after"),
         "updated_param_ratio_mean": format_number(row.get("updated_param_ratio_mean")),
         "adapter_param_ratio_mean": format_number(row.get("adapter_param_ratio_mean")),
         "critical_ratio": format_number(
