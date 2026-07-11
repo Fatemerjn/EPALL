@@ -90,6 +90,8 @@ CONFIG_GROUP_COLUMNS = [
     "adapter_shared_protect_strength",
     "retrain_steps",
     "adapter_train_classifier",
+    "adapter_mask_mode",
+    "adapter_conflict_gamma",
 ]
 
 SEED_AGG_METRICS = [
@@ -176,10 +178,20 @@ def find_metrics_files(root: Path) -> Iterable[Path]:
     yield from sorted(root.rglob("metrics.json"))
 
 
+# Config columns added after runs already existed: a run whose config predates the
+# flag must group as the flag's argparse DEFAULT (e.g. an old run with no
+# adapter_mask_mode IS discrete), so missing values normalize to the default rather
+# than to "" -- otherwise old and new-default runs would split into separate groups.
+CONFIG_MISSING_DEFAULTS = {
+    "adapter_mask_mode": "discrete",
+    "adapter_conflict_gamma": "1.0",
+}
+
+
 def config_group_value(config: Dict[str, Any], key: str) -> str:
     value = config.get(key)
     if value is None:
-        return ""
+        return CONFIG_MISSING_DEFAULTS.get(key, "")
     return str(value)
 
 

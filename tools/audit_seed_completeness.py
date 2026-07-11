@@ -61,6 +61,8 @@ class ExpectedSpec:
             "adapter_shared_protect_strength": "",
             "retrain_steps": "",
             "adapter_train_classifier": False,
+            "adapter_mask_mode": "discrete",  # main.py argparse default, written into every run config
+            "adapter_conflict_gamma": 1.0,  # main.py argparse default, written into every run config
         }
         row.update(self.config)
         for column in CONFIG_GROUP_COLUMNS:

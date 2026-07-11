@@ -563,6 +563,106 @@ class PALLAdapter(Base):
         )
         return full_count + soft_count, full_count, soft_count
 
+    def _compute_continuous_conflict_mask(self, deleted_grads, active_grads, forget_masks, gamma):
+        """Continuous conflict-weighted soft mask (``--adapter_mask_mode continuous``).
+
+        Instead of the discrete full/soft/frozen partition, every coordinate in
+        ``S_forget`` gets a per-coordinate multiplier
+        ``m_i = clamp(1 - gamma * c_hat_i, 0, 1)`` where ``c_i = relu(-g_forget_i *
+        g_retain_i)`` is the SAME gradient-conflict energy used by the discrete
+        conflict path (signed forget gradient captured before the forget buffer is
+        deleted) and ``c_hat = c / max(c)`` is its global max-normalization.
+        Coordinates outside ``S_forget`` stay frozen (``m=0``), exactly as before.
+        Returns ``(m_cont, stats)``; ``m_cont`` is a dict of float multiplier tensors
+        held FIXED across the Phase-3 iterations. ``stats`` partitions S_forget into
+        full (m==1) / soft (0<m<1) / frozen (m==0) so the structural invariant
+        ``frozen + (full+soft) == shared_forget`` still holds, and records the
+        conflict diagnostics (mean/max of c_hat, selectivity fractions)."""
+        conflict = self._compute_shared_conflict(deleted_grads, active_grads)  # relu(-g_f*g_r) >= 0
+        max_c = 0.0
+        for name, _ in self._shared_adapter_param_items():
+            c = conflict.get(name)
+            if c is not None and c.numel() > 0:
+                max_c = max(max_c, float(c.max().item()))
+
+        m_cont = {}
+        sum_c_hat = 0.0
+        n_shared = 0
+        n_nonzero_conflict_all = 0
+        n_forget = 0
+        n_nonzero_conflict_forget = 0
+        full_count = soft_count = frozen_count = 0
+        m_below_half_count = 0
+        for name, param in self._shared_adapter_param_items():
+            c = conflict.get(name)
+            forget_mask = forget_masks.get(name)
+            if c is None:
+                c = torch.zeros_like(param)
+            c_hat = c / max_c if max_c > 0.0 else torch.zeros_like(c)
+            m = torch.clamp(1.0 - gamma * c_hat, min=0.0, max=1.0)
+            if forget_mask is None:
+                fmask = torch.zeros_like(param, dtype=torch.bool)
+            else:
+                fmask = forget_mask.to(dtype=torch.bool, device=param.device)
+            m = m * fmask.to(dtype=m.dtype)  # freeze (m=0) outside S_forget
+            m_cont[name] = m
+            # diagnostics over ALL shared coordinates
+            sum_c_hat += float(c_hat.sum().item())
+            n_shared += int(c_hat.numel())
+            n_nonzero_conflict_all += int((c > 0).sum().item())
+            # partition of S_forget by the fixed multiplier
+            in_forget = fmask
+            n_forget += int(in_forget.sum().item())
+            n_nonzero_conflict_forget += int(((c > 0) & in_forget).sum().item())
+            full_count += int(((m >= 1.0) & in_forget).sum().item())
+            soft_count += int(((m > 0.0) & (m < 1.0) & in_forget).sum().item())
+            frozen_count += int(((m <= 0.0) & in_forget).sum().item())
+            m_below_half_count += int(((m < 0.5) & in_forget).sum().item())
+
+        updated_count = full_count + soft_count
+        stats = {
+            "gamma": float(gamma),
+            "max_c_raw": float(max_c),
+            "mean_c_hat": float(sum_c_hat / n_shared) if n_shared else 0.0,
+            "max_c_hat": 1.0 if max_c > 0.0 else 0.0,
+            "n_shared": int(n_shared),
+            "n_forget": int(n_forget),
+            "full_count": int(full_count),
+            "soft_count": int(soft_count),
+            "frozen_count": int(frozen_count),
+            "updated_count": int(updated_count),
+            "pct_m_below_half": float(100.0 * m_below_half_count / n_forget) if n_forget else 0.0,
+            "pct_nonzero_conflict_all": float(100.0 * n_nonzero_conflict_all / n_shared) if n_shared else 0.0,
+            "pct_nonzero_conflict_forget": float(100.0 * n_nonzero_conflict_forget / n_forget) if n_forget else 0.0,
+        }
+        return m_cont, stats
+
+    def _run_phase3_continuous_forgetting(self, task_id, m_cont, lr, n_steps):
+        """Phase 3 with the CONTINUOUS conflict-weighted multiplier ``m_cont`` (fixed
+        across steps): ``w -= lr * m_cont * grad`` of the uniform-target loss."""
+        lr = self.lr if lr is None else lr
+        steps_run = 0
+        batch_size = max(1, self.args.batch_size)
+        for _ in range(max(0, int(n_steps))):
+            if not hasattr(self.memory, "buffer") or task_id not in self.memory.buffer:
+                break
+            x, _y = self.memory.sample_task(batch_size, task_id)
+            for param in self.net.parameters():
+                param.grad = None
+            loss = self._uniform_forget_loss(x, task_id)
+            loss.backward()
+            with torch.no_grad():
+                for name, param in self._shared_adapter_param_items():
+                    grad = param.grad
+                    m = m_cont.get(name)
+                    if grad is None or m is None:
+                        continue
+                    param.add_(grad * m.to(dtype=grad.dtype), alpha=-lr)
+            steps_run += 1
+        for param in self.net.parameters():
+            param.grad = None
+        return steps_run
+
     def _apply_classifier_forgetting_update(self, grad_map, lr):
         lr = self.lr if lr is None else lr
         updated = 0
@@ -850,7 +950,36 @@ class PALLAdapter(Base):
         self.net.reset_task_adapter(task_id)
         self.net.reset_classifier_slice(task_id, self.cpt)
         if shared_forget_count > 0:
-            if getattr(self.args, "adapter_forget_mode", "uniform_loop") == "ascent_step":
+            if getattr(self.args, "adapter_mask_mode", "discrete") == "continuous":
+                # CONTINUOUS conflict-weighted soft mask: replaces the discrete
+                # full/soft/frozen partition with a per-coordinate multiplier over
+                # S_forget. The frozen (m==0) subset plays the "hard-protected" role
+                # so the structural invariant still holds.
+                gamma = float(getattr(self.args, "adapter_conflict_gamma", 1.0))
+                m_cont, conflict_mask_stats = self._compute_continuous_conflict_mask(
+                    deleted_grads, active_grads, shared_forget_mask, gamma,
+                )
+                self._run_phase3_continuous_forgetting(
+                    task_id, m_cont, self.args.adapter_shared_forget_lr,
+                    self.args.adapter_forget_steps,
+                )
+                updated_adapter_params = int(conflict_mask_stats["updated_count"])
+                shared_full_update_params = int(conflict_mask_stats["full_count"])
+                shared_soft_update_params = int(conflict_mask_stats["soft_count"])
+                hard_protected_adapter_params = int(conflict_mask_stats["frozen_count"])
+                info["conflict_mask_stats"] = conflict_mask_stats
+                self.log_progress(
+                    "adapter phase-3 continuous forgetting: gamma={g} mean_c_hat={mc:.4f} "
+                    "full={f} soft={s} frozen={fr} pct_m_below_half={pb:.1f} "
+                    "pct_nonzero_conflict_forget={pc:.1f}".format(
+                        g=gamma, mc=conflict_mask_stats["mean_c_hat"],
+                        f=shared_full_update_params, s=shared_soft_update_params,
+                        fr=hard_protected_adapter_params,
+                        pb=conflict_mask_stats["pct_m_below_half"],
+                        pc=conflict_mask_stats["pct_nonzero_conflict_forget"],
+                    )
+                )
+            elif getattr(self.args, "adapter_forget_mode", "uniform_loop") == "ascent_step":
                 (
                     updated_adapter_params,
                     shared_full_update_params,

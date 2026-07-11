@@ -195,6 +195,25 @@ parser.add_argument(
          "S_share_crit, frozen elsewhere).",
 )
 parser.add_argument(
+    '--adapter_mask_mode',
+    default='discrete',
+    choices=['discrete', 'continuous'],
+    help="pall_adapter Phase-3 soft-mask type. 'discrete' (default, unchanged): the "
+         "binary full/soft/frozen partition (1 on S_forget_only, 1-p on S_share_crit, "
+         "0 on hard-protected/outside). 'continuous': a per-coordinate multiplier "
+         "m_i = clamp(1 - gamma * c_hat_i, 0, 1) on S_forget coordinates only (frozen "
+         "outside), where c_hat is the normalized gradient-conflict energy "
+         "relu(-g_forget*g_retain)/max. Masks stay fixed across the Phase-3 iterations.",
+)
+parser.add_argument(
+    '--adapter_conflict_gamma',
+    default=1.0,
+    type=float,
+    help='strength of the continuous conflict-weighted soft mask (--adapter_mask_mode '
+         'continuous): m_i = clamp(1 - gamma * c_hat_i, 0, 1). gamma=0 recovers a full '
+         'update on S_forget; larger gamma suppresses high-conflict coordinates more.',
+)
+parser.add_argument(
     '--adapter_train_classifier',
     default=False,
     action='store_true',
@@ -753,6 +772,7 @@ def normalize_unlearning_event(event, availability=None):
     agreement = event.get("agreement")
     probe = event.get("probe")
     bound_check = event.get("bound_check")
+    conflict_mask = event.get("conflict_mask")
 
     t_reset = to_optional_float(event.get("t_reset")) if availability.get("t_reset", True) else None
     t_retrain = to_optional_float(event.get("t_retrain")) if availability.get("t_retrain", True) else None
@@ -864,6 +884,7 @@ def normalize_unlearning_event(event, availability=None):
         "agreement": json_safe(agreement) if isinstance(agreement, dict) else None,
         "probe": json_safe(probe) if isinstance(probe, dict) else None,
         "bound_check": json_safe(bound_check) if isinstance(bound_check, dict) else None,
+        "conflict_mask": json_safe(conflict_mask) if isinstance(conflict_mask, dict) else None,
     }
 
 
@@ -1341,6 +1362,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "agreement": agreement_block,
                 "probe": probe_event,
                 "bound_check": bound_check,
+                "conflict_mask": json_safe(info.get("conflict_mask_stats")) if isinstance(info.get("conflict_mask_stats"), dict) else None,
                 "t_reset": info.get("t_reset", 0.0) if info.get("t_reset") is not None else 0.0,
                 "t_retrain": info.get("t_retrain", 0.0) if info.get("t_retrain") is not None else 0.0,
                 "t_forget_total": info.get("t_forget_total"),

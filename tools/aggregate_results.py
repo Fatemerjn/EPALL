@@ -62,6 +62,8 @@ COLUMNS: List[str] = [
     "lambda_protect",
     "protect_anchor",
     "adaptive_protect",
+    "adapter_mask_mode",
+    "adapter_conflict_gamma",
     "retrain_steps",
     "request_schedule_file",
     "final_avg_accuracy",
@@ -108,6 +110,8 @@ DEDUP_GROUP_COLUMNS: List[str] = [
     "lambda_protect",
     "protect_anchor",
     "adaptive_protect",
+    "adapter_mask_mode",
+    "adapter_conflict_gamma",
     "retrain_steps",
     "request_schedule_file",
 ]
@@ -245,6 +249,8 @@ def extract_row(run_dir: Path, config: Dict[str, Any], metrics: Dict[str, Any]) 
         "lambda_protect": config.get("lambda_protect"),
         "protect_anchor": config.get("protect_anchor"),
         "adaptive_protect": config.get("adaptive_protect"),
+        "adapter_mask_mode": config.get("adapter_mask_mode"),
+        "adapter_conflict_gamma": config.get("adapter_conflict_gamma"),
         "retrain_steps": config.get("retrain_steps"),
         "request_schedule_file": first_non_none(
             config.get("request_schedule_file"),
