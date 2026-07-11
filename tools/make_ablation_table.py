@@ -33,8 +33,11 @@ from typing import Dict, List, Tuple
 BASE_OUTPUT_COLUMNS = [
     "Dataset",
     "Method",
+    "Protect Importance",
     "Protect Ratio",
     "Lambda Protect",
+    "Protect Anchor",
+    "Adaptive Protect",
     "Retrain Steps",
     "Epochs",
     "Final Avg Acc",
@@ -48,6 +51,11 @@ BASE_OUTPUT_COLUMNS = [
 ADAPTER_OUTPUT_COLUMNS = [
     "Dataset",
     "Method",
+    "Protect Importance",
+    "Protect Ratio",
+    "Lambda Protect",
+    "Protect Anchor",
+    "Adaptive Protect",
     "Adapter Bottleneck",
     "Train Classifier",
     "Adapter Location",
@@ -62,8 +70,11 @@ ADAPTER_OUTPUT_COLUMNS = [
 BASE_GROUP_COLUMNS = [
     ("dataset", "Dataset"),
     ("method", "Method"),
+    ("protect_importance", "Protect Importance"),
     ("protect_ratio", "Protect Ratio"),
     ("lambda_protect", "Lambda Protect"),
+    ("protect_anchor", "Protect Anchor"),
+    ("adaptive_protect", "Adaptive Protect"),
     ("retrain_steps", "Retrain Steps"),
     ("n_epochs", "Epochs"),
 ]
@@ -71,6 +82,11 @@ BASE_GROUP_COLUMNS = [
 ADAPTER_GROUP_COLUMNS = [
     ("dataset", "Dataset"),
     ("method", "Method"),
+    ("protect_importance", "Protect Importance"),
+    ("protect_ratio", "Protect Ratio"),
+    ("lambda_protect", "Lambda Protect"),
+    ("protect_anchor", "Protect Anchor"),
+    ("adaptive_protect", "Adaptive Protect"),
     ("adapter_bottleneck", "Adapter Bottleneck"),
     ("adapter_train_classifier", "Train Classifier"),
     ("adapter_location", "Adapter Location"),
