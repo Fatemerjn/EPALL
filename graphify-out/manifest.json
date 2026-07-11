@@ -30,8 +30,8 @@
     "semantic_hash": "772462c8744c969f075f8dd3b8e38aa2"
   },
   "main.py": {
-    "mtime": 1783775169.6145678,
-    "ast_hash": "1414d3a53d32d3f0fa995a5a15998078",
+    "mtime": 1783797712.5022388,
+    "ast_hash": "75b487cb154ad288204710af0b068160",
     "semantic_hash": ""
   },
   "methods/__init__.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": "d4fd344519c26a669eda3864a7e55f4b"
   },
   "methods/pall_adapter.py": {
-    "mtime": 1783775060.9107618,
-    "ast_hash": "85340376c07873f573917e640b9505de",
+    "mtime": 1783797735.2986104,
+    "ast_hash": "094da6e5113aaf40ace7149637ec3b3c",
     "semantic_hash": ""
   },
   "methods/pall_base.py": {
@@ -500,9 +500,9 @@
     "semantic_hash": "c704584db900a29604a2cee474d6a555"
   },
   "paper/REVIEW_NOTES.md": {
-    "mtime": 1783343938.0442545,
-    "ast_hash": "08eb371de2f12477cbf4a3767279b018",
-    "semantic_hash": "08eb371de2f12477cbf4a3767279b018"
+    "mtime": 1783797713.7608068,
+    "ast_hash": "f7dc708c611d886c242fca2351cebe96",
+    "semantic_hash": ""
   },
   "requirements.txt": {
     "mtime": 1783343938.0462308,
@@ -620,8 +620,8 @@
     "semantic_hash": ""
   },
   "tools/make_thesis_horizontal_figures.py": {
-    "mtime": 1783508484.535343,
-    "ast_hash": "3517821233fabd7e952317742c977873",
+    "mtime": 1783797215.88331,
+    "ast_hash": "ca773fa8667a4f69a513a494510f1b3b",
     "semantic_hash": ""
   },
   "thesis/image_prompts.md": {
@@ -630,23 +630,23 @@
     "semantic_hash": ""
   },
   "thesis/images/latest_pall_final_accuracy_horizontal.pdf": {
-    "mtime": 1783508496.8963227,
-    "ast_hash": "7880bb28ee7e1f6da027cf3c450552a0",
+    "mtime": 1783797905.756007,
+    "ast_hash": "a75f7f0a24a6e3e74b74a51ec2e41db7",
     "semantic_hash": ""
   },
   "thesis/images/latest_pall_tradeoff_horizontal.pdf": {
-    "mtime": 1783508497.003356,
-    "ast_hash": "3b910f2656580f701a2194af74aaec9d",
+    "mtime": 1783797905.8416908,
+    "ast_hash": "9b44da732113bfdb10270c17b2a35588",
     "semantic_hash": ""
   },
   "thesis/images/latest_pall_worstdrop_horizontal.pdf": {
-    "mtime": 1783508496.943051,
-    "ast_hash": "bb4e3929fdd35158c72af0a69963b6af",
+    "mtime": 1783797905.794569,
+    "ast_hash": "612cb14928ded62b523d5d2425a33ef3",
     "semantic_hash": ""
   },
   "thesis/images/mia_before_after_by_dataset_regime.pdf": {
-    "mtime": 1783508497.0406556,
-    "ast_hash": "1a896837addf5cdf38a2c2c83861cd54",
+    "mtime": 1783797915.013748,
+    "ast_hash": "5485b25442fba7308e95710a2d4c0d22",
     "semantic_hash": ""
   },
   "thesis/images/representative_pall_adapter_accuracy_heatmap.pdf": {
@@ -675,8 +675,8 @@
     "semantic_hash": ""
   },
   "tools/check_thesis_numbers.py": {
-    "mtime": 1783725129.7852056,
-    "ast_hash": "5c57fa019f052210e8575b1779d7d177",
+    "mtime": 1783798015.584961,
+    "ast_hash": "c544f4e3660a2e44346c85433a9f5f6e",
     "semantic_hash": ""
   },
   "scripts/sync_from_server.sh": {

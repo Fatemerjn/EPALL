@@ -40,9 +40,9 @@ MAIN_ROWS: List[Tuple[str, str, str, str]] = [
     ("CIFAR-100\nfrom scratch", "cifar100", "pall_original", "cifar100_main"),
     ("CIFAR-100\nfrom scratch", "cifar100", "pall_modified", "cifar100_main"),
     ("CIFAR-100\nfrom scratch", "cifar100", "pall_adapter", "cifar100_main"),
-    ("TinyImageNet\nfrom scratch", "tinyimagenet", "pall_original", "tiny_main"),
-    ("TinyImageNet\nfrom scratch", "tinyimagenet", "pall_modified", "tiny_main"),
-    ("TinyImageNet\npretrained", "tinyimagenet", "pall_adapter", "tiny_pretrained"),
+    ("TinyImageNet\nfrom scratch", "tinyimagenet", "pall_original", "tiny_e3_original_v1"),
+    ("TinyImageNet\nfrom scratch", "tinyimagenet", "pall_modified", "tiny_e3_modified_v1"),
+    ("TinyImageNet\nfrom scratch", "tinyimagenet", "pall_adapter", "tiny_e3_adapter_v1"),
 ]
 
 
