@@ -24,11 +24,41 @@ DATASET_PRESETS = {
     "cifar100": {"n_tasks": 10, "n_forget": 1},
 }
 
+GRADE_ORDER = ("very_low", "low", "medium", "high", "very_high")
+
+# The controlled-overlap proxy is the number of training requests that follow
+# the task that will eventually be forgotten.  CIFAR-10 has exactly five task
+# positions.  CIFAR-100 uses the nearest useful integer positions to quartiles,
+# retaining the legacy middle point (forget task 5 / four later tasks).
+TARGET_LATER_TASKS = {
+    "cifar10": {
+        "very_low": 0,
+        "low": 1,
+        "medium": 2,
+        "high": 3,
+        "very_high": 4,
+    },
+    "cifar100": {
+        "very_low": 0,
+        "low": 2,
+        "medium": 4,
+        "high": 7,
+        "very_high": 9,
+    },
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate controlled-overlap forgetting schedules.")
     parser.add_argument("--dataset", choices=sorted(DATASET_PRESETS), required=True)
     parser.add_argument("--seed", type=int, required=True)
+    parser.add_argument(
+        "--grades",
+        choices=GRADE_ORDER,
+        nargs="+",
+        default=list(GRADE_ORDER),
+        help="Overlap grades to generate (default: all five, in increasing order).",
+    )
     parser.add_argument("--out-dir", type=Path, default=Path("schedules"))
     return parser.parse_args()
 
@@ -61,25 +91,24 @@ def build_requests_from_plan(n_tasks: int, forget_task: int) -> List[Dict[str, A
 
 
 def schedule_plan(dataset: str) -> Dict[str, int]:
-    if dataset == "cifar10":
-        return {
-            # Request-level overlap proxy only: all tasks are trained
-            # sequentially, then one task is forgotten. Class-level overlap
-            # still requires a future dataset/task-split extension.
-            "low": 4,
-            "medium": 2,
-            "high": 0,
-        }
-    if dataset == "cifar100":
-        return {
-            "low": 9,
-            "medium": 5,
-            "high": 0,
-        }
-    raise ValueError(f"Unsupported dataset: {dataset}")
+    if dataset not in DATASET_PRESETS:
+        raise ValueError(f"Unsupported dataset: {dataset}")
+
+    n_tasks = DATASET_PRESETS[dataset]["n_tasks"]
+    return {
+        grade: n_tasks - 1 - later_tasks
+        for grade, later_tasks in TARGET_LATER_TASKS[dataset].items()
+    }
 
 
-def build_payload(dataset: str, seed: int, setting: str, requests: List[Dict[str, Any]]) -> Dict[str, Any]:
+def build_payload(
+    dataset: str,
+    seed: int,
+    setting: str,
+    forget_task: int,
+    later_tasks: int,
+    requests: List[Dict[str, Any]],
+) -> Dict[str, Any]:
     preset = DATASET_PRESETS[dataset]
     return {
         "n_tasks": preset["n_tasks"],
@@ -89,9 +118,15 @@ def build_payload(dataset: str, seed: int, setting: str, requests: List[Dict[str
         "sequence_length_actual": len(requests),
         "schedule_type": "controlled_overlap_position_proxy",
         "controlled_overlap_setting": setting,
+        "controlled_overlap_knob": "later_training_tasks",
+        "target_later_training_tasks": later_tasks,
+        "target_later_training_ratio": later_tasks / (preset["n_tasks"] - 1),
+        "forget_task": forget_task,
         "notes": (
-            "This schedule controls overlap at the request-position level only. "
-            "Class-level overlap requires a future dataset/task-split extension."
+            "This schedule controls the request-position overlap proxy: the target knob is the "
+            "number of training requests after the eventually forgotten task. It does not impose "
+            "a target on measured parameter overlap; class-level overlap requires a future "
+            "dataset/task-split extension."
         ),
         "requests": requests,
     }
@@ -137,14 +172,24 @@ def main() -> int:
     validate_schedule = load_main_schedule_validator(repo_root)
 
     generated: List[Path] = []
-    for setting in ("low", "medium", "high"):
+    for setting in args.grades:
         plan = plans[setting]
+        later_tasks = TARGET_LATER_TASKS[args.dataset][setting]
         requests = build_requests_from_plan(
             n_tasks=preset["n_tasks"],
             forget_task=plan,
         )
-        payload = build_payload(args.dataset, args.seed, setting, requests)
-        out_path = args.out_dir / f"{args.dataset}_controlled_{setting}_seed{args.seed}.json"
+        payload = build_payload(
+            args.dataset,
+            args.seed,
+            setting,
+            plan,
+            later_tasks,
+            requests,
+        )
+        out_path = args.out_dir / (
+            f"{args.dataset}_controlled_{setting}_later{later_tasks}_seed{args.seed}.json"
+        )
         write_schedule(out_path, payload)
 
         try:

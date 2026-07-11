@@ -15,6 +15,7 @@
 #   GROUP 14 (g14_conflict): conflict-vs-gradient protect_importance ablation (+adaptive_protect for pall_modified) -- ON DEMAND, not in `all`
 #   GROUP 11 (g11_vit): ViT-T/8 cross-architecture, pall_original + pall_modified -- ON DEMAND, not in `all`
 #   GROUP 15 (g15_seed2): seed-2 reruns for paper main-table rows only -- ON DEMAND, not in `all`
+#   GROUP 17 (g17_overlap_curve): five-grade overlap-response curves, six methods -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -32,6 +33,7 @@
 #   bash tools/run_server_experiments.sh g13_bottleneck # task-bottleneck seed1 + shared-bottleneck sweep (also: g3b_bottleneck_seed1, g13_shared_bottleneck)
 #   bash tools/run_server_experiments.sh g14_conflict # conflict-vs-gradient protect_importance ablation (+adaptive_protect for pall_modified)
 #   bash tools/run_server_experiments.sh g15_seed2 # third seed for selected main, standard, and pretrained paper rows
+#   bash tools/run_server_experiments.sh g17_overlap_curve # five-grade overlap-response curves, both CIFAR datasets/seeds
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -628,6 +630,78 @@ group15_seed2 () {
            --experiment_tag cifar100_pretrained
 }
 
+# ---------------------------------------------------- GROUP 17 overlap curve
+# Controlled request-position overlap at five grades. The `laterK` filename
+# knob is the number of training requests after the task that is eventually
+# forgotten. This group uses the same three-epoch configs as
+# cifar10_main/cifar100_main, plus the existing CLPU and SalUn baseline configs.
+# `--dump_overlap` is diagnostic-only on the mask-based PALL methods and supplies
+# their measured mask-IoU fallback for the response-curve x axis.
+# It is fixed to seeds 0/1 and intentionally NOT part of `all`. Total: 120 runs.
+group17_overlap_curve () {
+    echo "===== GROUP 17: five-grade overlap-response curves (six methods) ====="
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    local SALUN="--salun_mask_ratio 0.1 --salun_target uniform --forget_iters 50"
+
+    for s in 0 1; do
+        for grade in very_low low medium high very_high; do
+            local c10_k c100_k
+            case "$grade" in
+                very_low)  c10_k=0; c100_k=0 ;;
+                low)       c10_k=1; c100_k=2 ;;
+                medium)    c10_k=2; c100_k=4 ;;
+                high)      c10_k=3; c100_k=7 ;;
+                very_high) c10_k=4; c100_k=9 ;;
+            esac
+            local c10="schedules/cifar10_controlled_${grade}_later${c10_k}_seed${s}.json"
+            local c100="schedules/cifar100_controlled_${grade}_later${c100_k}_seed${s}.json"
+            local tag="overlap_curve_v1_${grade}"
+
+            launch "overlap_curve_c10_${grade}_pall_original_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method pall_original \
+                   --retrain_steps 50 --dump_overlap --experiment_tag $tag
+            launch "overlap_curve_c10_${grade}_pall_modified_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+                   --dump_overlap --experiment_tag $tag
+            launch "overlap_curve_c10_${grade}_pall_adapter_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+                   --experiment_tag $tag
+            launch "overlap_curve_c10_${grade}_lora_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method lora $LORA \
+                   --experiment_tag $tag
+            launch "overlap_curve_c10_${grade}_clpu_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method clpu \
+                   --experiment_tag $tag
+            launch "overlap_curve_c10_${grade}_salun_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method salun $SALUN \
+                   --experiment_tag $tag
+
+            launch "overlap_curve_c100_${grade}_pall_original_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method pall_original \
+                   --retrain_steps 50 --dump_overlap --experiment_tag $tag
+            launch "overlap_curve_c100_${grade}_pall_modified_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method pall_modified $PALL_MOD \
+                   --dump_overlap --experiment_tag $tag
+            launch "overlap_curve_c100_${grade}_pall_adapter_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+                   --experiment_tag $tag
+            launch "overlap_curve_c100_${grade}_lora_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method lora $LORA \
+                   --experiment_tag $tag
+            launch "overlap_curve_c100_${grade}_clpu_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method clpu \
+                   --experiment_tag $tag
+            launch "overlap_curve_c100_${grade}_salun_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method salun $SALUN \
+                   --experiment_tag $tag
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -648,7 +722,8 @@ case "$WHICH" in
     g13_bottleneck) group3b_bottleneck_seed1; group13_shared_bottleneck ;;
     g14_conflict) group14_conflict ;;
     g15_seed2) group15_seed2 ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2)"; exit 1 ;;
+    g17_overlap_curve) group17_overlap_curve ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2 | g17_overlap_curve)"; exit 1 ;;
 esac
 
 echo "===================================================================="

@@ -10,6 +10,7 @@ import csv
 import json
 import math
 import os
+import re
 import sys
 import textwrap
 from pathlib import Path
@@ -98,6 +99,14 @@ def parse_args() -> argparse.Namespace:
         "--paper-figures",
         action="store_true",
         help="Generate the PDF thesis/paper figure set from a group-by-config thesis table.",
+    )
+    parser.add_argument(
+        "--overlap-response",
+        action="store_true",
+        help=(
+            "Generate only the g17 overlap-response PDFs from per-run metrics and "
+            "overlap.csv files under --runs-root."
+        ),
     )
     parser.add_argument(
         "--runs-root",
@@ -379,6 +388,12 @@ CB_PALETTE = [
 METHOD_COLORS = {method: CB_PALETTE[idx % len(CB_PALETTE)] for method, idx in METHOD_ORDER.items()}
 FORGET_LINE_COLOR = "#D55E00"
 BOOTSTRAP_CONFIDENCE = 0.95
+OVERLAP_CURVE_GRADES = ("very_low", "low", "medium", "high", "very_high")
+OVERLAP_CURVE_METHODS = ("pall_original", "pall_modified", "pall_adapter", "lora", "clpu", "salun")
+OVERLAP_CURVE_TAG = re.compile(
+    r"^overlap_curve_v1_(very_low|low|medium|high|very_high)$"
+)
+FULL_NETWORK_PALL_METHODS = ("pall_original", "pall_modified")
 AGG_TO_RUN_METRIC = {
     "final_avg_acc_mean": "final_avg_accuracy",
     "WorstDrop_mean": "WorstDrop",
@@ -1308,6 +1323,309 @@ def plot_bound_verification(runs_root: Path, out_path: Path, dpi: int) -> Option
     return save_pdf(fig, out_path, dpi)
 
 
+def _overlap_curve_critical_ratio(metrics: Dict[str, Any], final: Dict[str, Any]) -> Optional[float]:
+    """Read the per-run value exported as ``overlap_s_share_crit_ratio`` by
+    ``tools/aggregate_results.py``.
+
+    The config-group thesis table calls the adapter-side analogue
+    ``overlap_shared_critical_ratio``; in the current aggregates that column is
+    populated for PALL-Adapter only.  Reading the normalized/raw event here keeps
+    the curve usable before a refreshed aggregate CSV has been generated.
+    """
+    normalized_events = nested_get(metrics, "normalized_results", "unlearning_events")
+    raw_events = metrics.get("unlearning_events")
+    candidates: List[Any] = [
+        nested_get(metrics, "normalized_results", "final", "final_unlearning", "overlap"),
+        final.get("overlap") if isinstance(final, dict) else None,
+    ]
+    if isinstance(normalized_events, list) and normalized_events and isinstance(normalized_events[-1], dict):
+        candidates.append(normalized_events[-1].get("overlap"))
+    if isinstance(raw_events, list) and raw_events and isinstance(raw_events[-1], dict):
+        candidates.append(raw_events[-1].get("overlap"))
+    for overlap in candidates:
+        if not isinstance(overlap, dict):
+            continue
+        value = to_float(overlap.get("s_share_crit_ratio"))
+        if value is not None:
+            return value
+    return None
+
+
+def _overlap_curve_mask_iou(path: Path) -> Optional[float]:
+    """Return ``avg_overlap_offdiag`` from a run's mask-IoU matrix.
+
+    This is the same statistic emitted by ``tools/analyze_overlap.py``.  It is
+    currently available as a per-run ``overlap.csv`` artifact (PALL methods), not
+    as a column in ``server_thesis_table.csv``.
+    """
+    try:
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            rows = list(csv.reader(handle))
+    except OSError:
+        return None
+    if len(rows) < 2 or len(rows[0]) < 2:
+        return None
+    n_tasks = len(rows[0]) - 1
+    if len(rows) - 1 != n_tasks:
+        return None
+    offdiag: List[float] = []
+    for row_index, row in enumerate(rows[1:]):
+        if len(row) < n_tasks + 1:
+            return None
+        for column_index, cell in enumerate(row[1:n_tasks + 1]):
+            value = to_float(cell)
+            if value is None:
+                return None
+            if row_index != column_index:
+                offdiag.append(value)
+    return float(np.mean(offdiag)) if offdiag else None
+
+
+def _overlap_curve_metric(metrics: Dict[str, Any], final: Dict[str, Any], metric: str) -> Optional[float]:
+    candidates = (
+        final.get(metric) if isinstance(final, dict) else None,
+        nested_get(metrics, "normalized_results", "final", metric),
+        metrics.get(metric),
+        nested_get(metrics, "summary", metric),
+    )
+    for candidate in candidates:
+        value = to_float(candidate)
+        if value is not None:
+            return value
+    return None
+
+
+def _collect_overlap_curve_rows(runs_root: Path) -> List[Dict[str, Any]]:
+    """Collect and de-duplicate g17 runs, resolving an honest measured x value.
+
+    Source priority is deliberately explicit:
+
+    1. the run's native ``overlap_s_share_crit_ratio``;
+    2. its own mask-IoU ``avg_overlap_offdiag`` from ``overlap.csv``;
+    3. for methods that expose neither (currently LoRA, CLPU, and SalUn), the
+       mask-IoU from the same dataset/grade/seed PALL-Original run, then
+       PALL-Modified.  This last value is a schedule-level reference, never the
+       target overlap knob from the schedule filename.
+    """
+    latest: Dict[Tuple[str, str, str, str], Dict[str, Any]] = {}
+    for config_path in sorted(runs_root.rglob("config.json")):
+        config = load_json(config_path) or {}
+        tag = clean_text(config.get("experiment_tag"))
+        tag_match = OVERLAP_CURVE_TAG.fullmatch(tag)
+        if tag_match is None:
+            continue
+        dataset = clean_text(config.get("dataset"))
+        method = clean_text(config.get("method"))
+        if dataset not in {"cifar10", "cifar100"} or method not in OVERLAP_CURVE_METHODS:
+            continue
+        metrics_path = config_path.with_name("metrics.json")
+        metrics = load_json(metrics_path)
+        if metrics is None:
+            print(
+                f"[WARN] overlap-response: incomplete run has no readable metrics: {config_path.parent}",
+                file=sys.stderr,
+            )
+            continue
+        final = extract_final_unlearning(metrics)
+        mask_iou = _overlap_curve_mask_iou(config_path.with_name("overlap.csv"))
+        # Baseline events are normalized with an unavailable/null overlap block,
+        # while some legacy raw events contain an all-zero placeholder.  Only the
+        # three PALL implementations produce a meaningful critical-overlap ratio;
+        # treating a baseline placeholder as measured x=0 would fabricate data.
+        native_ratio = (
+            _overlap_curve_critical_ratio(metrics, final)
+            if method in {"pall_original", "pall_modified", "pall_adapter"}
+            else None
+        )
+        if native_ratio is not None:
+            overlap_x = native_ratio
+            overlap_source = "overlap_s_share_crit_ratio"
+        elif mask_iou is not None:
+            overlap_x = mask_iou
+            overlap_source = "avg_overlap_offdiag (own mask-IoU)"
+        else:
+            overlap_x = None
+            overlap_source = ""
+        seed = clean_text(config.get("seed")) or clean_text(nested_get(metrics, "run", "seed"))
+        row: Dict[str, Any] = {
+            "dataset": dataset,
+            "method": method,
+            "grade": tag_match.group(1),
+            "seed": seed,
+            "WorstDrop": _overlap_curve_metric(metrics, final, "WorstDrop"),
+            "Au": _overlap_curve_metric(metrics, final, "Au"),
+            "overlap_x": overlap_x,
+            "overlap_source": overlap_source,
+            "mask_iou": mask_iou,
+            "run_path": str(config_path.parent),
+            "_mtime": metrics_path.stat().st_mtime,
+        }
+        key = (dataset, method, tag_match.group(1), seed)
+        incumbent = latest.get(key)
+        if incumbent is None or (row["_mtime"], row["run_path"]) > (incumbent["_mtime"], incumbent["run_path"]):
+            latest[key] = row
+
+    rows = list(latest.values())
+    mask_iou_references: Dict[Tuple[str, str, str], Dict[str, float]] = {}
+    for row in rows:
+        mask_iou = to_float(row.get("mask_iou"))
+        if row["method"] not in FULL_NETWORK_PALL_METHODS or mask_iou is None:
+            continue
+        reference_key = (row["dataset"], row["grade"], row["seed"])
+        mask_iou_references.setdefault(reference_key, {})[row["method"]] = mask_iou
+
+    for row in rows:
+        if to_float(row.get("overlap_x")) is not None:
+            continue
+        reference_key = (row["dataset"], row["grade"], row["seed"])
+        references = mask_iou_references.get(reference_key, {})
+        for reference_method in FULL_NETWORK_PALL_METHODS:
+            if reference_method not in references:
+                continue
+            row["overlap_x"] = references[reference_method]
+            row["overlap_source"] = f"avg_overlap_offdiag ({reference_method} schedule reference)"
+            break
+
+    return rows
+
+
+def _mean_and_seed_sd(values: Sequence[float]) -> Tuple[float, float]:
+    finite = np.asarray([float(value) for value in values if np.isfinite(value)], dtype=float)
+    mean_value = float(np.mean(finite))
+    seed_sd = float(np.std(finite, ddof=1)) if finite.size > 1 else 0.0
+    return mean_value, seed_sd
+
+
+def plot_overlap_response(runs_root: Path, outdir: Path, dpi: int) -> List[Path]:
+    """Plot g17's measured overlap-response curves, one two-panel PDF per dataset.
+
+    Each grade point is the mean across completed seeds; the shaded band is
+    mean +/- one sample standard deviation across seeds (collapsed for one seed).
+    Missing grades/methods are reported and omitted rather than imputed from the
+    schedule's target overlap knob.
+    """
+    rows = _collect_overlap_curve_rows(runs_root)
+    if not rows:
+        print("[WARN] overlap-response: no completed overlap_curve_v1_<grade> runs found.", file=sys.stderr)
+        return []
+
+    outputs: List[Path] = []
+    for dataset in ("cifar10", "cifar100"):
+        dataset_rows = [row for row in rows if row["dataset"] == dataset]
+        if not dataset_rows:
+            print(f"[WARN] overlap-response: no completed rows for {dataset}.", file=sys.stderr)
+            continue
+        fig, axes = plt.subplots(1, 2, figsize=(10.0, 4.1))
+        plotted_methods: List[str] = []
+        chance = CHANCE[dataset]
+        panel_specs = (
+            ("WorstDrop", "WorstDrop", False),
+            ("Au", f"|Au - chance| (chance={chance:g})", True),
+        )
+        for method in OVERLAP_CURVE_METHODS:
+            method_rows = [row for row in dataset_rows if row["method"] == method]
+            present_grades = {row["grade"] for row in method_rows}
+            missing_grades = [grade for grade in OVERLAP_CURVE_GRADES if grade not in present_grades]
+            if missing_grades:
+                print(
+                    f"[WARN] overlap-response: {dataset}/{method} missing grades: {', '.join(missing_grades)}",
+                    file=sys.stderr,
+                )
+            source_counts: Dict[str, int] = {}
+            for row in method_rows:
+                source = clean_text(row.get("overlap_source")) or "missing"
+                source_counts[source] = source_counts.get(source, 0) + 1
+            if method_rows:
+                source_summary = ", ".join(f"{source}={count}" for source, count in sorted(source_counts.items()))
+                if any("schedule reference" in source for source in source_counts):
+                    print(
+                        f"[WARN] overlap-response x sources {dataset}/{method}: {source_summary}; "
+                        "no native overlap metric, so x uses the matched PALL mask-IoU reference.",
+                        file=sys.stderr,
+                    )
+                else:
+                    print(f"[INFO] overlap-response x sources {dataset}/{method}: {source_summary}")
+
+            method_was_plotted = False
+            for ax, (metric, ylabel, chance_distance) in zip(axes, panel_specs):
+                points: List[Tuple[float, float, float, str]] = []
+                for grade in OVERLAP_CURVE_GRADES:
+                    grade_rows = [
+                        row
+                        for row in method_rows
+                        if row["grade"] == grade
+                        and to_float(row.get("overlap_x")) is not None
+                        and to_float(row.get(metric)) is not None
+                    ]
+                    if not grade_rows:
+                        continue
+                    x_values = [float(row["overlap_x"]) for row in grade_rows]
+                    y_values = [float(row[metric]) for row in grade_rows]
+                    if chance_distance:
+                        y_values = [abs(value - chance) for value in y_values]
+                    x_mean, _x_sd = _mean_and_seed_sd(x_values)
+                    y_mean, y_sd = _mean_and_seed_sd(y_values)
+                    points.append((x_mean, y_mean, y_sd, grade))
+                if not points:
+                    continue
+                points.sort(key=lambda point: (point[0], OVERLAP_CURVE_GRADES.index(point[3])))
+                x_values = np.asarray([point[0] for point in points], dtype=float)
+                means = np.asarray([point[1] for point in points], dtype=float)
+                seed_sds = np.asarray([point[2] for point in points], dtype=float)
+                lows = means - seed_sds
+                if chance_distance:
+                    lows = np.maximum(lows, 0.0)
+                highs = means + seed_sds
+                color = method_color(method)
+                ax.fill_between(x_values, lows, highs, color=color, alpha=0.13, linewidth=0)
+                ax.plot(
+                    x_values,
+                    means,
+                    color=color,
+                    marker="o",
+                    markersize=4.0,
+                    markeredgecolor="black",
+                    markeredgewidth=0.35,
+                    linewidth=1.25,
+                    label=METHOD_LABELS.get(method, method),
+                )
+                method_was_plotted = True
+            if method_was_plotted:
+                plotted_methods.append(method)
+
+        for ax, (_metric, ylabel, _chance_distance) in zip(axes, panel_specs):
+            ax.set_xlabel(r"Measured overlap ($s_{\mathrm{share,crit}}$; mask-IoU fallback)")
+            ax.set_ylabel(ylabel)
+            ax.grid(True, linewidth=0.45, alpha=0.4)
+        axes[0].set_title(f"{dataset_label(dataset)} | WorstDrop (seed mean +/- 1 SD)")
+        axes[1].set_title(f"{dataset_label(dataset)} | |Au - chance| (seed mean +/- 1 SD)")
+        handles = [
+            Line2D(
+                [0],
+                [0],
+                color=method_color(method),
+                marker="o",
+                markeredgecolor="black",
+                markeredgewidth=0.35,
+                linewidth=1.25,
+                markersize=4.0,
+                label=METHOD_LABELS.get(method, method),
+            )
+            for method in plotted_methods
+        ]
+        if handles:
+            fig.legend(
+                handles=handles,
+                loc="lower center",
+                bbox_to_anchor=(0.5, -0.01),
+                ncol=min(6, len(handles)),
+                frameon=False,
+            )
+        output_path = outdir / f"overlap_response_{dataset}.pdf"
+        outputs.append(save_pdf(fig, output_path, dpi))
+    return outputs
+
+
 def generate_paper_figures(
     input_csv: Path,
     runs_root: Path,
@@ -1371,6 +1689,7 @@ def generate_paper_figures(
         path = builder()
         if path is not None:
             outputs.append(path)
+    outputs.extend(plot_overlap_response(runs_root, outdir, dpi))
     print_best_summary(df)
     return outputs
 
@@ -1389,6 +1708,17 @@ def main() -> int:
             args.bootstrap_samples,
             args.bootstrap_seed,
         )
+        for output_path in outputs:
+            print(f"[INFO] Wrote plot: {output_path}")
+        print(f"[INFO] Figures generated: {len(outputs)}")
+        return 0
+
+    if args.overlap_response:
+        setup_paper_style()
+        outdir = args.outdir
+        if outdir == Path("results/thesis/report_plots"):
+            outdir = Path("results/thesis/plots_v2")
+        outputs = plot_overlap_response(args.runs_root, outdir, args.dpi)
         for output_path in outputs:
             print(f"[INFO] Wrote plot: {output_path}")
         print(f"[INFO] Figures generated: {len(outputs)}")
