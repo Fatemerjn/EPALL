@@ -381,6 +381,80 @@ class PALLAdapter(Base):
                 )
         return conflict
 
+    def _compute_bound_check(self, task_id, active_tasks, deleted_grads,
+                             shared_forget_mask, shared_critical_mask,
+                             hard_protected_shared_mask, protect_strength):
+        """WorstDrop first-order bound verification (Theorem thm:worstdrop).
+
+        Phase 3 applies the soft-masked forget update ``w -= eta * m_i * g_forget_i``
+        (see ``_run_phase3_shared_forgetting``). To first order, the drop the theorem
+        predicts on a retained task ``t`` is ``Delta_t <= E_crit_t + eps_C_t`` with,
+        per shared-adapter coordinate ``i``,
+            E_crit_t = sum_{i in S_share_crit}       eta * N * m_i * |g_forget_i| * |grad_retain_t_i|
+            eps_C_t  = sum_{i in S_forget\\S_active}  eta * N *  1  * |g_forget_i| * |grad_retain_t_i|
+        where ``m_i`` is the EXACT Phase-3 soft mask (``1-protect_strength`` on
+        soft-critical, ``0`` on hard-protected, ``1`` on forget-exclusive), ``eta`` =
+        ``adapter_shared_forget_lr`` and ``N`` = ``adapter_forget_steps``. The total
+        forget displacement ``Gamma_i = |sum_k g_i^(k)|`` is approximated by
+        ``N*|g_forget_i|`` (the Phase-2 forget gradient reused as the per-step
+        magnitude). ``grad_retain_t_i`` is task ``t``'s own retained gradient from ONE
+        replay batch (``_compute_shared_importance([t])``). This is a FIRST-ORDER
+        predictor in loss units; any measured accuracy drop that exceeds it reflects
+        the ``O(eta^2 N^2 G^2)`` second-order term of Eq. (soft-bound) and/or the
+        accuracy-vs-risk Lipschitz constant. The MEASURED per-task drop
+        (pre-forget minus post-forget accuracy) is merged in by main.py.
+        """
+        eta = self.args.adapter_shared_forget_lr
+        eta = float(self.lr if eta is None else eta)
+        n_steps = int(self.args.adapter_forget_steps or 0)
+        soft_scale = max(0.0, 1.0 - float(protect_strength))
+        names = [name for name, _ in self._shared_adapter_param_items()]
+
+        def _bool(mask_dict, name, like):
+            mask = mask_dict.get(name)
+            if mask is None:
+                return torch.zeros_like(like, dtype=torch.bool)
+            return mask.to(dtype=torch.bool, device=like.device)
+
+        per_task = {}
+        for t in active_tasks:
+            _imp, retain_grads_t, _cg, sampled = self._compute_shared_importance([t])
+            e_crit = 0.0
+            eps_c = 0.0
+            for name in names:
+                g_f = deleted_grads.get(name)
+                g_r = retain_grads_t.get(name)
+                if g_f is None or g_r is None:
+                    continue
+                forget_mask = shared_forget_mask.get(name)
+                if forget_mask is None:
+                    continue
+                forget_mask = forget_mask.to(dtype=torch.bool, device=g_f.device)
+                crit_mask = _bool(shared_critical_mask, name, forget_mask)
+                hard_mask = _bool(hard_protected_shared_mask, name, forget_mask)
+                soft_crit = torch.logical_and(crit_mask, torch.logical_not(hard_mask))   # m = 1-p
+                forget_only = torch.logical_and(forget_mask, torch.logical_not(crit_mask))  # m = 1
+                energy = (eta * n_steps) * g_f.abs() * g_r.abs()  # eta*N*|g_forget|*|grad_retain_t|
+                e_crit += float((energy * soft_scale)[soft_crit].sum().item())
+                eps_c += float(energy[forget_only].sum().item())
+            per_task[str(int(t))] = {
+                "E_crit": e_crit,
+                "eps_C": eps_c,
+                "predicted_bound": e_crit + eps_c,
+            }
+        predicted_worstdrop = max((v["predicted_bound"] for v in per_task.values()), default=0.0)
+        return {
+            "method": "pall_adapter",
+            "eta": eta,
+            "n_steps": n_steps,
+            "protect_strength": float(protect_strength),
+            "soft_scale": soft_scale,
+            "gamma_approx": "n_steps * |g_forget_i| (Phase-2 forget gradient)",
+            "units": "predicted_bound is in loss/gradient-energy units; measured_drop is an accuracy drop",
+            "per_task": per_task,
+            "predicted_worstdrop": predicted_worstdrop,
+        }
+
     def _apply_ascent_step_forgetting(self, grad_map, forget_masks, critical_masks,
                                       hard_protected_masks, lr, protect_strength):
         """Single gradient-ASCENT step on the forget task's true-label loss.
@@ -708,8 +782,21 @@ class PALLAdapter(Base):
         ):
             grad_norm_ratio = grad_l2_norm_ratio(deleted_grads, active_grads)
 
+        # WorstDrop first-order bound verification (Theorem thm:worstdrop). Computed
+        # here on the PRE-forget model (before reset/Phase-3) from the Phase-2 forget
+        # gradient + one-batch per-task retained gradients. Gated by --eval_bound
+        # because it costs one extra retained backward pass per active task.
+        bound_check = None
+        if getattr(self.args, "eval_bound", False) and shared_forget_count > 0 and active_tasks:
+            bound_check = self._compute_bound_check(
+                task_id, active_tasks, deleted_grads,
+                shared_forget_mask, shared_critical_mask,
+                hard_protected_shared_mask, shared_protect_strength,
+            )
+
         info = {
             "grad_norm_ratio": grad_norm_ratio,
+            "bound_check": bound_check,
             "s_t": int(total_overlap_scope),
             "s_share": int(shared_param_count),
             "s_share_crit": int(shared_critical_count),

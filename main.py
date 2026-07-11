@@ -135,6 +135,12 @@ parser.add_argument('--eval_probe', default=False, action='store_true',
                          'the forgotten task, train a fresh logistic-regression probe on that task\'s '
                          'TRAIN-split features, and report probe_acc_before/after on its held-out TEST '
                          'split (vs the 1/class_per_task chance level) under metrics "probe".')
+parser.add_argument('--eval_bound', default=False, action='store_true',
+                    help='WorstDrop bound verification (Theorem thm:worstdrop, pall_adapter only): at each '
+                         'forget event compute the first-order predicted per-task drop from the Phase-2 '
+                         'gradients (critical interference energy + forget-exclusive residual energy) and '
+                         'store it, alongside the measured per-task accuracy drop, under metrics '
+                         '"bound_check" so predicted-vs-measured can be checked.')
 parser.add_argument('--cache_features', default=False, action='store_true',
                     help='precompute the frozen backbone 512-d features once and train/eval the PEFT '
                          'head on the cached features (big speedup + memory). Only active for '
@@ -746,6 +752,7 @@ def normalize_unlearning_event(event, availability=None):
     mia = event.get("mia")
     agreement = event.get("agreement")
     probe = event.get("probe")
+    bound_check = event.get("bound_check")
 
     t_reset = to_optional_float(event.get("t_reset")) if availability.get("t_reset", True) else None
     t_retrain = to_optional_float(event.get("t_retrain")) if availability.get("t_retrain", True) else None
@@ -856,6 +863,7 @@ def normalize_unlearning_event(event, availability=None):
         "mia": json_safe(mia) if isinstance(mia, dict) else None,
         "agreement": json_safe(agreement) if isinstance(agreement, dict) else None,
         "probe": json_safe(probe) if isinstance(probe, dict) else None,
+        "bound_check": json_safe(bound_check) if isinstance(bound_check, dict) else None,
     }
 
 
@@ -1293,6 +1301,27 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
             au = post_acc[task_id] if task_id < len(post_acc) else 0.0
             finetune_diag = json_safe(info.get("finetune_diag", None))
 
+            # WorstDrop bound verification: merge the MEASURED per-task accuracy drop
+            # (pre-forget minus post-forget) into the predicted-bound block emitted by
+            # the method's _forget_impl, and flag whether measured <= predicted.
+            bound_check = info.get("bound_check")
+            if isinstance(bound_check, dict):
+                bound_check = json_safe(bound_check)
+                per_task = bound_check.get("per_task", {}) or {}
+                all_satisfied = True
+                for t in remaining_tasks:
+                    measured = float(pre_acc[t] - post_acc[t])
+                    entry = per_task.setdefault(str(int(t)), {})
+                    entry["measured_drop"] = measured
+                    predicted = entry.get("predicted_bound")
+                    if predicted is not None:
+                        entry["satisfied"] = bool(measured <= predicted)
+                        if measured > predicted:
+                            all_satisfied = False
+                bound_check["per_task"] = per_task
+                bound_check["measured_worstdrop"] = float(worst_drop)
+                bound_check["bound_satisfied"] = all_satisfied
+
             event = {
                 "unlearning_step": unlearning_step,
                 "request_id": request_id,
@@ -1311,6 +1340,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "mia": mia_event,
                 "agreement": agreement_block,
                 "probe": probe_event,
+                "bound_check": bound_check,
                 "t_reset": info.get("t_reset", 0.0) if info.get("t_reset") is not None else 0.0,
                 "t_retrain": info.get("t_retrain", 0.0) if info.get("t_retrain") is not None else 0.0,
                 "t_forget_total": info.get("t_forget_total"),

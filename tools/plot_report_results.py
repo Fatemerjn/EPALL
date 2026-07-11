@@ -1227,6 +1227,83 @@ def print_best_summary(df: Any) -> None:
                 print(f"[SUMMARY]   au: {describe_best_row(row, 'Au_mean')}")
 
 
+def _iter_unlearning_events(metrics: Dict[str, Any]):
+    events = metrics.get("unlearning_events")
+    if not isinstance(events, list):
+        events = nested_get(metrics, "normalized_results", "unlearning_events")
+    return events if isinstance(events, list) else []
+
+
+def collect_bound_points(runs_root: Path) -> List[Dict[str, Any]]:
+    """Gather (predicted_bound, measured_drop, method, dataset) points from every
+    per-task bound_check entry (all forget events) written under --eval_bound."""
+    points: List[Dict[str, Any]] = []
+    for config_path in runs_root.rglob("config.json"):
+        config = load_json(config_path) or {}
+        metrics = load_json(config_path.with_name("metrics.json")) or {}
+        method = clean_text(config.get("method"))
+        dataset = clean_text(config.get("dataset"))
+        for event in _iter_unlearning_events(metrics):
+            bound = event.get("bound_check") if isinstance(event, dict) else None
+            if not isinstance(bound, dict):
+                continue
+            for task_id, entry in (bound.get("per_task") or {}).items():
+                predicted = to_float(entry.get("predicted_bound"))
+                measured = to_float(entry.get("measured_drop"))
+                if predicted is None or measured is None:
+                    continue
+                points.append({
+                    "method": method,
+                    "dataset": dataset,
+                    "task_id": task_id,
+                    "predicted": float(predicted),
+                    "measured": float(measured),
+                })
+    return points
+
+
+def plot_bound_verification(runs_root: Path, out_path: Path, dpi: int) -> Optional[Path]:
+    """Scatter predicted first-order WorstDrop bound (x) vs measured per-task drop
+    (y), on log-log axes with the y=x reference line. Points on/under y=x satisfy
+    the bound. Colored by method, marker by dataset."""
+    points = collect_bound_points(runs_root)
+    if not points:
+        return None
+    floor = 1e-4  # log axes cannot show <=0 (e.g. a task that improved); clamp for display
+    markers = ["o", "s", "^", "D", "v", "P", "X"]
+    datasets = sorted({p["dataset"] for p in points})
+    dmarker = {d: markers[i % len(markers)] for i, d in enumerate(datasets)}
+    methods = sorted({p["method"] for p in points})
+
+    fig, ax = plt.subplots(figsize=(5.4, 5.2))
+    xs = [max(floor, p["predicted"]) for p in points]
+    ys = [max(floor, p["measured"]) for p in points]
+    lo = min(min(xs), min(ys)) * 0.5
+    hi = max(max(xs), max(ys)) * 2.0
+    ax.plot([lo, hi], [lo, hi], color="0.4", linestyle="--", linewidth=1.0, zorder=1,
+            label="y = x (bound tight)")
+    for p in points:
+        ax.scatter(max(floor, p["predicted"]), max(floor, p["measured"]),
+                   color=method_color(p["method"]), marker=dmarker[p["dataset"]],
+                   edgecolor="black", linewidth=0.4, s=42, zorder=3)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(lo, hi)
+    ax.set_ylim(lo, hi)
+    ax.set_xlabel("Predicted first-order bound  " r"$(1-p)E^{\mathrm{crit}}_t + \epsilon C_t$")
+    ax.set_ylabel("Measured per-task drop  " r"$A_t^{\mathrm{before}}-A_t^{\mathrm{after}}$")
+    n_ok = sum(1 for p in points if p["measured"] <= p["predicted"])
+    ax.set_title(f"WorstDrop bound verification | {n_ok}/{len(points)} points satisfy measured $\\leq$ predicted")
+    ax.grid(True, which="both", linewidth=0.3, alpha=0.5)
+    handles = [plt.Line2D([0], [0], color="0.4", linestyle="--", label="y = x")]
+    handles += [plt.Line2D([0], [0], marker="o", linestyle="", color=method_color(m),
+                           markeredgecolor="black", label=str(m)) for m in methods]
+    handles += [plt.Line2D([0], [0], marker=dmarker[d], linestyle="", color="0.5",
+                           markeredgecolor="black", label=str(d)) for d in datasets]
+    ax.legend(handles=handles, fontsize=7, loc="upper left", framealpha=0.9)
+    return save_pdf(fig, out_path, dpi)
+
+
 def generate_paper_figures(
     input_csv: Path,
     runs_root: Path,
@@ -1285,6 +1362,7 @@ def generate_paper_figures(
         ),
         lambda: plot_representative_heatmap(runs_root, outdir / "representative_pall_adapter_accuracy_heatmap.pdf", dpi),
         lambda: plot_mia(df, outdir / "mia_before_after_by_dataset_regime.pdf", dpi, samples_by_key, n_bootstrap, rng),
+        lambda: plot_bound_verification(runs_root, outdir / "bound_verification.pdf", dpi),
     ]:
         path = builder()
         if path is not None:
