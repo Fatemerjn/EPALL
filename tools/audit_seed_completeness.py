@@ -51,6 +51,7 @@ class ExpectedSpec:
             "protect_ratio": "",
             "lambda_protect": 0.0,
             "protect_anchor": "old",  # main.py argparse default, written into every run config
+            "adaptive_protect": False,  # main.py argparse default (store_true), written into every run config
             "adapter_bottleneck": 16,
             "adapter_shared_bottleneck": 0,
             "adapter_shared_forget_ratio": 0.0,

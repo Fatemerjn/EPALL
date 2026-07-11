@@ -76,6 +76,7 @@ CONFIG_GROUP_COLUMNS = [
     "protect_ratio",
     "lambda_protect",
     "protect_anchor",
+    "adaptive_protect",
     "adapter_bottleneck",
     "adapter_shared_bottleneck",
     "adapter_shared_forget_ratio",

@@ -12,6 +12,7 @@
 #   GROUP 9 (g9_extra_baselines): SSD + SalUn baselines -- ON DEMAND, not in `all`
 #   GROUP 9b (g9b_ssd_tune): SSD alpha/lambda tuning sweep (CIFAR-10) -- ON DEMAND, not in `all`
 #   GROUP 10 (g10_anchor): PALL-Modified anchor ablation, protect_anchor old vs reinit -- ON DEMAND, not in `all`
+#   GROUP 14 (g14_conflict): conflict-vs-gradient protect_importance ablation (+adaptive_protect for pall_modified) -- ON DEMAND, not in `all`
 #   GROUP 11 (g11_vit): ViT-T/8 cross-architecture, pall_original + pall_modified -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
@@ -28,6 +29,7 @@
 #   bash tools/run_server_experiments.sh g11_vit # ViT-T/8 cross-architecture (pall_original + pall_modified), both datasets/seeds
 #   bash tools/run_server_experiments.sh g12_agreement # model agreement rate (pall_modified + pall_adapter, T5_F1, seeds 0/1)
 #   bash tools/run_server_experiments.sh g13_bottleneck # task-bottleneck seed1 + shared-bottleneck sweep (also: g3b_bottleneck_seed1, g13_shared_bottleneck)
+#   bash tools/run_server_experiments.sh g14_conflict # conflict-vs-gradient protect_importance ablation (+adaptive_protect for pall_modified)
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -503,6 +505,51 @@ group13_shared_bottleneck () {
     done
 }
 
+# ------------------------------------------------- GROUP 14 conflict ablation
+# Decides the fate of the gradient-CONFLICT protection criterion empirically.
+# --protect_importance conflict (relu(-g_forget*g_retain): methods/pall_base.
+# _compute_conflict_importance and methods/pall_adapter._compute_shared_conflict)
+# is wired for BOTH pall_modified and pall_adapter but has only ever run as a
+# 1-epoch smoke; every recorded full run used protect_importance=gradient. This
+# group re-runs the SAME base config as cifar10_main/cifar100_main, sweeping
+# protect_importance in {gradient, conflict}. For pall_modified it additionally
+# sweeps --adaptive_protect {off, on} (that flag scales lambda_protect by the
+# measured critical-overlap ratio and is a pall_modified-only knob -- it is NOT
+# wired for pall_adapter). The gradient cells reproduce the main config as a
+# same-tag paired baseline for a clean conflict-vs-gradient comparison. Run
+# ON DEMAND (g14_conflict) -- intentionally NOT part of `all`.
+group14_conflict () {
+    echo "===== GROUP 14: conflict-importance ablation (pall_modified + pall_adapter) ====="
+    local PALL_MOD_BASE="--protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    for s in $SEEDS; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        for imp in gradient conflict; do
+            # ---- pall_modified: protect_importance x adaptive_protect {off,on} ----
+            for adapt in off on; do
+                local aflag=""
+                if [[ "$adapt" == "on" ]]; then aflag="--adaptive_protect"; fi
+                launch "conflict_c10_pall_modified_${imp}_adapt${adapt}_s${s}" $C10 $COMMON --seed $s \
+                       --request_schedule_file $c10 --method pall_modified $PALL_MOD_BASE \
+                       --protect_importance $imp $aflag --experiment_tag conflict_ablation_v1
+                launch "conflict_c100_pall_modified_${imp}_adapt${adapt}_s${s}" $C100 $COMMON --seed $s \
+                       --request_schedule_file $c100 --method pall_modified $PALL_MOD_BASE \
+                       --protect_importance $imp $aflag --experiment_tag conflict_ablation_v1
+            done
+            # ---- pall_adapter: protect_importance only (no adaptive_protect flag) ----
+            launch "conflict_c10_pall_adapter_${imp}_s${s}" $C10 $COMMON --seed $s \
+                   --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+                   --protect_importance $imp --experiment_tag conflict_ablation_v1
+            launch "conflict_c100_pall_adapter_${imp}_s${s}" $C100 $COMMON --seed $s \
+                   --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+                   --protect_importance $imp --experiment_tag conflict_ablation_v1
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -521,7 +568,8 @@ case "$WHICH" in
     g3b_bottleneck_seed1) group3b_bottleneck_seed1 ;;
     g13_shared_bottleneck) group13_shared_bottleneck ;;
     g13_bottleneck) group3b_bottleneck_seed1; group13_shared_bottleneck ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck)"; exit 1 ;;
+    g14_conflict) group14_conflict ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict)"; exit 1 ;;
 esac
 
 echo "===================================================================="

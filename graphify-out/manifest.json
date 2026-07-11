@@ -215,8 +215,8 @@
     "semantic_hash": "160c8203f07e99d82efd98d03f14b281"
   },
   "tools/aggregate_results.py": {
-    "mtime": 1783715864.7614186,
-    "ast_hash": "a43b2b5f137ba02803951a7883e46dd4",
+    "mtime": 1783752382.1667259,
+    "ast_hash": "207be9fb0066b01eb07f7a2c3f144362",
     "semantic_hash": ""
   },
   "tools/analyze_overlap.py": {
@@ -295,8 +295,8 @@
     "semantic_hash": ""
   },
   "tools/make_thesis_table.py": {
-    "mtime": 1783715919.4752343,
-    "ast_hash": "d016c21ef18d671cb148bb9ca02b63f7",
+    "mtime": 1783752382.167214,
+    "ast_hash": "c2ceac11dc27ec50b607cb33a2ba981d",
     "semantic_hash": ""
   },
   "tools/md_to_latex_table.py": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1783721529.6944575,
-    "ast_hash": "8eb5390920e90d2b649cd71dc8e07b11",
+    "mtime": 1783752382.167561,
+    "ast_hash": "bb0a22da8218c4cf0d91c2380f56ad16",
     "semantic_hash": ""
   },
   "tools/run_small_ablation.py": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "tools/audit_seed_completeness.py": {
-    "mtime": 1783688573.855847,
-    "ast_hash": "cdc4b3535fc973b5fa459c2d47bb2243",
+    "mtime": 1783752382.1669962,
+    "ast_hash": "d850e16703fa8f7fc279bd7d11c1c784",
     "semantic_hash": ""
   },
   "paper/drop_decomposition.pdf": {
@@ -672,6 +672,11 @@
   "tools/audit_privacy.py": {
     "mtime": 1783712858.5702503,
     "ast_hash": "64a9f81836dd797f6298fc1d75db6833",
+    "semantic_hash": ""
+  },
+  "tools/check_thesis_numbers.py": {
+    "mtime": 1783725129.7852056,
+    "ast_hash": "5c57fa019f052210e8575b1779d7d177",
     "semantic_hash": ""
   }
 }
