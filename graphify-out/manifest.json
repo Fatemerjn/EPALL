@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1783781108.5419488,
-    "ast_hash": "bb0a22da8218c4cf0d91c2380f56ad16",
+    "mtime": 1783794426.5469022,
+    "ast_hash": "54b55648d4cb9625a8e87347b99ae4ad",
     "semantic_hash": ""
   },
   "tools/run_small_ablation.py": {
@@ -687,6 +687,16 @@
   "scripts/sync_to_server.sh": {
     "mtime": 1783769379.837804,
     "ast_hash": "f7227b39bf4304cae3450adcf9961290",
+    "semantic_hash": ""
+  },
+  "schedules/cifar100_t10_f3_seed2.json": {
+    "mtime": 1783794382.1659753,
+    "ast_hash": "0687f87f5dc854a8c5f62204fc9d4057",
+    "semantic_hash": ""
+  },
+  "schedules/cifar10_t5_f3_fixed_seed2.json": {
+    "mtime": 1783794382.165965,
+    "ast_hash": "2400fa94d0b1933f0c591cf82a62450f",
     "semantic_hash": ""
   }
 }

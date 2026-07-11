@@ -14,6 +14,7 @@
 #   GROUP 10 (g10_anchor): PALL-Modified anchor ablation, protect_anchor old vs reinit -- ON DEMAND, not in `all`
 #   GROUP 14 (g14_conflict): conflict-vs-gradient protect_importance ablation (+adaptive_protect for pall_modified) -- ON DEMAND, not in `all`
 #   GROUP 11 (g11_vit): ViT-T/8 cross-architecture, pall_original + pall_modified -- ON DEMAND, not in `all`
+#   GROUP 15 (g15_seed2): seed-2 reruns for paper main-table rows only -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -30,6 +31,7 @@
 #   bash tools/run_server_experiments.sh g12_agreement # model agreement rate (pall_modified + pall_adapter, T5_F1, seeds 0/1)
 #   bash tools/run_server_experiments.sh g13_bottleneck # task-bottleneck seed1 + shared-bottleneck sweep (also: g3b_bottleneck_seed1, g13_shared_bottleneck)
 #   bash tools/run_server_experiments.sh g14_conflict # conflict-vs-gradient protect_importance ablation (+adaptive_protect for pall_modified)
+#   bash tools/run_server_experiments.sh g15_seed2 # third seed for selected main, standard, and pretrained paper rows
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -550,6 +552,82 @@ group14_conflict () {
     done
 }
 
+# ---------------------------------------------------- GROUP 15 paper seed 2
+# Third-seed reruns for rows consumed by the paper's main tables. This is a
+# deliberately curated subset: all existing cifar10_main/cifar100_main rows;
+# the three PALL methods, LoRA, and CLPU from each standard table; and the
+# PALL-Adapter/LoRA pretrained rows. Fixed to seed 2 and intentionally NOT in
+# `all`, independent of the SEEDS override. Total: 22 runs.
+group15_seed2 () {
+    echo "===== GROUP 15: seed-2 paper main-table rows only ====="
+    local s=2
+    local c10="schedules/cifar10_t5_f3_fixed_seed2.json"
+    local c100="schedules/cifar100_t10_f3_seed2.json"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+
+    # ---- overlap-heavy main rows (three PALL methods + LoRA) ----
+    launch "c10_pall_original_s${s}" $C10 $COMMON --seed $s \
+           --request_schedule_file $c10 --method pall_original \
+           --retrain_steps 50 --experiment_tag cifar10_main
+    launch "c10_pall_modified_grad_s${s}" $C10 $COMMON --seed $s \
+           --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+           --experiment_tag cifar10_main
+    launch "c10_pall_adapter_s${s}" $C10 $COMMON --seed $s \
+           --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+           --experiment_tag cifar10_main
+    launch "c10_lora_s${s}" $C10 $COMMON --seed $s \
+           --request_schedule_file $c10 --method lora $LORA \
+           --experiment_tag cifar10_main
+
+    launch "c100_pall_original_s${s}" $C100 $COMMON --seed $s \
+           --request_schedule_file $c100 --method pall_original \
+           --retrain_steps 50 --experiment_tag cifar100_main
+    launch "c100_pall_modified_grad_s${s}" $C100 $COMMON --seed $s \
+           --request_schedule_file $c100 --method pall_modified $PALL_MOD \
+           --experiment_tag cifar100_main
+    launch "c100_pall_adapter_s${s}" $C100 $COMMON --seed $s \
+           --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+           --experiment_tag cifar100_main
+    launch "c100_lora_s${s}" $C100 $COMMON --seed $s \
+           --request_schedule_file $c100 --method lora $LORA \
+           --experiment_tag cifar100_main
+
+    # ---- selected standard rows (three PALL methods + LoRA + CLPU) ----
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    launch "std_c10_pall_original_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_original --retrain_steps 50 --experiment_tag cifar10_standard
+    launch "std_c10_pall_modified_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_modified $PALL_MOD --experiment_tag cifar10_standard
+    launch "std_c10_pall_adapter_s${s}"  $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_adapter $ADAPTER --experiment_tag cifar10_standard
+    launch "std_c10_lora_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lora $LORA --experiment_tag cifar10_standard
+    launch "std_c10_clpu_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method clpu --experiment_tag cifar10_standard
+
+    launch "std_c100_pall_original_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_original --retrain_steps 50 --experiment_tag cifar100_standard
+    launch "std_c100_pall_modified_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_modified $PALL_MOD --experiment_tag cifar100_standard
+    launch "std_c100_pall_adapter_s${s}"  $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_adapter $ADAPTER --experiment_tag cifar100_standard
+    launch "std_c100_lora_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lora $LORA --lr 1e-3 --experiment_tag cifar100_standard
+    launch "std_c100_clpu_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method clpu --experiment_tag cifar100_standard
+
+    # ---- pretrained PEFT rows (PALL-Adapter + LoRA) ----
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local C100_R18="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9"
+    launch "c10_pall_adapter_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+           --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+           --experiment_tag cifar10_pretrained
+    launch "c10_lora_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+           --request_schedule_file $c10 --method lora $LORA \
+           --experiment_tag cifar10_pretrained
+    launch "c100_pall_adapter_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+           --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+           --experiment_tag cifar100_pretrained
+    launch "c100_lora_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+           --request_schedule_file $c100 --method lora $LORA \
+           --experiment_tag cifar100_pretrained
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -569,7 +647,8 @@ case "$WHICH" in
     g13_shared_bottleneck) group13_shared_bottleneck ;;
     g13_bottleneck) group3b_bottleneck_seed1; group13_shared_bottleneck ;;
     g14_conflict) group14_conflict ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict)"; exit 1 ;;
+    g15_seed2) group15_seed2 ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2)"; exit 1 ;;
 esac
 
 echo "===================================================================="
