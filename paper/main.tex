@@ -609,43 +609,47 @@ We conduct extensive evaluations simulating multi-task continual unlearning over
     \item \textbf{CIFAR-100} \cite{krizhevsky2009learning}: 10 sequential tasks, 5 disjoint classes/task.
     \item \textbf{TinyImageNet} \cite{le2015tinyimagenet}: A large-scale benchmark formulated as 20 complex tasks, 10 disjoint classes/task.
 \end{itemize}
-All algorithms were trained using a ResNet-18 backbone \cite{he2016deep} via Stochastic Gradient Descent (SGD) \cite{robbins1951sgd} with a learning rate of \(0.01\), over 3 epochs per task. Baseline comparisons include ER \cite{thrun1995lifelong} and DER++ \cite{buzzega2020dark}.
+All algorithms use a ResNet-18 backbone \cite{he2016deep} trained with Stochastic Gradient Descent (SGD) \cite{robbins1951sgd} at a learning rate of \(0.01\). We report two evaluation regimes with different training budgets: the \emph{overlap-heavy} protocol (this paper's main contribution, Table~\ref{tab:main_results}) trains \(3\) epochs per task, while the literature-comparable \emph{standard} Split-CIFAR protocol (Tables~\ref{tab:standard_cifar10}--\ref{tab:standard_cifar100}) trains \(20\) epochs per task; unless otherwise noted, CIFAR results are means over two seeds and TinyImageNet is a single-seed validation run. Baselines span replay methods (ER \cite{thrun1995lifelong}, DER++ \cite{buzzega2020dark}), regularization, distillation, and task-isolation methods (EWC \cite{kirkpatrick2017overcoming}, LwF, CLPU \cite{liu2022clpu}), a LoRA parameter-efficient baseline \cite{hu2021lora}, and two unlearning-specific baselines (SSD \cite{foster2024ssd}, SalUn \cite{fan2024salun}).
 
 \section{Experimental Results and Analysis}
 
+% Numbers refreshed from results/aggregates/server_report_table.csv (point values)
+% and server_thesis_table.csv (std), tags: cifar10_main / cifar100_main / tiny_main,
+% plus tiny_pretrained for the Adapter TinyImageNet row. These are the SAME source
+% rows as thesis/chapters/results.tex tab:main-pall-results, kept numerically
+% consistent. Overlap-heavy (from-scratch) regime, 3 epochs/task, means over 2 seeds
+% (TinyImageNet single seed). Baselines (DER++/ER/...) are reported under the
+% literature-comparable standard protocol in Tables~\ref{tab:standard_cifar10}--\ref{tab:standard_cifar100}.
 \begin{table*}[t]
 \centering
-\caption{Comprehensive Quantitative Evaluation of Proposed Methods vs. Baselines}
+\caption{Overlap-heavy (from-scratch) evaluation of the proposed PALL methods. Values are means over two seeds ($\pm$ std where available); TinyImageNet is a single-seed run. The Adapter TinyImageNet row uses the frozen pretrained-backbone setting and is therefore not directly comparable to the from-scratch rows above it.}
 \label{tab:main_results}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}llcccccc@{}}
+\begin{tabular}{@{}lllcccccc@{}}
 \toprule
-\textbf{Dataset} & \textbf{Algorithm} & \textbf{\(A_{final}\) (\(\uparrow\))} & \textbf{\(F_{avg}\) (\(\downarrow\))} & \textbf{WorstDrop (\(\downarrow\))} & \textbf{Au (\(\downarrow\))} & \textbf{Fu} & \textbf{\(R_{updated}\) (\(\downarrow\))} \\ \midrule
-\multirow{5}{*}{\textbf{CIFAR-10}} 
-& DER++ & 0.9244 \(\pm\) 0.0167 & 0.2399 & 0.0158 & 0.2678 & 0.0061 & N/A \\
-& ER & 0.8864 \(\pm\) 0.0277 & 0.2278 & 0.0557 & 0.5318 & 0.0307 & N/A \\
-& PALL-Original & 0.9166 \(\pm\) 0.0209 & 0.1583 & 0.0160 & 0.5000 & 0.0056 & 0.0475 \\
-& \textbf{PALL-Modified (Ours)} & \textbf{0.9301 \(\pm\) 0.0094} & 0.1507 & \textbf{0.0008} & 0.5005 & 0.0004 & 0.0475 \\
-& \textbf{PALL-Adapter (Ours)} & 0.8057 \(\pm\) 0.0054 & \textbf{0.0916} & 0.0050 & \textbf{0.5000} & -0.0369 & \textbf{0.0061} \\ \midrule
-\multirow{5}{*}{\textbf{CIFAR-100}} 
-& DER++ & 0.5371 \(\pm\) 0.0097 & 0.1040 & 0.0440 & 0.3590 & 0.0213 & N/A \\
-& ER & 0.4657 \(\pm\) 0.0675 & 0.1854 & 0.1400 & 0.1870 & 0.0734 & N/A \\
-& PALL-Original & 0.4233 \(\pm\) 0.0297 & 0.1611 & 0.0710 & 0.2250 & 0.0294 & 0.0763 \\
-& \textbf{PALL-Modified (Ours)} & \textbf{0.5377 \(\pm\) 0.0299} & 0.1045 & 0.0140 & 0.2120 & -0.0071 & 0.0763 \\
-& \textbf{PALL-Adapter (Ours)} & 0.4084 \(\pm\) 0.0293 & \textbf{0.0853} & \textbf{0.0050} & \textbf{0.1640} & 0.0020 & \textbf{0.0123} \\ \midrule
-\multirow{3}{*}{\textbf{TinyImageNet}} 
-& PALL-Original & 0.3361 \(\pm\) 0.0141 & 0.1949 & 0.0940 & 0.0960 & 0.0534 & 0.0960 \\
-& \textbf{PALL-Modified (Ours)} & \textbf{0.4566 \(\pm\) 0.0054} & 0.0869 & 0.0600 & 0.0960 & 0.0157 & 0.0960 \\
-& \textbf{PALL-Adapter (Ours)} & 0.3256 \(\pm\) 0.0064 & \textbf{0.0758} & \textbf{0.0080} & \textbf{0.0800} & 0.0057 & \textbf{0.0292} \\ \bottomrule
+\textbf{Dataset} & \textbf{Setting} & \textbf{Algorithm} & \textbf{\(A_{final}\) (\(\uparrow\))} & \textbf{\(F_{avg}\) (\(\downarrow\))} & \textbf{WorstDrop (\(\downarrow\))} & \textbf{Au (\(\downarrow\))} & \textbf{Fu} & \textbf{\(R_{updated}\) (\(\downarrow\))} \\ \midrule
+\multirow{3}{*}{\textbf{CIFAR-10}} & \multirow{3}{*}{Scratch}
+& PALL-Original & 0.9219 \(\pm\) 0.0193 & 0.2516 & 0.0060 & 0.5000 & 0.0046 & 0.0360 \\
+& & \textbf{PALL-Modified (Ours)} & \textbf{0.9316 \(\pm\) 0.0080} & 0.2474 & \textbf{0.0012} & 0.5000 & \textbf{0.0004} & 0.0360 \\
+& & \textbf{PALL-Adapter (Ours)} & 0.8166 \(\pm\) 0.0249 & \textbf{0.1415} & 0.0160 & 0.5247 & 0.0027 & \textbf{0.0045} \\ \midrule
+\multirow{3}{*}{\textbf{CIFAR-100}} & \multirow{3}{*}{Scratch}
+& PALL-Original & 0.4951 \(\pm\) 0.0004 & 0.0883 & 0.0150 & 0.2050 & -0.0042 & 0.0248 \\
+& & \textbf{PALL-Modified (Ours)} & \textbf{0.5010 \(\pm\) 0.0046} & 0.0902 & \textbf{0.0070} & 0.2050 & \textbf{-0.0024} & 0.0248 \\
+& & \textbf{PALL-Adapter (Ours)} & 0.3246 \(\pm\) 0.0352 & \textbf{0.0739} & 0.0480 & \textbf{0.2010} & 0.0078 & \textbf{0.0065} \\ \midrule
+\multirow{2}{*}{\textbf{TinyImageNet}} & \multirow{2}{*}{Scratch}
+& PALL-Original & 0.3922 & 0.1420 & 0.0620 & 0.1120 & 0.0267 & 0.0960 \\
+& & \textbf{PALL-Modified (Ours)} & \textbf{0.4635} & \textbf{0.0777} & 0.0480 & \textbf{0.1020} & -0.0001 & 0.0960 \\ \midrule
+\textbf{TinyImageNet} & Pretrained & \textbf{PALL-Adapter (Ours)} & \textbf{0.9101} & 0.1308 & \textbf{0.0080} & 0.1320 & \textbf{-0.0029} & \textbf{0.0292} \\ \bottomrule
 \end{tabular}%
 }
 \end{table*}
 
 \subsection{Accuracy vs. Forgetting Stability Trade-off}
-As shown in Table \ref{tab:main_results}, \textbf{PALL-Modified} achieves the highest retention accuracy among the compared methods (\(A_{final} = 0.9301\) on CIFAR-10) by balancing explicit overlap regularization with full-capacity network training. Conversely, \textbf{PALL-Adapter} prioritizes structural stability and parameter efficiency. On CIFAR-100, the PALL-Adapter restricts the WorstDrop to an exceptional \(0.0050\), compared to a catastrophic \(0.0710\) drop in PALL-Original, proving that targeted soft-scaling prevents interference.
+As shown in Table \ref{tab:main_results}, \textbf{PALL-Modified} achieves the highest retention accuracy among the from-scratch PALL variants (\(A_{final} = 0.9316\) on CIFAR-10, versus \(0.9219\) for PALL-Original) by balancing explicit overlap regularization with full-capacity network training. Its explicit protection of the critical overlap directly lowers side damage: relative to PALL-Original, WorstDrop drops from \(0.0060\) to \(0.0012\) on CIFAR-10 and from \(0.0150\) to \(0.0070\) on CIFAR-100. Conversely, \textbf{PALL-Adapter} trades some retention accuracy for structural stability and parameter efficiency (Section~\ref{subsec:efficiency}): from a frozen backbone it keeps Au near the random-guess level while updating an order of magnitude fewer parameters, though on the harder from-scratch CIFAR-100 setting its WorstDrop (\(0.0480\)) shows the adapter capacity is insufficient without pretraining.
 
 \subsection{Computational Efficiency and Ablation Study}
-By quarantining weight updates strictly to the bottleneck modules, the PALL-Adapter sharply reduces the updated-parameter ratio (\(R_{updated}\)) relative to the full-network PALL-Original on every benchmark: from \(0.0475\) to \(0.0061\) on CIFAR-10 (a \(\sim\!87\%\) reduction), from \(0.0763\) to \(0.0123\) on CIFAR-100 (\(\sim\!84\%\)), and from \(0.0960\) to \(0.0292\) on TinyImageNet (\(\sim\!70\%\)). Figure \ref{fig:worstdrop_chart} confirms that this parameter efficiency directly prevents WorstDrop degradation.
+\label{subsec:efficiency}
+By quarantining weight updates strictly to the bottleneck modules, PALL-Adapter sharply reduces the updated-parameter ratio (\(R_{updated}\)) relative to the full-network PALL-Original baseline. Each percentage below is computed against that baseline's \(R_{updated}\): from \(0.0360\) to \(0.0045\) on CIFAR-10 (a \(\sim\!87.5\%\) reduction against PALL-Original's \(0.0360\)), and from \(0.0248\) to \(0.0065\) on CIFAR-100 (\(\sim\!74\%\) against \(0.0248\)). On TinyImageNet the frozen-backbone PALL-Adapter uses \(R_{updated}=0.0292\) versus the from-scratch PALL-Original's \(0.0960\) (\(\sim\!70\%\)); this TinyImageNet comparison crosses training regimes (pretrained Adapter vs.\ from-scratch full-network) and is therefore indicative rather than strictly controlled. Figure \ref{fig:worstdrop_chart} shows that this parameter efficiency coincides with bounded WorstDrop.
 
 \begin{figure}[t]
 \centering
@@ -670,8 +674,75 @@ Analytical observations (Figure \ref{fig:overlap_results}) mapping critical over
     \label{fig:tradeoff_results}
 \end{figure}
 
+\subsection{Standard Split-CIFAR Protocol}
+\label{subsec:standard-protocol}
+We report two evaluation regimes. The overlap-heavy protocol of Table~\ref{tab:main_results} is this paper's contribution and stresses selective forgetting under high inter-task parameter sharing; the standard Split-CIFAR protocol below (10 random-disjoint classes/task on CIFAR-100, \(20\) epochs/task) makes our numbers directly comparable to the continual-learning and unlearning literature. Tables~\ref{tab:standard_cifar10} and \ref{tab:standard_cifar100} give all nine methods under this standard protocol. The random-guess level for Au is \(0.5\) on CIFAR-10 and \(0.2\) on CIFAR-100.
+
+% Source: results/aggregates/server_thesis_table.csv, tag cifar10_standard (means over 2 seeds).
+\begin{table}[t]
+\centering
+\caption{Standard Split-CIFAR-10 protocol (20 epochs/task), all methods. \(A_{final}\pm\)std over two seeds; other columns are seed means. Random-guess Au \(=0.5\).}
+\label{tab:standard_cifar10}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{Method} & \textbf{\(A_{final}\)} & \textbf{\(F_{avg}\)} & \textbf{Fu} & \textbf{WorstDrop} & \textbf{Au} & \textbf{Forget (s)} \\ \midrule
+CLPU & 0.9701 \(\pm\) 0.0129 & 0.2710 & 0.0000 & 0.0000 & 0.5197 & 0.0005 \\
+DER++ & 0.9380 \(\pm\) 0.0198 & 0.2240 & -0.0040 & 0.0055 & 0.5655 & 3.1019 \\
+ER & 0.9282 \(\pm\) 0.0074 & 0.2964 & 0.0049 & 0.0185 & 0.4208 & 2.4309 \\
+EWC & 0.8782 \(\pm\) 0.0573 & 0.2188 & 0.0000 & 0.0000 & 0.9423 & 0.0001 \\
+LoRA & 0.8320 \(\pm\) 0.0244 & 0.1434 & 0.0019 & 0.0052 & 0.4998 & 3.5474 \\
+LwF & 0.9410 \(\pm\) 0.0262 & 0.0522 & 0.0000 & 0.0000 & 0.9690 & 0.0000 \\
+PALL-Adapter (Ours) & 0.8250 \(\pm\) 0.0184 & 0.1506 & -0.0011 & 0.0112 & 0.5000 & 3.8880 \\
+PALL-Modified (Ours) & 0.9629 \(\pm\) 0.0108 & 0.2749 & 0.0021 & 0.0052 & 0.5000 & 4.1892 \\
+PALL-Original & 0.9565 \(\pm\) 0.0106 & 0.2792 & 0.0051 & 0.0100 & 0.5000 & 3.2010 \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+% Source: results/aggregates/server_thesis_table.csv, tag cifar100_standard (means over 2 seeds).
+\begin{table}[t]
+\centering
+\caption{Standard Split-CIFAR-100 protocol (20 epochs/task), all methods. \(A_{final}\pm\)std over two seeds; other columns are seed means. Random-guess Au \(=0.2\).}
+\label{tab:standard_cifar100}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{Method} & \textbf{\(A_{final}\)} & \textbf{\(F_{avg}\)} & \textbf{Fu} & \textbf{WorstDrop} & \textbf{Au} & \textbf{Forget (s)} \\ \midrule
+CLPU & 0.7349 \(\pm\) 0.0043 & 0.1945 & 0.0000 & 0.0000 & 0.1030 & 0.0007 \\
+DER++ & 0.6563 \(\pm\) 0.0059 & 0.2541 & 0.0048 & 0.0400 & 0.2670 & 12.8544 \\
+ER & 0.5852 \(\pm\) 0.0276 & 0.2785 & 0.0474 & 0.0880 & 0.3850 & 7.3805 \\
+EWC & 0.4442 \(\pm\) 0.0074 & 0.3991 & 0.0000 & 0.0000 & 0.4860 & 0.0001 \\
+LoRA & 0.1000 \(\pm\) 0.0000 & 0.0000 & 0.0000 & 0.0000 & 0.1000 & 7.7062 \\
+LwF & 0.6737 \(\pm\) 0.0251 & 0.1466 & 0.0000 & 0.0000 & 0.8135 & 0.0000 \\
+PALL-Adapter (Ours) & 0.2524 \(\pm\) 0.0209 & 0.0783 & -0.0046 & 0.0295 & 0.1040 & 8.8414 \\
+PALL-Modified (Ours) & 0.7301 \(\pm\) 0.0076 & 0.1966 & -0.0034 & 0.0005 & 0.0920 & 17.4795 \\
+PALL-Original & 0.7066 \(\pm\) 0.0002 & 0.2090 & 0.0075 & 0.0190 & 0.1050 & 13.3405 \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Under the standard protocol, PALL-Modified remains the strongest forgetting-aware method: it keeps \(A_{final}\) close to the non-forgetting CLPU upper bound (\(0.9629\) vs.\ \(0.9701\) on CIFAR-10; \(0.7301\) vs.\ \(0.7349\) on CIFAR-100) while driving Au to the random-guess level (\(0.5000\) and \(0.0920\)) with the smallest WorstDrop among the accurate methods. Regularization baselines such as EWC and LwF barely forget (Au \(\approx 0.94\)--\(0.97\) on CIFAR-10), confirming that continual-learning stability alone does not deliver selective removal.
+
+\subsection{Membership-Inference Behavior}
+\label{subsec:mia}
+Because Theorem~\ref{thm:shared-adapter-impossibility} rules out \emph{exact} unlearning for the shared adapter, we report a membership-inference attack (MIA) as empirical evidence for the \emph{approximate}-unlearning claim. Table-free, the MIA-AUC (chance \(=0.5\)) before/after each forget request stays near chance in every configuration that logged it. On the from-scratch runs, PALL-Modified moves from \(0.5045\) to \(0.4961\) on CIFAR-10 and from \(0.4998\) to \(0.5279\) on CIFAR-100, while the exact-unlearning reference CLPU stays at \(0.4986\!\to\!0.4935\) and \(0.4936\!\to\!0.4902\). On the pretrained-backbone runs, PALL-Adapter moves from \(0.4291\) to \(0.5021\) on CIFAR-10 and from \(0.4907\) to \(0.4469\) on CIFAR-100 (LoRA: \(0.4220\!\to\!0.4997\) and \(0.4934\!\to\!0.4617\)). No configuration shows an after-forget AUC that meaningfully exceeds chance, which is consistent with—but weaker than—a formal guarantee. A calibrated empirical \(\varepsilon\) lower bound in the spirit of \eqref{eq:epsilon-roadmap} \cite{steinke2024privacy} is not yet reported because the audit aggregate is empty.
+% TODO(data): results/aggregates/privacy_audit.csv is absent/empty; add eps_hat once the
+% --eval_mia runs are re-executed with the per-sample MIA score dump and the audit is run.
+
+\subsection{Additional Unlearning Baselines}
+\label{subsec:extra-baselines}
+We additionally include two unlearning-specific baselines. On standard CIFAR-10, Selective Synaptic Dampening (SSD) \cite{foster2024ssd} preserves accuracy (\(A_{final}=0.9038\), WorstDrop \(0.0042\)) but barely forgets at its default threshold (Au \(=0.9317\), far above the \(0.5\) chance level), whereas Saliency Unlearning (SalUn) \cite{fan2024salun} forgets more effectively (Au \(=0.5160\), \(A_{final}=0.9096\), WorstDrop \(0.0120\)). On standard CIFAR-100 both reach Au \(\approx 0.31\)--\(0.33\) (chance \(0.2\)) at lower accuracy (SSD \(0.4161\), SalUn \(0.4507\)), leaving PALL-Modified's simultaneous high accuracy, near-chance Au, and small WorstDrop unmatched.
+
+% TODO(data): cross-architecture ViT-T/8 results (tags cifar10_vit_v1 / cifar100_vit_v1)
+% are NOT yet in results/aggregates/server_report_table.csv, so the cross-architecture
+% WorstDrop-reduction claim is omitted. Add a row/sentence once g11_vit has been run.
+% TODO(data): anchor ablation (tag anchor_ablation_v1, old vs reinit L2 anchor) and the
+% agreement-rate / gradient-norm-ratio diagnostics (tag agreement_v1) are not yet in the
+% aggregates; add them when populated.
+
 \section{Conclusion}
-We addressed the vulnerability of selective machine unlearning algorithms to overlapping parameter domains. We proposed two synergistic frameworks: \textit{PALL-Modified}, which maximizes retention accuracy via explicit overlap regularization, and \textit{PALL-Adapter}, which utilizes bottleneck modules and a three-phase soft-masked optimization execution to shrink parameter update footprints by up to 87\%. By demonstrating resilience against catastrophic degradation, our solutions establish a practical pathway for deploying continuous, privacy-compliant AI systems.
+We addressed the vulnerability of selective machine unlearning algorithms to overlapping parameter domains. We proposed two synergistic frameworks: \textit{PALL-Modified}, which maximizes retention accuracy via explicit overlap regularization, and \textit{PALL-Adapter}, which utilizes bottleneck modules and a three-phase soft-masked optimization execution to shrink parameter update footprints by up to \(87.5\%\) (CIFAR-10, against the full-network PALL-Original baseline). By demonstrating resilience against catastrophic degradation, our solutions establish a practical pathway for deploying continuous, privacy-compliant AI systems.
 
 \begin{thebibliography}{00}
 
