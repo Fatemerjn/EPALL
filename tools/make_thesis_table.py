@@ -235,6 +235,52 @@ def get_overlap_analysis(metrics: Dict[str, Any], final_unlearning: Dict[str, An
     return {}
 
 
+def read_mask_iou_overlap(path: Path) -> Optional[float]:
+    """Return the mean off-diagonal subnet-mask IoU from ``overlap.csv``."""
+    try:
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            rows = list(csv.reader(handle))
+    except OSError:
+        return None
+    if len(rows) < 2 or len(rows[0]) < 2:
+        return None
+    n_tasks = len(rows[0]) - 1
+    if len(rows) - 1 != n_tasks:
+        return None
+    off_diagonal: List[float] = []
+    for row_index, row in enumerate(rows[1:]):
+        if len(row) < n_tasks + 1:
+            return None
+        for column_index, cell in enumerate(row[1 : n_tasks + 1]):
+            value = to_float(cell)
+            if value is None:
+                return None
+            if row_index != column_index:
+                off_diagonal.append(value)
+    return float(statistics.mean(off_diagonal)) if off_diagonal else None
+
+
+def get_shared_critical_ratio(
+    metrics_path: Path,
+    method: str,
+    overlap_analysis: Dict[str, Any],
+) -> Optional[float]:
+    """Return the measured overlap used by the overlap-response analysis.
+
+    PALL-Adapter records its native shared-critical ratio in
+    ``overlap_analysis.critical_ratio``.  For PALL-Original/Modified the
+    comparable continuous covariate requested for the response analysis is the
+    mean off-diagonal IoU of their per-task subnet masks, written to the run's
+    ``overlap.csv`` by ``--dump_overlap``.  Baseline zero placeholders are never
+    treated as measurements.
+    """
+    if method in {"pall_original", "pall_modified"}:
+        return read_mask_iou_overlap(metrics_path.with_name("overlap.csv"))
+    if method == "pall_adapter":
+        return to_float(overlap_analysis.get("critical_ratio"))
+    return None
+
+
 def derive_adapter_param_ratio(metrics: Dict[str, Any]) -> Optional[float]:
     adapter_stats = metrics.get("adapter_stats") if isinstance(metrics.get("adapter_stats"), dict) else {}
     model_stats = metrics.get("model") if isinstance(metrics.get("model"), dict) else {}
@@ -498,7 +544,11 @@ def extract_run_row(
         "t_forget_total": t_forget_total,
         "updated_param_ratio": derive_updated_param_ratio(metrics, final_unlearning),
         "adapter_param_ratio": derive_adapter_param_ratio(metrics),
-        "overlap_shared_critical_ratio": to_float(overlap_analysis.get("critical_ratio")),
+        "overlap_shared_critical_ratio": get_shared_critical_ratio(
+            metrics_path,
+            str(method),
+            overlap_analysis,
+        ),
         "overlap_protected_ratio": to_float(overlap_analysis.get("protected_ratio")),
         "overlap_updated_ratio": to_float(overlap_analysis.get("updated_ratio")),
         "overlap_shared_critical_count": to_float(overlap_analysis.get("shared_critical")),

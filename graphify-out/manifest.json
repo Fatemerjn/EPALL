@@ -295,8 +295,8 @@
     "semantic_hash": ""
   },
   "tools/make_thesis_table.py": {
-    "mtime": 1783804780.906451,
-    "ast_hash": "ac57e0fda59a0541e93b3c0b4b3fc6f0",
+    "mtime": 1783846950.304917,
+    "ast_hash": "0a8ce2d9e460f8c7f9c12f1e790728ff",
     "semantic_hash": ""
   },
   "tools/md_to_latex_table.py": {
@@ -310,8 +310,8 @@
     "semantic_hash": "67ee2f74c90ead55fa7cc1bb638e0966"
   },
   "tools/plot_report_results.py": {
-    "mtime": 1783804780.9067168,
-    "ast_hash": "9af2f686219f070dbd5bf493934d3d37",
+    "mtime": 1783847362.923929,
+    "ast_hash": "c0869fa27ad078b5b21a4d629cf815bd",
     "semantic_hash": ""
   },
   "tools/plot_thesis_results.py": {
