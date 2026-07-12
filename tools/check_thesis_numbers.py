@@ -531,6 +531,59 @@ def audit_privacy_table(text, privacy, records):
                               "privacy summary exists", privacy.path.name, "FAIL"))
 
 
+def audit_probe_table(text, thesis, records):
+    """Validate probe_v1 before/after mean±std cells and signed mean changes."""
+    label = "tab:probe-results"
+    body = table_body(text, label)
+    seen = set()
+    for cells in data_rows(body):
+        vals = [strip_latex(cell) for cell in cells]
+        if len(vals) < 5:
+            continue
+        dataset = DATASET_MAP.get(vals[0])
+        method = METHOD_MAP.get(vals[1])
+        if dataset is None or method is None:
+            continue
+        key = (dataset, method)
+        seen.add(key)
+        row_label = f"{dataset}/{method}"
+        csv_row, matches, source = thesis.find(
+            dataset=dataset,
+            method=method,
+            experiment_tag="probe_v1",
+        )
+        reason = None if len(matches) == 1 else no_match_reason(matches)
+        audit_metric_cell(
+            records, label, row_label, "Probe Before", cells[2], csv_row or {},
+            "probe_acc_before_mean", "probe_acc_before_std", source, reason,
+        )
+        audit_metric_cell(
+            records, label, row_label, "Probe After", cells[3], csv_row or {},
+            "probe_acc_after_mean", "probe_acc_after_std", source, reason,
+        )
+        change_nums = numbers_in(cells[4])
+        if reason is not None or not change_nums:
+            records.append(Record(
+                label, row_label, "Signed Change",
+                change_nums[0] if change_nums else "<missing>",
+                reason or "probe means unavailable", source, "FAIL",
+            ))
+            continue
+        signed_change = float(csv_row["probe_acc_after_mean"]) - float(csv_row["probe_acc_before_mean"])
+        audit_scalar(records, label, row_label, "Signed Change", change_nums[0], str(signed_change), source)
+
+    expected = {
+        (row["dataset"], row["method"])
+        for row in thesis.rows
+        if row.get("experiment_tag") == "probe_v1"
+    }
+    for dataset, method in sorted(expected - seen):
+        records.append(Record(
+            label, f"{dataset}/{method}", "row presence", "missing",
+            "probe_v1 aggregate row exists", THESIS_CSV.name, "FAIL",
+        ))
+
+
 def audit_vit_availability(text, thesis, records):
     """Audit ViT metrics when present, or an explicit pending row when absent."""
     label = "tab:vit-results"
@@ -705,7 +758,7 @@ def audit_prose(text, records):
 def print_records(records: List[Record]) -> None:
     order = ["tab:main-pall-results", "tab:standard-cifar10-results", "tab:standard-cifar100-results",
              "tab:vit-results", "tab:anchor-ablation", "tab:adapter-ablation",
-             "tab:conflict-ablation", "tab:overlap-correlation", "tab:privacy-eps-hat",
+             "tab:conflict-ablation", "tab:overlap-correlation", "tab:privacy-eps-hat", "tab:probe-results",
              "tab:hparams", "prose"]
     by_table = {name: [r for r in records if r.table == name] for name in order}
     for name in order:
@@ -752,6 +805,7 @@ def main() -> int:
     audit_conflict_ablation(text, thesis, records)
     audit_overlap(text, thesis, records)
     audit_privacy_table(text, privacy, records)
+    audit_probe_table(text, thesis, records)
     audit_hparams(text, thesis, records)
     audit_prose(text, records)
 

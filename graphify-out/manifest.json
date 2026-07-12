@@ -655,8 +655,8 @@
     "semantic_hash": ""
   },
   "tools/check_thesis_numbers.py": {
-    "mtime": 1783869625.5350764,
-    "ast_hash": "dfcee92b86fabca67cdbece5b1e38443",
+    "mtime": 1783892696.930861,
+    "ast_hash": "8ed0457cf2efc4af1fb033e93d6ecab3",
     "semantic_hash": ""
   },
   "scripts/sync_from_server.sh": {
@@ -905,68 +905,68 @@
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_slopes.md": {
-    "mtime": 1783868825.394326,
-    "ast_hash": "38b41479a6fab52f74cabcd47d3b39e3",
+    "mtime": 1783891669.252185,
+    "ast_hash": "6df631952f90fd34c86d80893020471f",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/adapter_bottleneck_ablation.pdf": {
-    "mtime": 1783869763.1752782,
-    "ast_hash": "d1578e5434ddf8c8c851be3cdda0dc52",
+    "mtime": 1783891461.1581466,
+    "ast_hash": "fc9a9cb29753c424a4ffedba8ed56c97",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/au_bars_by_dataset_regime.pdf": {
-    "mtime": 1783869763.175811,
-    "ast_hash": "6ffecc50f5d520ad2bb89b84c9649148",
+    "mtime": 1783891460.2092357,
+    "ast_hash": "970236274bada808064770b5116ae3be",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/bound_verification.pdf": {
-    "mtime": 1783868825.1169038,
-    "ast_hash": "17536b35314fdbf7fc6b19b602faa427",
+    "mtime": 1783891462.7324579,
+    "ast_hash": "d02313887cbcaebe56e8aea1c9492901",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/final_accuracy_bars_by_dataset_regime.pdf": {
-    "mtime": 1783869763.1764097,
-    "ast_hash": "6a545a8d0430f2b41e743662d68587b2",
+    "mtime": 1783891459.6574965,
+    "ast_hash": "77693cd0102dc7ac56aef3e72e923e2e",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/mia_before_after_by_dataset_regime.pdf": {
-    "mtime": 1783869763.176797,
-    "ast_hash": "bc8f009dde01ffe8303ea27942484f50",
+    "mtime": 1783891462.3883052,
+    "ast_hash": "433bd79ab2d0dfdd237aeada540c82d3",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_cifar10.pdf": {
-    "mtime": 1783869763.177297,
-    "ast_hash": "d84070f76051bd781d0ab91a8e8f6ba4",
+    "mtime": 1783891669.2517138,
+    "ast_hash": "7c7eaf401e1b68b4b5843f48bda29995",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_cifar100.pdf": {
-    "mtime": 1783869763.1776257,
-    "ast_hash": "4ae8700877ccb4bcaa219feabd2f60e3",
+    "mtime": 1783891669.1612618,
+    "ast_hash": "d740c0531b6227ad27da77aff3d97bdf",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/representative_pall_adapter_accuracy_heatmap.pdf": {
-    "mtime": 1783869763.177984,
-    "ast_hash": "e0da99e1e3a7097fb79fbbdf8d1e1c5e",
+    "mtime": 1783891462.2530212,
+    "ast_hash": "f62b78ef49360516a281ff08cefe2574",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/shared_bottleneck_ablation.pdf": {
-    "mtime": 1783868823.7463307,
-    "ast_hash": "dba438f03b70d3a5493a98b00627ec4d",
+    "mtime": 1783891461.3233826,
+    "ast_hash": "233583d2fea7668951d7cc26910a8022",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/tradeoff_updated_vs_final_accuracy_by_dataset_regime.pdf": {
-    "mtime": 1783869763.1784034,
-    "ast_hash": "886a9b61d78b5e9dfa02f3859952166e",
+    "mtime": 1783891460.9678755,
+    "ast_hash": "25ef31aab400cbfbb24c9c3a592f9c24",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/tradeoff_updated_vs_worstdrop_by_dataset_regime.pdf": {
-    "mtime": 1783869763.179003,
-    "ast_hash": "e4b5d4e5cf2c3f78fdf4a36a9f5ebbb0",
+    "mtime": 1783891460.5801063,
+    "ast_hash": "b993d907ead6272ddef176f36d079aee",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/worstdrop_bars_by_dataset_regime.pdf": {
-    "mtime": 1783869763.1793098,
-    "ast_hash": "7f669f5826ebe0c53e38547aef79a7b3",
+    "mtime": 1783891459.9459307,
+    "ast_hash": "cbd50d5550e5d5286f37577d2ea2ce55",
     "semantic_hash": ""
   }
 }

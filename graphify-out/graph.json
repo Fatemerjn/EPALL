@@ -1275,7 +1275,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_base",
-      "community": 63,
+      "community": 61,
       "norm_label": "base.py"
     },
     {
@@ -1735,7 +1735,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_er",
-      "community": 63,
+      "community": 61,
       "norm_label": "er.py"
     },
     {
@@ -1785,7 +1785,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "methods_er_rehearsalmemory_add",
-      "community": 132,
+      "community": 61,
       "norm_label": ".add()"
     },
     {
@@ -1885,7 +1885,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_ewc_ewc",
-      "community": 141,
+      "community": 63,
       "norm_label": "ewc"
     },
     {
@@ -1895,7 +1895,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_ewc_ewc_init",
-      "community": 141,
+      "community": 63,
       "norm_label": ".__init__()"
     },
     {
@@ -1905,7 +1905,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "methods_ewc_ewc_penalty",
-      "community": 141,
+      "community": 63,
       "norm_label": ".penalty()"
     },
     {
@@ -1915,7 +1915,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "methods_ewc_ewc_learn",
-      "community": 141,
+      "community": 63,
       "norm_label": ".learn()"
     },
     {
@@ -1925,7 +1925,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "methods_ewc_ewc_forget",
-      "community": 141,
+      "community": 63,
       "norm_label": ".forget()"
     },
     {
@@ -1935,7 +1935,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lora",
-      "community": 63,
+      "community": 61,
       "norm_label": "lora.py"
     },
     {
@@ -2075,7 +2075,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lsf",
-      "community": 63,
+      "community": 142,
       "norm_label": "lsf.py"
     },
     {
@@ -2085,7 +2085,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "methods_lsf_lsf",
-      "community": 2,
+      "community": 142,
       "norm_label": "lsf"
     },
     {
@@ -2095,7 +2095,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "methods_lsf_lsf_init",
-      "community": 2,
+      "community": 142,
       "norm_label": ".__init__()"
     },
     {
@@ -2105,7 +2105,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "methods_lsf_lsf_init_optimizer_classifier",
-      "community": 2,
+      "community": 142,
       "norm_label": ".init_optimizer_classifier()"
     },
     {
@@ -2115,7 +2115,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "methods_lsf_lsf_penalty",
-      "community": 2,
+      "community": 142,
       "norm_label": ".penalty()"
     },
     {
@@ -2125,7 +2125,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "methods_lsf_lsf_learn",
-      "community": 2,
+      "community": 142,
       "norm_label": ".learn()"
     },
     {
@@ -2135,7 +2135,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "methods_lsf_lsf_forget",
-      "community": 2,
+      "community": 142,
       "norm_label": ".forget()"
     },
     {
@@ -2145,7 +2145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lwf",
-      "community": 63,
+      "community": 142,
       "norm_label": "lwf.py"
     },
     {
@@ -2155,7 +2155,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_lwf_smooth",
-      "community": 63,
+      "community": 142,
       "norm_label": "smooth()"
     },
     {
@@ -2165,7 +2165,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "methods_lwf_modified_kl_div",
-      "community": 63,
+      "community": 142,
       "norm_label": "modified_kl_div()"
     },
     {
@@ -2245,7 +2245,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_adapter",
-      "community": 63,
+      "community": 61,
       "norm_label": "pall_adapter.py"
     },
     {
@@ -3145,7 +3145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_salun",
-      "community": 63,
+      "community": 61,
       "norm_label": "salun.py"
     },
     {
@@ -3165,7 +3165,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_salun_salun_init",
-      "community": 61,
+      "community": 31,
       "norm_label": ".__init__()"
     },
     {
@@ -3305,7 +3305,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_sequential",
-      "community": 63,
+      "community": 2,
       "norm_label": "sequential.py"
     },
     {
@@ -3345,7 +3345,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_ssd",
-      "community": 63,
+      "community": 61,
       "norm_label": "ssd.py"
     },
     {
@@ -3365,7 +3365,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_ssd_ssd_init",
-      "community": 61,
+      "community": 13,
       "norm_label": ".__init__()"
     },
     {
@@ -4795,7 +4795,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_subnet_vit",
-      "community": 63,
+      "community": 2,
       "norm_label": "subnet_vit.py"
     },
     {
@@ -6695,10 +6695,20 @@
       "norm_label": "audit_privacy_table()"
     },
     {
-      "label": "audit_vit_availability()",
+      "label": "audit_probe_table()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
       "source_location": "L534",
+      "_origin": "ast",
+      "id": "tools_check_thesis_numbers_audit_probe_table",
+      "community": 24,
+      "norm_label": "audit_probe_table()"
+    },
+    {
+      "label": "audit_vit_availability()",
+      "file_type": "code",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L587",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_audit_vit_availability",
       "community": 24,
@@ -6708,7 +6718,7 @@
       "label": "audit_overlap()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L589",
+      "source_location": "L642",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_audit_overlap",
       "community": 24,
@@ -6718,7 +6728,7 @@
       "label": "audit_hparams()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L628",
+      "source_location": "L681",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_audit_hparams",
       "community": 24,
@@ -6728,7 +6738,7 @@
       "label": "strip_environments()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L661",
+      "source_location": "L714",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_strip_environments",
       "community": 24,
@@ -6738,7 +6748,7 @@
       "label": "audit_prose()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L667",
+      "source_location": "L720",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_audit_prose",
       "community": 24,
@@ -6748,7 +6758,7 @@
       "label": "print_records()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L705",
+      "source_location": "L758",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_print_records",
       "community": 24,
@@ -6758,7 +6768,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L729",
+      "source_location": "L782",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_main",
       "community": 24,
@@ -6815,12 +6825,22 @@
       "norm_label": "audit and register one already-extracted scalar value."
     },
     {
-      "label": "Audit ViT metrics when present, or an explicit pending row when absent.",
+      "label": "Validate probe_v1 before/after mean\u00b1std cells and signed mean changes.",
       "file_type": "rationale",
       "source_file": "tools/check_thesis_numbers.py",
       "source_location": "L535",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_rationale_535",
+      "community": 24,
+      "norm_label": "validate probe_v1 before/after mean\u00b1std cells and signed mean changes."
+    },
+    {
+      "label": "Audit ViT metrics when present, or an explicit pending row when absent.",
+      "file_type": "rationale",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L588",
+      "_origin": "ast",
+      "id": "tools_check_thesis_numbers_rationale_588",
       "community": 24,
       "norm_label": "audit vit metrics when present, or an explicit pending row when absent."
     },
@@ -14369,7 +14389,7 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify claude instructions",
-      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
+      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
     },
     {
       "label": "Graphify Skill Pipeline",
@@ -30152,7 +30172,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L628",
+      "source_location": "L681",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_audit_hparams",
@@ -30182,7 +30202,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L589",
+      "source_location": "L642",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_audit_overlap",
@@ -30202,7 +30222,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L667",
+      "source_location": "L534",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers",
+      "target": "tools_check_thesis_numbers_audit_probe_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L720",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_audit_prose",
@@ -30232,7 +30262,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L534",
+      "source_location": "L587",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_audit_vit_availability",
@@ -30262,7 +30292,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L729",
+      "source_location": "L782",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_main",
@@ -30292,7 +30322,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L705",
+      "source_location": "L758",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_print_records",
@@ -30332,7 +30362,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L661",
+      "source_location": "L714",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_strip_environments",
@@ -30406,7 +30436,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L634",
+      "source_location": "L687",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_strip_latex",
@@ -30428,7 +30458,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L600",
+      "source_location": "L653",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_strip_latex",
@@ -30450,6 +30480,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L540",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
+      "target": "tools_check_thesis_numbers_strip_latex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
       "source_location": "L288",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_standard",
@@ -30461,7 +30502,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L546",
+      "source_location": "L599",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_strip_latex",
@@ -30527,7 +30568,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L630",
+      "source_location": "L683",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_table_body",
@@ -30549,7 +30590,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L591",
+      "source_location": "L644",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_table_body",
@@ -30571,6 +30612,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L537",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
+      "target": "tools_check_thesis_numbers_table_body",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
       "source_location": "L286",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_standard",
@@ -30582,7 +30634,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L537",
+      "source_location": "L590",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_table_body",
@@ -30626,7 +30678,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L631",
+      "source_location": "L684",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_data_rows",
@@ -30648,7 +30700,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L599",
+      "source_location": "L652",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_data_rows",
@@ -30670,6 +30722,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L539",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
+      "target": "tools_check_thesis_numbers_data_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
       "source_location": "L287",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_standard",
@@ -30681,7 +30744,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L545",
+      "source_location": "L598",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_data_rows",
@@ -30702,7 +30765,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L635",
+      "source_location": "L688",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_numbers_in",
@@ -30735,6 +30798,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L564",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
+      "target": "tools_check_thesis_numbers_numbers_in",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
       "source_location": "L303",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_standard",
@@ -30746,7 +30820,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L569",
+      "source_location": "L622",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_numbers_in",
@@ -30778,7 +30852,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L654",
+      "source_location": "L707",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_values_match",
@@ -30842,7 +30916,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L742",
+      "source_location": "L795",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_csvtable",
@@ -30897,7 +30971,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L650",
+      "source_location": "L703",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_csvtable_find",
@@ -30919,9 +30993,20 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L611",
+      "source_location": "L664",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
+      "target": "tools_check_thesis_numbers_csvtable_find",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L550",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
       "target": "tools_check_thesis_numbers_csvtable_find",
       "confidence_score": 1.0
     },
@@ -30941,7 +31026,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L556",
+      "source_location": "L609",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_csvtable_find",
@@ -30985,7 +31070,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L652",
+      "source_location": "L705",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_no_match_reason",
@@ -31007,9 +31092,20 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L612",
+      "source_location": "L665",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
+      "target": "tools_check_thesis_numbers_no_match_reason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L555",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
       "target": "tools_check_thesis_numbers_no_match_reason",
       "confidence_score": 1.0
     },
@@ -31072,7 +31168,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L647",
+      "source_location": "L700",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_record",
@@ -31105,7 +31201,18 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L694",
+      "source_location": "L566",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
+      "target": "tools_check_thesis_numbers_record",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L747",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_prose",
       "target": "tools_check_thesis_numbers_record",
@@ -31138,7 +31245,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L573",
+      "source_location": "L626",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_record",
@@ -31149,7 +31256,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L705",
+      "source_location": "L758",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_print_records",
       "target": "tools_check_thesis_numbers_record",
@@ -31181,7 +31288,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L639",
+      "source_location": "L692",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_register_value",
@@ -31258,9 +31365,20 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L614",
+      "source_location": "L667",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
+      "target": "tools_check_thesis_numbers_audit_metric_cell",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L556",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
       "target": "tools_check_thesis_numbers_audit_metric_cell",
       "confidence_score": 1.0
     },
@@ -31280,7 +31398,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L565",
+      "source_location": "L618",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_audit_metric_cell",
@@ -31308,6 +31426,17 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L573",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_probe_table",
+      "target": "tools_check_thesis_numbers_audit_scalar",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
@@ -31322,7 +31451,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L746",
+      "source_location": "L799",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_main_pall",
@@ -31333,7 +31462,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L747",
+      "source_location": "L800",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_standard",
@@ -31344,7 +31473,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L751",
+      "source_location": "L804",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_adapter_ablation",
@@ -31355,7 +31484,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L750",
+      "source_location": "L803",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_anchor_ablation",
@@ -31366,7 +31495,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L752",
+      "source_location": "L805",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_conflict_ablation",
@@ -31377,7 +31506,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L754",
+      "source_location": "L807",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_privacy_table",
@@ -31388,10 +31517,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L749",
+      "source_location": "L808",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
-      "target": "tools_check_thesis_numbers_audit_vit_availability",
+      "target": "tools_check_thesis_numbers_audit_probe_table",
       "confidence_score": 1.0
     },
     {
@@ -31401,6 +31530,27 @@
       "source_location": "L535",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_rationale_535",
+      "target": "tools_check_thesis_numbers_audit_probe_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L802",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_main",
+      "target": "tools_check_thesis_numbers_audit_vit_availability",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L588",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_rationale_588",
       "target": "tools_check_thesis_numbers_audit_vit_availability",
       "confidence_score": 1.0
     },
@@ -31409,7 +31559,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L753",
+      "source_location": "L806",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_overlap",
@@ -31420,7 +31570,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L755",
+      "source_location": "L809",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_hparams",
@@ -31431,7 +31581,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L668",
+      "source_location": "L721",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_prose",
       "target": "tools_check_thesis_numbers_strip_environments",
@@ -31442,7 +31592,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L756",
+      "source_location": "L810",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_prose",
@@ -31453,7 +31603,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L758",
+      "source_location": "L812",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_print_records",
@@ -46376,5 +46526,5 @@
       "source_file": "thesis/front/template/images/besmellah.jpg"
     }
   ],
-  "built_at_commit": "c8eb7ff277437403b1248fd6e0c2454ad7b00160"
+  "built_at_commit": "b6c23b121f51625cacbbef87ad658d0d433a6a34"
 }
