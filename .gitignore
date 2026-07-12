@@ -1,8 +1,16 @@
 .idea/
+.agents/
 .DS_Store
 __pycache__/
 *.py[cod]
 *.xml
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.clang-module-cache/
 
 venv/
 .venv/
@@ -63,7 +71,14 @@ graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 
 data/
 
-docs/
+# Keep the project-facing documentation in Git, but leave local drafts and
+# advisor notes private to this checkout.
+docs/*
+!docs/adapter_notes.md
+!docs/pall_modified_hparams.md
+!docs/standard_vs_overlap.md
+!docs/server_setup.md
+
 wheels_linux/
 logs/
 thesis*.zip
@@ -72,7 +87,23 @@ thesis*.zip
 comparison_*.csv
 comparison_*.md
 results_*.csv
-.clang-module-cache/
-results/
+# Experiment output is local by default.  The explicit plots_v2 allow-list is
+# the reviewed thesis snapshot kept under version control.
+results/*
+!results/thesis/
+results/thesis/*
+!results/thesis/plots_v2/
+!results/thesis/plots_v2/adapter_bottleneck_ablation.pdf
+!results/thesis/plots_v2/au_bars_by_dataset_regime.pdf
+!results/thesis/plots_v2/final_accuracy_bars_by_dataset_regime.pdf
+!results/thesis/plots_v2/mia_before_after_by_dataset_regime.pdf
+!results/thesis/plots_v2/overlap_response_cifar10.pdf
+!results/thesis/plots_v2/overlap_response_cifar100.pdf
+!results/thesis/plots_v2/overlap_response_slopes.csv
+!results/thesis/plots_v2/overlap_response_slopes.md
+!results/thesis/plots_v2/representative_pall_adapter_accuracy_heatmap.pdf
+!results/thesis/plots_v2/tradeoff_updated_vs_final_accuracy_by_dataset_regime.pdf
+!results/thesis/plots_v2/tradeoff_updated_vs_worstdrop_by_dataset_regime.pdf
+!results/thesis/plots_v2/worstdrop_bars_by_dataset_regime.pdf
+
 runs/
-schedules/*candidate*

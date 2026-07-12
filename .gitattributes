@@ -1,0 +1,12 @@
+# Use LF for source and configuration files on both macOS and Linux.
+* text=auto eol=lf
+
+# Never line-ending-normalize binary research assets or checkpoints.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ttf binary
+*.pth binary
+*.pt binary
+*.ckpt binary

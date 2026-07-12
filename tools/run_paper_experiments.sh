@@ -15,6 +15,7 @@ PY="${PYTHON:-python}"
 SEEDS="${SEEDS:-0 1}"
 WHICH="${1:-all}"
 mkdir -p logs
+FAILED_RUNS=0
 
 launch () {  # launch <logname> <main.py args...>
     local name="$1"; shift
@@ -22,6 +23,7 @@ launch () {  # launch <logname> <main.py args...>
     if $PY -u main.py "$@" > "logs/${name}.log" 2>&1; then
         echo "    PASS ${name}"
     else
+        ((FAILED_RUNS += 1))
         echo "    FAIL ${name} (see logs/${name}.log)"
     fi
 }
@@ -69,6 +71,10 @@ if [ "$WHICH" = "all" ] || [ "$WHICH" = "cifar10" ];  then run_dataset cifar10  
 if [ "$WHICH" = "all" ] || [ "$WHICH" = "cifar100" ]; then run_dataset cifar100 cifar100_t10_f3;    fi
 
 echo "===================================================================="
+if (( FAILED_RUNS > 0 )); then
+    echo "[FAILED] ${FAILED_RUNS} run(s) failed; inspect logs/ before aggregating." >&2
+    exit 1
+fi
 echo "DONE. Aggregate the results with:"
 echo "  $PY tools/aggregate_results.py --root runs --require-metrics --seed-policy latest --out results/aggregates/paper_results.csv"
 echo "  $PY tools/make_thesis_table.py --root runs --group-by-config --seed-policy latest --out-csv results/aggregates/paper_thesis_table.csv --out-md results/aggregates/paper_thesis_table.md"

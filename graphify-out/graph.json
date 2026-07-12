@@ -1575,7 +1575,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_clpu",
-      "community": 22,
+      "community": 63,
       "norm_label": "clpu.py"
     },
     {
@@ -1675,7 +1675,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_derpp",
-      "community": 22,
+      "community": 59,
       "norm_label": "derpp.py"
     },
     {
@@ -1685,7 +1685,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "methods_derpp_derpp",
-      "community": 61,
+      "community": 59,
       "norm_label": "derpp"
     },
     {
@@ -1695,7 +1695,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "methods_derpp_derpp_init",
-      "community": 61,
+      "community": 59,
       "norm_label": ".__init__()"
     },
     {
@@ -1705,7 +1705,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "methods_derpp_derpp_der_loss",
-      "community": 61,
+      "community": 59,
       "norm_label": ".der_loss()"
     },
     {
@@ -1715,7 +1715,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "methods_derpp_derpp_learn",
-      "community": 61,
+      "community": 59,
       "norm_label": ".learn()"
     },
     {
@@ -1725,7 +1725,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "methods_derpp_derpp_forget",
-      "community": 61,
+      "community": 59,
       "norm_label": ".forget()"
     },
     {
@@ -1755,7 +1755,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_er_rehearsalmemory_init",
-      "community": 61,
+      "community": 22,
       "norm_label": ".__init__()"
     },
     {
@@ -1785,7 +1785,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "methods_er_rehearsalmemory_add",
-      "community": 132,
+      "community": 61,
       "norm_label": ".add()"
     },
     {
@@ -1825,7 +1825,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "methods_er_er_init",
-      "community": 61,
+      "community": 22,
       "norm_label": ".__init__()"
     },
     {
@@ -1875,7 +1875,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_ewc",
-      "community": 22,
+      "community": 63,
       "norm_label": "ewc.py"
     },
     {
@@ -1885,7 +1885,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_ewc_ewc",
-      "community": 137,
+      "community": 63,
       "norm_label": "ewc"
     },
     {
@@ -1895,7 +1895,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_ewc_ewc_init",
-      "community": 137,
+      "community": 63,
       "norm_label": ".__init__()"
     },
     {
@@ -1905,7 +1905,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "methods_ewc_ewc_penalty",
-      "community": 137,
+      "community": 63,
       "norm_label": ".penalty()"
     },
     {
@@ -1915,7 +1915,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "methods_ewc_ewc_learn",
-      "community": 137,
+      "community": 63,
       "norm_label": ".learn()"
     },
     {
@@ -1925,7 +1925,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "methods_ewc_ewc_forget",
-      "community": 137,
+      "community": 63,
       "norm_label": ".forget()"
     },
     {
@@ -1945,7 +1945,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "methods_lora_lora",
-      "community": 15,
+      "community": 2,
       "norm_label": "lora"
     },
     {
@@ -1955,7 +1955,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "methods_lora_lora_init",
-      "community": 15,
+      "community": 2,
       "norm_label": ".__init__()"
     },
     {
@@ -1965,7 +1965,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "methods_lora_lora_init_optimizer",
-      "community": 15,
+      "community": 2,
       "norm_label": ".init_optimizer()"
     },
     {
@@ -1975,7 +1975,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "methods_lora_lora_train_mode",
-      "community": 15,
+      "community": 2,
       "norm_label": ".train_mode()"
     },
     {
@@ -1985,7 +1985,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "methods_lora_lora_extract_logits_and_features",
-      "community": 15,
+      "community": 2,
       "norm_label": ".extract_logits_and_features()"
     },
     {
@@ -1995,7 +1995,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "methods_lora_lora_fill_buffer",
-      "community": 15,
+      "community": 2,
       "norm_label": ".fill_buffer()"
     },
     {
@@ -2005,7 +2005,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "methods_lora_lora_learn",
-      "community": 15,
+      "community": 2,
       "norm_label": ".learn()"
     },
     {
@@ -2015,7 +2015,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "methods_lora_lora_compute_retrain_steps",
-      "community": 15,
+      "community": 2,
       "norm_label": "._compute_retrain_steps()"
     },
     {
@@ -2025,7 +2025,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "methods_lora_lora_count_active_trainable_params",
-      "community": 15,
+      "community": 2,
       "norm_label": "._count_active_trainable_params()"
     },
     {
@@ -2035,7 +2035,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "methods_lora_lora_forget",
-      "community": 15,
+      "community": 2,
       "norm_label": ".forget()"
     },
     {
@@ -2045,7 +2045,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "methods_lora_lora_forget_with_diagnostics",
-      "community": 15,
+      "community": 2,
       "norm_label": ".forget_with_diagnostics()"
     },
     {
@@ -2055,7 +2055,7 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "methods_lora_lora_forget_impl",
-      "community": 15,
+      "community": 2,
       "norm_label": "._forget_impl()"
     },
     {
@@ -2065,7 +2065,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_lora_rationale_9",
-      "community": 15,
+      "community": 2,
       "norm_label": "parameter-efficient lora baseline for continual learning + task unlearning."
     },
     {
@@ -2225,7 +2225,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall",
-      "community": 7,
+      "community": 22,
       "norm_label": "pall.py"
     },
     {
@@ -2235,7 +2235,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_rationale_1",
-      "community": 7,
+      "community": 22,
       "norm_label": "backward-compatibility shim.  the pall implementation was split into:   * ``meth"
     },
     {
@@ -3065,7 +3065,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_modified",
-      "community": 7,
+      "community": 22,
       "norm_label": "pall_modified.py"
     },
     {
@@ -3075,7 +3075,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_pall_modified_pallmodified",
-      "community": 7,
+      "community": 22,
       "norm_label": "pallmodified"
     },
     {
@@ -3085,7 +3085,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "methods_pall_modified_pallmodified_init",
-      "community": 7,
+      "community": 22,
       "norm_label": ".__init__()"
     },
     {
@@ -3095,7 +3095,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_modified_rationale_1",
-      "community": 7,
+      "community": 22,
       "norm_label": "pall-modified -- the main overlap-aware selective-forgetting method.  identifies"
     },
     {
@@ -3105,7 +3105,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_original",
-      "community": 7,
+      "community": 22,
       "norm_label": "pall_original.py"
     },
     {
@@ -3115,7 +3115,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "methods_pall_original_palloriginal",
-      "community": 7,
+      "community": 22,
       "norm_label": "palloriginal"
     },
     {
@@ -3125,7 +3125,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "methods_pall_original_palloriginal_init",
-      "community": 7,
+      "community": 22,
       "norm_label": ".__init__()"
     },
     {
@@ -3135,7 +3135,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_original_rationale_1",
-      "community": 7,
+      "community": 22,
       "norm_label": "pall-original -- the pall baseline (no overlap protection).  forgetting resets t"
     },
     {
@@ -3305,7 +3305,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_sequential",
-      "community": 22,
+      "community": 63,
       "norm_label": "sequential.py"
     },
     {
@@ -3315,7 +3315,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_sequential_sequential",
-      "community": 22,
+      "community": 63,
       "norm_label": "sequential"
     },
     {
@@ -3325,7 +3325,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_sequential_sequential_init",
-      "community": 22,
+      "community": 63,
       "norm_label": ".__init__()"
     },
     {
@@ -3335,7 +3335,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "methods_sequential_sequential_learn",
-      "community": 22,
+      "community": 63,
       "norm_label": ".learn()"
     },
     {
@@ -3465,7 +3465,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_init",
-      "community": 22,
+      "community": 0,
       "norm_label": "__init__.py"
     },
     {
@@ -3755,7 +3755,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_base",
-      "community": 22,
+      "community": 0,
       "norm_label": "base.py"
     },
     {
@@ -4795,7 +4795,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_subnet_vit",
-      "community": 22,
+      "community": 0,
       "norm_label": "subnet_vit.py"
     },
     {
@@ -4955,7 +4955,7 @@
       "source_location": "L293",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t8",
-      "community": 63,
+      "community": 0,
       "norm_label": "subnet_vit_t8()"
     },
     {
@@ -4965,7 +4965,7 @@
       "source_location": "L307",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t_8",
-      "community": 63,
+      "community": 0,
       "norm_label": "subnet_vit_t_8()"
     },
     {
@@ -4975,7 +4975,7 @@
       "source_location": "L313",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t_16",
-      "community": 63,
+      "community": 0,
       "norm_label": "subnet_vit_t_16()"
     },
     {
@@ -4995,7 +4995,7 @@
       "source_location": "L294",
       "_origin": "ast",
       "id": "models_subnet_vit_rationale_294",
-      "community": 63,
+      "community": 0,
       "norm_label": "vit-tiny/8 sized for 32x32 cifar inputs: 16 patches (+1 cls token).      distinc"
     },
     {
@@ -5005,7 +5005,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_vit",
-      "community": 22,
+      "community": 63,
       "norm_label": "vit.py"
     },
     {
@@ -5025,7 +5025,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention_init",
-      "community": 18,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5045,7 +5045,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "models_vit_multiheadattention",
-      "community": 18,
+      "community": 0,
       "norm_label": "multiheadattention"
     },
     {
@@ -5055,7 +5055,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_init",
-      "community": 18,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5065,7 +5065,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_forward",
-      "community": 18,
+      "community": 0,
       "norm_label": ".forward()"
     },
     {
@@ -5075,7 +5075,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "models_vit_encoderblock",
-      "community": 18,
+      "community": 0,
       "norm_label": "encoderblock"
     },
     {
@@ -5085,7 +5085,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "models_vit_encoderblock_init",
-      "community": 18,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5095,7 +5095,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "models_vit_encoderblock_forward",
-      "community": 18,
+      "community": 0,
       "norm_label": ".forward()"
     },
     {
@@ -5105,7 +5105,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "models_vit_visiontransformer",
-      "community": 22,
+      "community": 63,
       "norm_label": "visiontransformer"
     },
     {
@@ -5115,7 +5115,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_init",
-      "community": 18,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5125,7 +5125,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_process_input",
-      "community": 22,
+      "community": 63,
       "norm_label": "._process_input()"
     },
     {
@@ -5135,7 +5135,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_forward",
-      "community": 22,
+      "community": 63,
       "norm_label": ".forward()"
     },
     {
@@ -5145,7 +5145,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "models_vit_vit_t_8",
-      "community": 22,
+      "community": 63,
       "norm_label": "vit_t_8()"
     },
     {
@@ -5155,7 +5155,7 @@
       "source_location": "L200",
       "_origin": "ast",
       "id": "models_vit_vit_t_16",
-      "community": 22,
+      "community": 63,
       "norm_label": "vit_t_16()"
     },
     {
@@ -5175,8 +5175,50 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "models_vit_rationale_48",
-      "community": 18,
+      "community": 0,
       "norm_label": "inputs:                 q: (batch_size, seq_len1, d_model)                 k: (b"
+    },
+    {
+      "label": "bootstrap_linux_offline.sh",
+      "file_type": "code",
+      "source_file": "scripts/bootstrap_linux_offline.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "scripts_bootstrap_linux_offline",
+      "community": 134,
+      "norm_label": "bootstrap_linux_offline.sh"
+    },
+    {
+      "label": "bootstrap_linux_offline.sh script",
+      "file_type": "code",
+      "source_file": "scripts/bootstrap_linux_offline.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "scripts_bootstrap_linux_offline_sh__entry",
+      "community": 134,
+      "norm_label": "bootstrap_linux_offline.sh script"
+    },
+    {
+      "label": "usage()",
+      "file_type": "code",
+      "source_file": "scripts/bootstrap_linux_offline.sh",
+      "source_location": "L9",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "scripts_bootstrap_linux_offline_usage",
+      "community": 134,
+      "norm_label": "usage()"
     },
     {
       "label": "reproduce_all.sh",
@@ -5261,6 +5303,20 @@
       "id": "scripts_sync_to_server_sh__entry",
       "community": 136,
       "norm_label": "sync_to_server.sh script"
+    },
+    {
+      "label": "usage()",
+      "file_type": "code",
+      "source_file": "scripts/sync_to_server.sh",
+      "source_location": "L21",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "scripts_sync_to_server_usage",
+      "community": 136,
+      "norm_label": "usage()"
     },
     {
       "label": "aggregate_results.py",
@@ -7853,304 +7909,12 @@
       "norm_label": "main()"
     },
     {
-      "label": "make_overlap_vs_accuracy_pub.swift",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub",
-      "community": 2,
-      "norm_label": "make_overlap_vs_accuracy_pub.swift"
-    },
-    {
-      "label": "Foundation",
-      "file_type": "code",
-      "type": "module",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "foundation",
-      "community": 2,
-      "norm_label": "foundation"
-    },
-    {
-      "label": "AppKit",
-      "file_type": "code",
-      "type": "module",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L4",
-      "_origin": "ast",
-      "id": "appkit",
-      "community": 2,
-      "norm_label": "appkit"
-    },
-    {
-      "label": "Row",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L6",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_row",
-      "community": 2,
-      "norm_label": "row"
-    },
-    {
-      "label": "String",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "community": 2,
-      "norm_label": "string"
-    },
-    {
-      "label": "Double",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_double",
-      "community": 2,
-      "norm_label": "double"
-    },
-    {
-      "label": "QuadraticFit",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_quadraticfit",
-      "community": 2,
-      "norm_label": "quadraticfit"
-    },
-    {
-      "label": "PlotError",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L22",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "community": 2,
-      "norm_label": "ploterror"
-    },
-    {
-      "label": "Error",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "error",
-      "community": 2,
-      "norm_label": "error"
-    },
-    {
-      "label": "CustomStringConvertible",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "customstringconvertible",
-      "community": 2,
-      "norm_label": "customstringconvertible"
-    },
-    {
-      "label": "missingColumn",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L23",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_ploterror_missingcolumn",
-      "community": 2,
-      "norm_label": "missingcolumn"
-    },
-    {
-      "label": "noData",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L24",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_ploterror_nodata",
-      "community": 2,
-      "norm_label": "nodata"
-    },
-    {
-      "label": "invalidRegression",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_ploterror_invalidregression",
-      "community": 2,
-      "norm_label": "invalidregression"
-    },
-    {
-      "label": "pdfContext",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L26",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_ploterror_pdfcontext",
-      "community": 2,
-      "norm_label": "pdfcontext"
-    },
-    {
-      "label": "parseDouble()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L42",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_parsedouble",
-      "community": 2,
-      "norm_label": "parsedouble()"
-    },
-    {
-      "label": "parseCSVLine()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L51",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_parsecsvline",
-      "community": 2,
-      "norm_label": "parsecsvline()"
-    },
-    {
-      "label": "loadRows()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L72",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "community": 2,
-      "norm_label": "loadrows()"
-    },
-    {
-      "label": "solve3x3()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L110",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_solve3x3",
-      "community": 2,
-      "norm_label": "solve3x3()"
-    },
-    {
-      "label": "Int",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_int",
-      "community": 2,
-      "norm_label": "int"
-    },
-    {
-      "label": "drawText()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "community": 2,
-      "norm_label": "drawtext()"
-    },
-    {
-      "label": "CGPoint",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_cgpoint",
-      "community": 2,
-      "norm_label": "cgpoint"
-    },
-    {
-      "label": "CGFloat",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_cgfloat",
-      "community": 2,
-      "norm_label": "cgfloat"
-    },
-    {
-      "label": "NSColor",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_nscolor",
-      "community": 2,
-      "norm_label": "nscolor"
-    },
-    {
-      "label": "NSFont",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_nsfont",
-      "community": 2,
-      "norm_label": "nsfont"
-    },
-    {
-      "label": "NSTextAlignment",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_nstextalignment",
-      "community": 2,
-      "norm_label": "nstextalignment"
-    },
-    {
-      "label": "drawMarker()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L232",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "community": 2,
-      "norm_label": "drawmarker()"
-    },
-    {
-      "label": "CGContext",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_swift_cgcontext",
-      "community": 2,
-      "norm_label": "cgcontext"
-    },
-    {
-      "label": "tickValues()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L266",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_tickvalues",
-      "community": 2,
-      "norm_label": "tickvalues()"
-    },
-    {
-      "label": "drawPlot()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L273",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "community": 2,
-      "norm_label": "drawplot()"
-    },
-    {
       "label": "make_overlap_vs_forgetting_pub.py",
       "file_type": "code",
       "source_file": "tools/make_overlap_vs_forgetting_pub.py",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_py_tools_make_overlap_vs_forgetting_pub",
+      "id": "tools_make_overlap_vs_forgetting_pub",
       "community": 41,
       "norm_label": "make_overlap_vs_forgetting_pub.py"
     },
@@ -8243,256 +8007,6 @@
       "id": "tools_make_overlap_vs_forgetting_pub_main",
       "community": 41,
       "norm_label": "main()"
-    },
-    {
-      "label": "make_overlap_vs_forgetting_pub.swift",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "community": 2,
-      "norm_label": "make_overlap_vs_forgetting_pub.swift"
-    },
-    {
-      "label": "Row",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L6",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_row",
-      "community": 2,
-      "norm_label": "row"
-    },
-    {
-      "label": "String",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "community": 2,
-      "norm_label": "string"
-    },
-    {
-      "label": "Double",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_double",
-      "community": 2,
-      "norm_label": "double"
-    },
-    {
-      "label": "RegressionBand",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_regressionband",
-      "community": 2,
-      "norm_label": "regressionband"
-    },
-    {
-      "label": "PlotError",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "community": 2,
-      "norm_label": "ploterror"
-    },
-    {
-      "label": "missingColumn",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L20",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_ploterror_missingcolumn",
-      "community": 2,
-      "norm_label": "missingcolumn"
-    },
-    {
-      "label": "noData",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L21",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_ploterror_nodata",
-      "community": 2,
-      "norm_label": "nodata"
-    },
-    {
-      "label": "invalidRegression",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L22",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_ploterror_invalidregression",
-      "community": 2,
-      "norm_label": "invalidregression"
-    },
-    {
-      "label": "pdfContext",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L23",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_ploterror_pdfcontext",
-      "community": 2,
-      "norm_label": "pdfcontext"
-    },
-    {
-      "label": "tCritical95()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L39",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_tcritical95",
-      "community": 2,
-      "norm_label": "tcritical95()"
-    },
-    {
-      "label": "Int",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_int",
-      "community": 2,
-      "norm_label": "int"
-    },
-    {
-      "label": "parseDouble()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L75",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_parsedouble",
-      "community": 2,
-      "norm_label": "parsedouble()"
-    },
-    {
-      "label": "parseCSVLine()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L84",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_parsecsvline",
-      "community": 2,
-      "norm_label": "parsecsvline()"
-    },
-    {
-      "label": "loadRows()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L105",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "community": 2,
-      "norm_label": "loadrows()"
-    },
-    {
-      "label": "drawText()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "community": 2,
-      "norm_label": "drawtext()"
-    },
-    {
-      "label": "CGPoint",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_cgpoint",
-      "community": 2,
-      "norm_label": "cgpoint"
-    },
-    {
-      "label": "CGFloat",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_cgfloat",
-      "community": 2,
-      "norm_label": "cgfloat"
-    },
-    {
-      "label": "NSColor",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_nscolor",
-      "community": 2,
-      "norm_label": "nscolor"
-    },
-    {
-      "label": "NSFont",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_nsfont",
-      "community": 2,
-      "norm_label": "nsfont"
-    },
-    {
-      "label": "NSTextAlignment",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_nstextalignment",
-      "community": 2,
-      "norm_label": "nstextalignment"
-    },
-    {
-      "label": "drawMarker()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L219",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "community": 2,
-      "norm_label": "drawmarker()"
-    },
-    {
-      "label": "CGContext",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_swift_cgcontext",
-      "community": 2,
-      "norm_label": "cgcontext"
-    },
-    {
-      "label": "tickValues()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L254",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_tickvalues",
-      "community": 2,
-      "norm_label": "tickvalues()"
-    },
-    {
-      "label": "drawPlot()",
-      "file_type": "code",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L261",
-      "_origin": "ast",
-      "id": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "community": 2,
-      "norm_label": "drawplot()"
     },
     {
       "label": "make_paper_figures.py",
@@ -9815,16 +9329,6 @@
       "norm_label": "main()"
     },
     {
-      "label": "plot_drop.py",
-      "file_type": "code",
-      "source_file": "tools/plot_drop.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tools_plot_drop",
-      "community": 59,
-      "norm_label": "plot_drop.py"
-    },
-    {
       "label": "plot_report_results.py",
       "file_type": "code",
       "source_file": "tools/plot_report_results.py",
@@ -9950,7 +9454,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "tools_plot_report_results_py_axes",
+      "id": "axes",
       "community": 12,
       "norm_label": "axes"
     },
@@ -10593,126 +10097,6 @@
       "id": "tools_plot_report_results_rationale_1529",
       "community": 12,
       "norm_label": "regress signed worstdrop on continuous measured overlap for pooled runs.      ci"
-    },
-    {
-      "label": "plot_thesis_results.py",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results",
-      "community": 35,
-      "norm_label": "plot_thesis_results.py"
-    },
-    {
-      "label": "parse_args()",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L49",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_parse_args",
-      "community": 35,
-      "norm_label": "parse_args()"
-    },
-    {
-      "label": "Namespace",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_py_namespace",
-      "community": 35,
-      "norm_label": "namespace"
-    },
-    {
-      "label": "read_rows()",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L66",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_read_rows",
-      "community": 35,
-      "norm_label": "read_rows()"
-    },
-    {
-      "label": "Path",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_py_path",
-      "community": 35,
-      "norm_label": "path"
-    },
-    {
-      "label": "parse_float()",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L78",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_parse_float",
-      "community": 35,
-      "norm_label": "parse_float()"
-    },
-    {
-      "label": "Any",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_py_any",
-      "community": 35,
-      "norm_label": "any"
-    },
-    {
-      "label": "filtered_points()",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L93",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_filtered_points",
-      "community": 35,
-      "norm_label": "filtered_points()"
-    },
-    {
-      "label": "build_legend()",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L105",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_build_legend",
-      "community": 35,
-      "norm_label": "build_legend()"
-    },
-    {
-      "label": "Axes",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_py_axes",
-      "community": 35,
-      "norm_label": "axes"
-    },
-    {
-      "label": "make_plot()",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L115",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_make_plot",
-      "community": 35,
-      "norm_label": "make_plot()"
-    },
-    {
-      "label": "main()",
-      "file_type": "code",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L144",
-      "_origin": "ast",
-      "id": "tools_plot_thesis_results_main",
-      "community": 35,
-      "norm_label": "main()"
     },
     {
       "label": "prune_duplicate_runs.py",
@@ -11656,7 +11040,7 @@
       "label": "launch()",
       "file_type": "code",
       "source_file": "tools/run_paper_experiments.sh",
-      "source_location": "L19",
+      "source_location": "L20",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11670,7 +11054,7 @@
       "label": "run_dataset()",
       "file_type": "code",
       "source_file": "tools/run_paper_experiments.sh",
-      "source_location": "L29",
+      "source_location": "L31",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11782,7 +11166,7 @@
       "label": "launch()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L56",
+      "source_location": "L58",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11796,7 +11180,7 @@
       "label": "group1()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L67",
+      "source_location": "L70",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11810,7 +11194,7 @@
       "label": "group2()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L85",
+      "source_location": "L88",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11824,7 +11208,7 @@
       "label": "group3()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L125",
+      "source_location": "L128",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11838,7 +11222,7 @@
       "label": "group4()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L143",
+      "source_location": "L146",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11852,7 +11236,7 @@
       "label": "group5()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L175",
+      "source_location": "L178",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11866,7 +11250,7 @@
       "label": "group6_standard()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L210",
+      "source_location": "L213",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11880,7 +11264,7 @@
       "label": "group7_tiny()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L255",
+      "source_location": "L258",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11894,7 +11278,7 @@
       "label": "group8_mia()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L291",
+      "source_location": "L294",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11908,7 +11292,7 @@
       "label": "group9_extra_baselines()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L335",
+      "source_location": "L338",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11922,7 +11306,7 @@
       "label": "group9b_ssd_tune()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L371",
+      "source_location": "L374",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11936,7 +11320,7 @@
       "label": "group10_anchor()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L395",
+      "source_location": "L398",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11950,7 +11334,7 @@
       "label": "group11_vit()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L421",
+      "source_location": "L424",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11964,7 +11348,7 @@
       "label": "group12_agreement()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L454",
+      "source_location": "L457",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11978,7 +11362,7 @@
       "label": "group3b_bottleneck_seed1()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L477",
+      "source_location": "L480",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -11992,7 +11376,7 @@
       "label": "group13_shared_bottleneck()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L497",
+      "source_location": "L500",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -12006,7 +11390,7 @@
       "label": "group14_conflict()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L525",
+      "source_location": "L528",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -12020,7 +11404,7 @@
       "label": "group15_seed2()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L563",
+      "source_location": "L566",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -12034,7 +11418,7 @@
       "label": "group17_overlap_curve()",
       "file_type": "code",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L641",
+      "source_location": "L644",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -13869,10 +13253,20 @@
       "norm_label": "reproducibility workflow"
     },
     {
+      "label": "Offline Linux Server",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L167",
+      "_origin": "ast",
+      "id": "readme_offline_linux_server",
+      "community": 58,
+      "norm_label": "offline linux server"
+    },
+    {
       "label": "Adapter Variant",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L187",
+      "source_location": "L199",
       "_origin": "ast",
       "id": "readme_adapter_variant",
       "community": 58,
@@ -13882,7 +13276,7 @@
       "label": "Overlap-Aware Adapter Unlearning",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L220",
+      "source_location": "L232",
       "_origin": "ast",
       "id": "readme_overlap_aware_adapter_unlearning",
       "community": 58,
@@ -13892,7 +13286,7 @@
       "label": "Paper-oriented interpretation",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L251",
+      "source_location": "L263",
       "_origin": "ast",
       "id": "readme_paper_oriented_interpretation",
       "community": 58,
@@ -13902,7 +13296,7 @@
       "label": "Run Artifacts",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L274",
+      "source_location": "L286",
       "_origin": "ast",
       "id": "readme_run_artifacts",
       "community": 58,
@@ -13912,7 +13306,7 @@
       "label": "Reference",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L292",
+      "source_location": "L304",
       "_origin": "ast",
       "id": "readme_reference",
       "community": 58,
@@ -13922,7 +13316,7 @@
       "label": "Acknowledgments",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L306",
+      "source_location": "L318",
       "_origin": "ast",
       "id": "readme_acknowledgments",
       "community": 58,
@@ -13947,6 +13341,276 @@
       "id": "configs_readme_configs",
       "community": 85,
       "norm_label": "configs"
+    },
+    {
+      "label": "adapter_notes.md",
+      "file_type": "document",
+      "source_file": "docs/adapter_notes.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_adapter_notes",
+      "community": 137,
+      "norm_label": "adapter_notes.md"
+    },
+    {
+      "label": "Adapter Notes",
+      "file_type": "document",
+      "source_file": "docs/adapter_notes.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_adapter_notes_adapter_notes",
+      "community": 137,
+      "norm_label": "adapter notes"
+    },
+    {
+      "label": "pall_modified_hparams.md",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams",
+      "community": 35,
+      "norm_label": "pall_modified_hparams.md"
+    },
+    {
+      "label": "PALL Modified: Hyperparameters (Overlap-Aware Selective Forgetting)",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "community": 35,
+      "norm_label": "pall modified: hyperparameters (overlap-aware selective forgetting)"
+    },
+    {
+      "label": "Scope",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams_scope",
+      "community": 35,
+      "norm_label": "scope"
+    },
+    {
+      "label": "Hyperparameter Table",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams_hyperparameter_table",
+      "community": 35,
+      "norm_label": "hyperparameter table"
+    },
+    {
+      "label": "Resolution Rules (Current Behavior)",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams_resolution_rules_current_behavior",
+      "community": 35,
+      "norm_label": "resolution rules (current behavior)"
+    },
+    {
+      "label": "Config Serialization",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L37",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams_config_serialization",
+      "community": 35,
+      "norm_label": "config serialization"
+    },
+    {
+      "label": "Consistency Check",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams_consistency_check",
+      "community": 35,
+      "norm_label": "consistency check"
+    },
+    {
+      "label": "Recommended Ablation Grid",
+      "file_type": "document",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "docs_pall_modified_hparams_recommended_ablation_grid",
+      "community": 35,
+      "norm_label": "recommended ablation grid"
+    },
+    {
+      "label": "server_setup.md",
+      "file_type": "document",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_server_setup",
+      "community": 58,
+      "norm_label": "server_setup.md"
+    },
+    {
+      "label": "Offline Linux server setup",
+      "file_type": "document",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_server_setup_offline_linux_server_setup",
+      "community": 58,
+      "norm_label": "offline linux server setup"
+    },
+    {
+      "label": "1. Provision the runtime assets",
+      "file_type": "document",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "docs_server_setup_1_provision_the_runtime_assets",
+      "community": 58,
+      "norm_label": "1. provision the runtime assets"
+    },
+    {
+      "label": "2. Deploy code",
+      "file_type": "document",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "docs_server_setup_2_deploy_code",
+      "community": 58,
+      "norm_label": "2. deploy code"
+    },
+    {
+      "label": "3. Create the offline environment and run",
+      "file_type": "document",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "docs_server_setup_3_create_the_offline_environment_and_run",
+      "community": 58,
+      "norm_label": "3. create the offline environment and run"
+    },
+    {
+      "label": "4. Pull artifacts back",
+      "file_type": "document",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L72",
+      "_origin": "ast",
+      "id": "docs_server_setup_4_pull_artifacts_back",
+      "community": 58,
+      "norm_label": "4. pull artifacts back"
+    },
+    {
+      "label": "standard_vs_overlap.md",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap",
+      "community": 18,
+      "norm_label": "standard_vs_overlap.md"
+    },
+    {
+      "label": "Our overlap-heavy setting vs the standard Split-CIFAR / PALL protocol",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_our_overlap_heavy_setting_vs_the_standard_split_cifar_pall_protocol",
+      "community": 18,
+      "norm_label": "our overlap-heavy setting vs the standard split-cifar / pall protocol"
+    },
+    {
+      "label": "At a glance",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_at_a_glance",
+      "community": 18,
+      "norm_label": "at a glance"
+    },
+    {
+      "label": "What increases parameter / representation sharing (with code references)",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_what_increases_parameter_representation_sharing_with_code_references",
+      "community": 18,
+      "norm_label": "what increases parameter / representation sharing (with code references)"
+    },
+    {
+      "label": "1. CIFAR-100 is built from semantic *superclasses*, not random splits",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_1_cifar_100_is_built_from_semantic_superclasses_not_random_splits",
+      "community": 18,
+      "norm_label": "1. cifar-100 is built from semantic *superclasses*, not random splits"
+    },
+    {
+      "label": "2. Fewer classes per task, and only half the label space",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L63",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_2_fewer_classes_per_task_and_only_half_the_label_space",
+      "community": 18,
+      "norm_label": "2. fewer classes per task, and only half the label space"
+    },
+    {
+      "label": "3. Short training (n_epochs 3)",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L70",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_3_short_training_n_epochs_3",
+      "community": 18,
+      "norm_label": "3. short training (n_epochs 3)"
+    },
+    {
+      "label": "4. The PALL subnetwork sparsity (context, not a differentiator)",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L75",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_4_the_pall_subnetwork_sparsity_context_not_a_differentiator",
+      "community": 18,
+      "norm_label": "4. the pall subnetwork sparsity (context, not a differentiator)"
+    },
+    {
+      "label": "5. Forgetting-centric schedules (same in both)",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L85",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_5_forgetting_centric_schedules_same_in_both",
+      "community": 18,
+      "norm_label": "5. forgetting-centric schedules (same in both)"
+    },
+    {
+      "label": "What `g6_standard` runs",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L95",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_what_g6_standard_runs",
+      "community": 18,
+      "norm_label": "what `g6_standard` runs"
+    },
+    {
+      "label": "Known issue: LoRA diverges on standard Split-CIFAR-100 (fixed, footnote required)",
+      "file_type": "document",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L122",
+      "_origin": "ast",
+      "id": "docs_standard_vs_overlap_known_issue_lora_diverges_on_standard_split_cifar_100_fixed_footnote_required",
+      "community": 18,
+      "norm_label": "known issue: lora diverges on standard split-cifar-100 (fixed, footnote required)"
     },
     {
       "label": "REVIEW_NOTES.md",
@@ -14087,6 +13751,26 @@
       "id": "paper_review_notes_what_is_correct_verified",
       "community": 62,
       "norm_label": "what is correct (verified)"
+    },
+    {
+      "label": "overlap_response_slopes.md",
+      "file_type": "document",
+      "source_file": "results/thesis/plots_v2/overlap_response_slopes.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "results_thesis_plots_v2_overlap_response_slopes",
+      "community": 139,
+      "norm_label": "overlap_response_slopes.md"
+    },
+    {
+      "label": "Pooled measured-overlap regressions",
+      "file_type": "document",
+      "source_file": "results/thesis/plots_v2/overlap_response_slopes.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "results_thesis_plots_v2_overlap_response_slopes_pooled_measured_overlap_regressions",
+      "community": 139,
+      "norm_label": "pooled measured-overlap regressions"
     },
     {
       "label": "overlap_grades.md",
@@ -14755,7 +14439,7 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify claude instructions",
-      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
+      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
     },
     {
       "label": "Graphify Skill Pipeline",
@@ -25295,28 +24979,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "references",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "models/subnet_layers.py",
-      "source_location": "L213",
-      "weight": 1.0,
-      "source": "models_subnet_layers_subnetconv2d_forward",
-      "target": "models_subnet_layers_maskbyscores"
-    },
-    {
-      "relation": "references",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "models/subnet_layers.py",
-      "source_location": "L110",
-      "weight": 1.0,
-      "source": "models_subnet_layers_subnetlinear_forward",
-      "target": "models_subnet_layers_maskbyscores"
-    },
-    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "models/subnet_layers.py",
@@ -27142,6 +26804,37 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "scripts/bootstrap_linux_offline.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "scripts_bootstrap_linux_offline",
+      "target": "scripts_bootstrap_linux_offline_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/bootstrap_linux_offline.sh",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "scripts_bootstrap_linux_offline",
+      "target": "scripts_bootstrap_linux_offline_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/bootstrap_linux_offline.sh",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "call",
+      "source": "scripts_bootstrap_linux_offline_sh__entry",
+      "target": "scripts_bootstrap_linux_offline_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "scripts/reproduce_all.sh",
       "source_location": "L1",
       "weight": 1.0,
@@ -27167,6 +26860,27 @@
       "weight": 1.0,
       "source": "scripts_sync_to_server",
       "target": "scripts_sync_to_server_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/sync_to_server.sh",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "scripts_sync_to_server",
+      "target": "scripts_sync_to_server_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/sync_to_server.sh",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "call",
+      "source": "scripts_sync_to_server_sh__entry",
+      "target": "scripts_sync_to_server_usage",
       "confidence_score": 1.0
     },
     {
@@ -34501,697 +34215,12 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "appkit",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "foundation",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L232",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L273",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L72",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L51",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_parsecsvline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L42",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_parsedouble",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L151",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_quadraticfit",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L110",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_solve3x3",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L266",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub",
-      "target": "tools_make_overlap_vs_accuracy_pub_tickvalues",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "foundation",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "appkit",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L273",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L72",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "target": "tools_make_overlap_vs_accuracy_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L151",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_quadraticfit",
-      "target": "tools_make_overlap_vs_accuracy_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L9",
-      "weight": 1.0,
-      "context": "field",
-      "source": "tools_make_overlap_vs_accuracy_pub_row",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "source": "tools_make_overlap_vs_accuracy_pub_row",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L273",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L72",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L51",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_parsecsvline",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L42",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_parsedouble",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L28",
-      "weight": 1.0,
-      "context": "field",
-      "source": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L42",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_parsedouble",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_quadraticfit",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L110",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_solve3x3",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L266",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_tickvalues",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L153",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_quadraticfit",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_invalidregression",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L184",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_quadraticfit",
-      "target": "tools_make_overlap_vs_accuracy_pub_solve3x3",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L151",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_quadraticfit",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_int",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "target": "customstringconvertible",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "target": "error",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_invalidregression",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L23",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_missingcolumn",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_nodata",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L26",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_ploterror",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_pdfcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "target": "error",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "target": "customstringconvertible",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L82",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_missingcolumn",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L77",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_nodata",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L319",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_ploterror_pdfcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L97",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "target": "tools_make_overlap_vs_accuracy_pub_parsedouble",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L80",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_loadrows",
-      "target": "tools_make_overlap_vs_accuracy_pub_parsecsvline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L232",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_int",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L266",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_tickvalues",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_int",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L330",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgfloat",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgpoint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_nscolor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_nsfont",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L211",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawtext",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_nstextalignment",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L232",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgpoint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L286",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgpoint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L232",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgfloat",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L461",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgfloat",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L232",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_nscolor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L277",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_nscolor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L232",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L405",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_drawmarker",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L318",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_swift_cgcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_accuracy_pub.swift",
-      "source_location": "L362",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_accuracy_pub_drawplot",
-      "target": "tools_make_overlap_vs_accuracy_pub_tickvalues",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/make_overlap_vs_forgetting_pub.py",
       "source_location": "L54",
       "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_py_tools_make_overlap_vs_forgetting_pub",
+      "source": "tools_make_overlap_vs_forgetting_pub",
       "target": "tools_make_overlap_vs_forgetting_pub_compute_regression_band",
       "confidence_score": 1.0
     },
@@ -35201,7 +34230,7 @@
       "source_file": "tools/make_overlap_vs_forgetting_pub.py",
       "source_location": "L168",
       "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_py_tools_make_overlap_vs_forgetting_pub",
+      "source": "tools_make_overlap_vs_forgetting_pub",
       "target": "tools_make_overlap_vs_forgetting_pub_main",
       "confidence_score": 1.0
     },
@@ -35211,7 +34240,7 @@
       "source_file": "tools/make_overlap_vs_forgetting_pub.py",
       "source_location": "L20",
       "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_py_tools_make_overlap_vs_forgetting_pub",
+      "source": "tools_make_overlap_vs_forgetting_pub",
       "target": "tools_make_overlap_vs_forgetting_pub_parse_args",
       "confidence_score": 1.0
     },
@@ -35221,7 +34250,7 @@
       "source_file": "tools/make_overlap_vs_forgetting_pub.py",
       "source_location": "L113",
       "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_py_tools_make_overlap_vs_forgetting_pub",
+      "source": "tools_make_overlap_vs_forgetting_pub",
       "target": "tools_make_overlap_vs_forgetting_pub_plot_publication_figure",
       "confidence_score": 1.0
     },
@@ -35231,7 +34260,7 @@
       "source_file": "tools/make_overlap_vs_forgetting_pub.py",
       "source_location": "L39",
       "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_py_tools_make_overlap_vs_forgetting_pub",
+      "source": "tools_make_overlap_vs_forgetting_pub",
       "target": "tools_make_overlap_vs_forgetting_pub_validate_input",
       "confidence_score": 1.0
     },
@@ -35343,618 +34372,6 @@
       "weight": 1.0,
       "source": "tools_make_overlap_vs_forgetting_pub_plot_publication_figure",
       "target": "tools_make_overlap_vs_forgetting_pub_py_path",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L219",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L261",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L105",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L84",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_parsecsvline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L75",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_parsedouble",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L143",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_regressionband",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L39",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_tcritical95",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L254",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_swift_tools_make_overlap_vs_forgetting_pub",
-      "target": "tools_make_overlap_vs_forgetting_pub_tickvalues",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L261",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L105",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "target": "tools_make_overlap_vs_forgetting_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L143",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_regressionband",
-      "target": "tools_make_overlap_vs_forgetting_pub_row",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L9",
-      "weight": 1.0,
-      "context": "field",
-      "source": "tools_make_overlap_vs_forgetting_pub_row",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "source": "tools_make_overlap_vs_forgetting_pub_row",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L261",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L105",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L84",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_parsecsvline",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L75",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_parsedouble",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L25",
-      "weight": 1.0,
-      "context": "field",
-      "source": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L75",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_parsedouble",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L16",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_regressionband",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L39",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_tcritical95",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L254",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_tickvalues",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_double",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L145",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_regressionband",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_invalidregression",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L143",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_regressionband",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_int",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L175",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_regressionband",
-      "target": "tools_make_overlap_vs_forgetting_pub_tcritical95",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_invalidregression",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L20",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_missingcolumn",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_nodata",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "case_of",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L23",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_ploterror",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_pdfcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L115",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_missingcolumn",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L110",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_nodata",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L303",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_ploterror_pdfcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L39",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_tcritical95",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_int",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L219",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_int",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L254",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_tickvalues",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_int",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L130",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "target": "tools_make_overlap_vs_forgetting_pub_parsedouble",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L113",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_loadrows",
-      "target": "tools_make_overlap_vs_forgetting_pub_parsecsvline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L314",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgfloat",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgpoint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_nscolor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_nsfont",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L199",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawtext",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_nstextalignment",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L219",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgpoint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L274",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgpoint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L219",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgfloat",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L411",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgfloat",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L219",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_nscolor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L265",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_nscolor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L219",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L389",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_drawmarker",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L302",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_swift_cgcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/make_overlap_vs_forgetting_pub.swift",
-      "source_location": "L330",
-      "weight": 1.0,
-      "source": "tools_make_overlap_vs_forgetting_pub_drawplot",
-      "target": "tools_make_overlap_vs_forgetting_pub_tickvalues",
       "confidence_score": 1.0
     },
     {
@@ -40890,7 +39307,7 @@
       "source_location": "L189",
       "weight": 1.0,
       "source": "tools_plot_report_results_style_axis",
-      "target": "tools_plot_report_results_py_axes",
+      "target": "axes",
       "confidence_score": 1.0
     },
     {
@@ -40901,7 +39318,7 @@
       "source_location": "L196",
       "weight": 1.0,
       "source": "tools_plot_report_results_dedup_legend",
-      "target": "tools_plot_report_results_py_axes",
+      "target": "axes",
       "confidence_score": 1.0
     },
     {
@@ -42459,208 +40876,6 @@
       "weight": 1.0,
       "source": "tools_plot_report_results_main",
       "target": "tools_plot_report_results_generate_paper_figures",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L105",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results",
-      "target": "tools_plot_thesis_results_build_legend",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L93",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results",
-      "target": "tools_plot_thesis_results_filtered_points",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L144",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results",
-      "target": "tools_plot_thesis_results_main",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L115",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results",
-      "target": "tools_plot_thesis_results_make_plot",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L49",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results",
-      "target": "tools_plot_thesis_results_parse_args",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L78",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results",
-      "target": "tools_plot_thesis_results_parse_float",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L66",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results",
-      "target": "tools_plot_thesis_results_read_rows",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L145",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_main",
-      "target": "tools_plot_thesis_results_parse_args",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L49",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_parse_args",
-      "target": "tools_plot_thesis_results_py_namespace",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L54",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_parse_args",
-      "target": "tools_plot_thesis_results_py_path",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L146",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_main",
-      "target": "tools_plot_thesis_results_read_rows",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L66",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_read_rows",
-      "target": "tools_plot_thesis_results_py_path",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L115",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_make_plot",
-      "target": "tools_plot_thesis_results_py_path",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L97",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_filtered_points",
-      "target": "tools_plot_thesis_results_parse_float",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L78",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_parse_float",
-      "target": "tools_plot_thesis_results_py_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L123",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_make_plot",
-      "target": "tools_plot_thesis_results_filtered_points",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L105",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_build_legend",
-      "target": "tools_plot_thesis_results_py_axes",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L136",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_make_plot",
-      "target": "tools_plot_thesis_results_build_legend",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tools/plot_thesis_results.py",
-      "source_location": "L153",
-      "weight": 1.0,
-      "source": "tools_plot_thesis_results_main",
-      "target": "tools_plot_thesis_results_make_plot",
       "confidence_score": 1.0
     },
     {
@@ -44723,7 +42938,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_paper_experiments.sh",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
       "source": "tools_run_paper_experiments",
       "target": "tools_run_paper_experiments_launch",
@@ -44733,7 +42948,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_paper_experiments.sh",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0,
       "source": "tools_run_paper_experiments",
       "target": "tools_run_paper_experiments_run_dataset",
@@ -44753,7 +42968,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_paper_experiments.sh",
-      "source_location": "L68",
+      "source_location": "L70",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_paper_experiments_sh__entry",
@@ -44764,7 +42979,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_paper_experiments.sh",
-      "source_location": "L45",
+      "source_location": "L47",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_paper_experiments_run_dataset",
@@ -44902,7 +43117,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L67",
+      "source_location": "L70",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group1",
@@ -44912,7 +43127,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L395",
+      "source_location": "L398",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group10_anchor",
@@ -44922,7 +43137,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L421",
+      "source_location": "L424",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group11_vit",
@@ -44932,7 +43147,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L454",
+      "source_location": "L457",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group12_agreement",
@@ -44942,7 +43157,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L497",
+      "source_location": "L500",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group13_shared_bottleneck",
@@ -44952,7 +43167,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L525",
+      "source_location": "L528",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group14_conflict",
@@ -44962,7 +43177,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L563",
+      "source_location": "L566",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group15_seed2",
@@ -44972,7 +43187,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L641",
+      "source_location": "L644",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group17_overlap_curve",
@@ -44982,7 +43197,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L85",
+      "source_location": "L88",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group2",
@@ -44992,7 +43207,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L125",
+      "source_location": "L128",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group3",
@@ -45002,7 +43217,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L477",
+      "source_location": "L480",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group3b_bottleneck_seed1",
@@ -45012,7 +43227,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L143",
+      "source_location": "L146",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group4",
@@ -45022,7 +43237,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L175",
+      "source_location": "L178",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group5",
@@ -45032,7 +43247,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L210",
+      "source_location": "L213",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group6_standard",
@@ -45042,7 +43257,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L255",
+      "source_location": "L258",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group7_tiny",
@@ -45052,7 +43267,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L291",
+      "source_location": "L294",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group8_mia",
@@ -45062,7 +43277,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L335",
+      "source_location": "L338",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group9_extra_baselines",
@@ -45072,7 +43287,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L371",
+      "source_location": "L374",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_group9b_ssd_tune",
@@ -45082,7 +43297,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L56",
+      "source_location": "L58",
       "weight": 1.0,
       "source": "tools_run_server_experiments",
       "target": "tools_run_server_experiments_launch",
@@ -45102,7 +43317,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L706",
+      "source_location": "L709",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45113,7 +43328,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L717",
+      "source_location": "L720",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45124,7 +43339,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L718",
+      "source_location": "L721",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45135,7 +43350,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L719",
+      "source_location": "L722",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45146,7 +43361,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L721",
+      "source_location": "L724",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45157,7 +43372,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L723",
+      "source_location": "L726",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45168,7 +43383,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L724",
+      "source_location": "L727",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45179,7 +43394,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L725",
+      "source_location": "L728",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45190,7 +43405,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L706",
+      "source_location": "L709",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45201,7 +43416,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L706",
+      "source_location": "L709",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45212,7 +43427,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L720",
+      "source_location": "L723",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45223,7 +43438,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L710",
+      "source_location": "L713",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45234,7 +43449,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L711",
+      "source_location": "L714",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45245,7 +43460,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L712",
+      "source_location": "L715",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45256,7 +43471,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L713",
+      "source_location": "L716",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45267,7 +43482,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L714",
+      "source_location": "L717",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45278,7 +43493,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L715",
+      "source_location": "L718",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45289,7 +43504,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L716",
+      "source_location": "L719",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_sh__entry",
@@ -45300,7 +43515,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L73",
+      "source_location": "L76",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group1",
@@ -45311,7 +43526,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L402",
+      "source_location": "L405",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group10_anchor",
@@ -45322,7 +43537,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L431",
+      "source_location": "L434",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group11_vit",
@@ -45333,7 +43548,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L463",
+      "source_location": "L466",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group12_agreement",
@@ -45344,7 +43559,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L502",
+      "source_location": "L505",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group13_shared_bottleneck",
@@ -45355,7 +43570,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L539",
+      "source_location": "L542",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group14_conflict",
@@ -45366,7 +43581,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L575",
+      "source_location": "L578",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group15_seed2",
@@ -45377,7 +43592,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L664",
+      "source_location": "L667",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group17_overlap_curve",
@@ -45388,7 +43603,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L96",
+      "source_location": "L99",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group2",
@@ -45399,7 +43614,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L129",
+      "source_location": "L132",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group3",
@@ -45410,7 +43625,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L481",
+      "source_location": "L484",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group3b_bottleneck_seed1",
@@ -45421,7 +43636,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L155",
+      "source_location": "L158",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group4",
@@ -45432,7 +43647,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L185",
+      "source_location": "L188",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group5",
@@ -45443,7 +43658,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L224",
+      "source_location": "L227",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group6_standard",
@@ -45454,7 +43669,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L270",
+      "source_location": "L273",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group7_tiny",
@@ -45465,7 +43680,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L304",
+      "source_location": "L307",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group8_mia",
@@ -45476,7 +43691,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L347",
+      "source_location": "L350",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group9_extra_baselines",
@@ -45487,7 +43702,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "tools/run_server_experiments.sh",
-      "source_location": "L377",
+      "source_location": "L380",
       "weight": 1.0,
       "context": "call",
       "source": "tools_run_server_experiments_group9b_ssd_tune",
@@ -47513,6 +45728,16 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L177",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "docs_server_setup",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
@@ -47526,7 +45751,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L306",
+      "source_location": "L318",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_acknowledgments",
@@ -47536,7 +45761,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L187",
+      "source_location": "L199",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_adapter_variant",
@@ -47556,7 +45781,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L220",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "readme_privacy_aware_lifelong_learning",
+      "target": "readme_offline_linux_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L232",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_overlap_aware_adapter_unlearning",
@@ -47566,7 +45801,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L292",
+      "source_location": "L304",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_reference",
@@ -47596,7 +45831,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L274",
+      "source_location": "L286",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_run_artifacts",
@@ -47636,7 +45871,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L251",
+      "source_location": "L263",
       "weight": 1.0,
       "source": "readme_overlap_aware_adapter_unlearning",
       "target": "readme_paper_oriented_interpretation",
@@ -47650,6 +45885,236 @@
       "weight": 1.0,
       "source": "configs_readme",
       "target": "configs_readme_configs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adapter_notes.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_adapter_notes",
+      "target": "docs_adapter_notes_adapter_notes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_pall_modified_hparams",
+      "target": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "target": "docs_pall_modified_hparams_config_serialization",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "target": "docs_pall_modified_hparams_consistency_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "target": "docs_pall_modified_hparams_hyperparameter_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "target": "docs_pall_modified_hparams_recommended_ablation_grid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "target": "docs_pall_modified_hparams_resolution_rules_current_behavior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/pall_modified_hparams.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
+      "target": "docs_pall_modified_hparams_scope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_server_setup",
+      "target": "docs_server_setup_offline_linux_server_setup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "docs_server_setup_offline_linux_server_setup",
+      "target": "docs_server_setup_1_provision_the_runtime_assets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "docs_server_setup_offline_linux_server_setup",
+      "target": "docs_server_setup_2_deploy_code",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "docs_server_setup_offline_linux_server_setup",
+      "target": "docs_server_setup_3_create_the_offline_environment_and_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/server_setup.md",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "docs_server_setup_offline_linux_server_setup",
+      "target": "docs_server_setup_4_pull_artifacts_back",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap",
+      "target": "docs_standard_vs_overlap_our_overlap_heavy_setting_vs_the_standard_split_cifar_pall_protocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_our_overlap_heavy_setting_vs_the_standard_split_cifar_pall_protocol",
+      "target": "docs_standard_vs_overlap_at_a_glance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L122",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_our_overlap_heavy_setting_vs_the_standard_split_cifar_pall_protocol",
+      "target": "docs_standard_vs_overlap_known_issue_lora_diverges_on_standard_split_cifar_100_fixed_footnote_required",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_our_overlap_heavy_setting_vs_the_standard_split_cifar_pall_protocol",
+      "target": "docs_standard_vs_overlap_what_g6_standard_runs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_our_overlap_heavy_setting_vs_the_standard_split_cifar_pall_protocol",
+      "target": "docs_standard_vs_overlap_what_increases_parameter_representation_sharing_with_code_references",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_what_increases_parameter_representation_sharing_with_code_references",
+      "target": "docs_standard_vs_overlap_1_cifar_100_is_built_from_semantic_superclasses_not_random_splits",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_what_increases_parameter_representation_sharing_with_code_references",
+      "target": "docs_standard_vs_overlap_2_fewer_classes_per_task_and_only_half_the_label_space",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_what_increases_parameter_representation_sharing_with_code_references",
+      "target": "docs_standard_vs_overlap_3_short_training_n_epochs_3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_what_increases_parameter_representation_sharing_with_code_references",
+      "target": "docs_standard_vs_overlap_4_the_pall_subnetwork_sparsity_context_not_a_differentiator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/standard_vs_overlap.md",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "docs_standard_vs_overlap_what_increases_parameter_representation_sharing_with_code_references",
+      "target": "docs_standard_vs_overlap_5_forgetting_centric_schedules_same_in_both",
       "confidence_score": 1.0
     },
     {
@@ -47780,6 +46245,16 @@
       "weight": 1.0,
       "source": "paper_review_notes_code_review_notes_open_decisions_for_advisor_meeting",
       "target": "paper_review_notes_what_is_correct_verified",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "results/thesis/plots_v2/overlap_response_slopes.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "results_thesis_plots_v2_overlap_response_slopes",
+      "target": "results_thesis_plots_v2_overlap_response_slopes_pooled_measured_overlap_regressions",
       "confidence_score": 1.0
     },
     {
@@ -48019,5 +46494,5 @@
       "source_file": "thesis/front/template/images/besmellah.jpg"
     }
   ],
-  "built_at_commit": "b31dc5b61fbcfe20314b6d29f01217e72b551ebf"
+  "built_at_commit": "6cb9064bb074c5ef51f58a030b988392a6469cda"
 }

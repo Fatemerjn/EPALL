@@ -43,6 +43,8 @@ PY="${PYTHON:-python}"
 SEEDS="${SEEDS:-0 1}"
 WHICH="${1:-all}"
 mkdir -p logs results/aggregates
+FAILED_RUNS=0
+FAILED_AGGREGATIONS=0
 
 # Data directory: override with DATA_DIR=/path/to/data to keep CIFAR off the SSD.
 DATA_DIR="${DATA_DIR:-./data}"
@@ -59,6 +61,7 @@ launch () {  # launch <logname> <main.py args...>
     if $PY -u main.py "$@" > "logs/${name}.log" 2>&1; then
         echo "    PASS ${name}"
     else
+        ((FAILED_RUNS += 1))
         echo "    FAIL ${name}  (see logs/${name}.log)"
     fi
 }
@@ -728,18 +731,33 @@ esac
 
 echo "===================================================================="
 echo "AGGREGATING TABLES ..."
-$PY tools/aggregate_results.py --root runs --require-metrics --seed-policy latest \
-    --out results/aggregates/server_results.csv || true
-$PY tools/make_thesis_table.py --root runs --group-by-config \
+if ! $PY tools/aggregate_results.py --root runs --require-metrics --seed-policy latest \
+    --out results/aggregates/server_results.csv; then
+    ((FAILED_AGGREGATIONS += 1))
+    echo "[FAIL] aggregate_results.py" >&2
+fi
+if ! $PY tools/make_thesis_table.py --root runs --group-by-config \
     --seed-policy latest \
     --out-csv results/aggregates/server_thesis_table.csv \
-    --out-md  results/aggregates/server_thesis_table.md || true
-$PY tools/make_report_table.py \
+    --out-md  results/aggregates/server_thesis_table.md; then
+    ((FAILED_AGGREGATIONS += 1))
+    echo "[FAIL] make_thesis_table.py" >&2
+fi
+if ! $PY tools/make_report_table.py \
     --input results/aggregates/server_thesis_table.csv \
     --out-csv results/aggregates/server_report_table.csv \
-    --out-md  results/aggregates/server_report_table.md || true
+    --out-md  results/aggregates/server_report_table.md; then
+    ((FAILED_AGGREGATIONS += 1))
+    echo "[FAIL] make_report_table.py" >&2
+fi
 
-echo "DONE."
+if (( FAILED_RUNS > 0 || FAILED_AGGREGATIONS > 0 )); then
+    echo "[FAILED] ${FAILED_RUNS} run(s) and ${FAILED_AGGREGATIONS} aggregation step(s) failed." >&2
+    echo "         Review logs/ and rerun only the affected group(s)." >&2
+    exit 1
+fi
+
+echo "DONE. All runs and aggregation steps passed."
 echo "Tables written under results/aggregates/ :"
 echo "  server_thesis_table.md   (full)"
 echo "  server_report_table.md   (compact)"
