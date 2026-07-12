@@ -1275,7 +1275,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_base",
-      "community": 22,
+      "community": 63,
       "norm_label": "base.py"
     },
     {
@@ -1735,7 +1735,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_er",
-      "community": 22,
+      "community": 63,
       "norm_label": "er.py"
     },
     {
@@ -1745,7 +1745,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_er_rehearsalmemory",
-      "community": 22,
+      "community": 61,
       "norm_label": "rehearsalmemory"
     },
     {
@@ -1755,7 +1755,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_er_rehearsalmemory_init",
-      "community": 22,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -1765,7 +1765,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "methods_er_rehearsalmemory_len",
-      "community": 22,
+      "community": 61,
       "norm_label": ".__len__()"
     },
     {
@@ -1785,7 +1785,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "methods_er_rehearsalmemory_add",
-      "community": 61,
+      "community": 132,
       "norm_label": ".add()"
     },
     {
@@ -1825,7 +1825,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "methods_er_er_init",
-      "community": 22,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -1885,7 +1885,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_ewc_ewc",
-      "community": 63,
+      "community": 141,
       "norm_label": "ewc"
     },
     {
@@ -1895,7 +1895,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_ewc_ewc_init",
-      "community": 63,
+      "community": 141,
       "norm_label": ".__init__()"
     },
     {
@@ -1905,7 +1905,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "methods_ewc_ewc_penalty",
-      "community": 63,
+      "community": 141,
       "norm_label": ".penalty()"
     },
     {
@@ -1915,7 +1915,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "methods_ewc_ewc_learn",
-      "community": 63,
+      "community": 141,
       "norm_label": ".learn()"
     },
     {
@@ -1925,7 +1925,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "methods_ewc_ewc_forget",
-      "community": 63,
+      "community": 141,
       "norm_label": ".forget()"
     },
     {
@@ -1935,7 +1935,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lora",
-      "community": 22,
+      "community": 63,
       "norm_label": "lora.py"
     },
     {
@@ -1945,7 +1945,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "methods_lora_lora",
-      "community": 2,
+      "community": 15,
       "norm_label": "lora"
     },
     {
@@ -1955,7 +1955,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "methods_lora_lora_init",
-      "community": 2,
+      "community": 15,
       "norm_label": ".__init__()"
     },
     {
@@ -1965,7 +1965,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "methods_lora_lora_init_optimizer",
-      "community": 2,
+      "community": 15,
       "norm_label": ".init_optimizer()"
     },
     {
@@ -1975,7 +1975,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "methods_lora_lora_train_mode",
-      "community": 2,
+      "community": 15,
       "norm_label": ".train_mode()"
     },
     {
@@ -1985,7 +1985,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "methods_lora_lora_extract_logits_and_features",
-      "community": 2,
+      "community": 15,
       "norm_label": ".extract_logits_and_features()"
     },
     {
@@ -1995,7 +1995,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "methods_lora_lora_fill_buffer",
-      "community": 2,
+      "community": 15,
       "norm_label": ".fill_buffer()"
     },
     {
@@ -2005,7 +2005,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "methods_lora_lora_learn",
-      "community": 2,
+      "community": 15,
       "norm_label": ".learn()"
     },
     {
@@ -2015,7 +2015,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "methods_lora_lora_compute_retrain_steps",
-      "community": 2,
+      "community": 15,
       "norm_label": "._compute_retrain_steps()"
     },
     {
@@ -2025,7 +2025,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "methods_lora_lora_count_active_trainable_params",
-      "community": 2,
+      "community": 15,
       "norm_label": "._count_active_trainable_params()"
     },
     {
@@ -2035,7 +2035,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "methods_lora_lora_forget",
-      "community": 2,
+      "community": 15,
       "norm_label": ".forget()"
     },
     {
@@ -2045,7 +2045,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "methods_lora_lora_forget_with_diagnostics",
-      "community": 2,
+      "community": 15,
       "norm_label": ".forget_with_diagnostics()"
     },
     {
@@ -2055,7 +2055,7 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "methods_lora_lora_forget_impl",
-      "community": 2,
+      "community": 15,
       "norm_label": "._forget_impl()"
     },
     {
@@ -2065,7 +2065,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_lora_rationale_9",
-      "community": 2,
+      "community": 15,
       "norm_label": "parameter-efficient lora baseline for continual learning + task unlearning."
     },
     {
@@ -2085,7 +2085,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "methods_lsf_lsf",
-      "community": 63,
+      "community": 2,
       "norm_label": "lsf"
     },
     {
@@ -2095,7 +2095,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "methods_lsf_lsf_init",
-      "community": 63,
+      "community": 2,
       "norm_label": ".__init__()"
     },
     {
@@ -2105,7 +2105,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "methods_lsf_lsf_init_optimizer_classifier",
-      "community": 63,
+      "community": 2,
       "norm_label": ".init_optimizer_classifier()"
     },
     {
@@ -2115,7 +2115,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "methods_lsf_lsf_penalty",
-      "community": 63,
+      "community": 2,
       "norm_label": ".penalty()"
     },
     {
@@ -2125,7 +2125,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "methods_lsf_lsf_learn",
-      "community": 63,
+      "community": 2,
       "norm_label": ".learn()"
     },
     {
@@ -2135,7 +2135,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "methods_lsf_lsf_forget",
-      "community": 63,
+      "community": 2,
       "norm_label": ".forget()"
     },
     {
@@ -2175,7 +2175,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "methods_lwf_lwf",
-      "community": 63,
+      "community": 142,
       "norm_label": "lwf"
     },
     {
@@ -2185,7 +2185,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_lwf_lwf_init",
-      "community": 63,
+      "community": 142,
       "norm_label": ".__init__()"
     },
     {
@@ -2195,7 +2195,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "methods_lwf_lwf_init_optimizer_classifier",
-      "community": 63,
+      "community": 142,
       "norm_label": ".init_optimizer_classifier()"
     },
     {
@@ -2205,7 +2205,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "methods_lwf_lwf_learn",
-      "community": 63,
+      "community": 142,
       "norm_label": ".learn()"
     },
     {
@@ -2215,7 +2215,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "methods_lwf_lwf_forget",
-      "community": 63,
+      "community": 142,
       "norm_label": ".forget()"
     },
     {
@@ -2245,7 +2245,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_adapter",
-      "community": 22,
+      "community": 63,
       "norm_label": "pall_adapter.py"
     },
     {
@@ -3145,7 +3145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_salun",
-      "community": 22,
+      "community": 63,
       "norm_label": "salun.py"
     },
     {
@@ -3165,7 +3165,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_salun_salun_init",
-      "community": 31,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -3315,7 +3315,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_sequential_sequential",
-      "community": 63,
+      "community": 2,
       "norm_label": "sequential"
     },
     {
@@ -3325,7 +3325,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_sequential_sequential_init",
-      "community": 63,
+      "community": 2,
       "norm_label": ".__init__()"
     },
     {
@@ -3335,7 +3335,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "methods_sequential_sequential_learn",
-      "community": 63,
+      "community": 2,
       "norm_label": ".learn()"
     },
     {
@@ -3345,7 +3345,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_ssd",
-      "community": 22,
+      "community": 63,
       "norm_label": "ssd.py"
     },
     {
@@ -3365,7 +3365,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_ssd_ssd_init",
-      "community": 13,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -3465,7 +3465,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_init",
-      "community": 0,
+      "community": 23,
       "norm_label": "__init__.py"
     },
     {
@@ -3485,7 +3485,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "models_adapter_resnet_taskbottleneckadapter",
-      "community": 46,
+      "community": 23,
       "norm_label": "taskbottleneckadapter"
     },
     {
@@ -3505,7 +3505,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "models_adapter_resnet_taskbottleneckadapter_reset_parameters",
-      "community": 46,
+      "community": 23,
       "norm_label": ".reset_parameters()"
     },
     {
@@ -3515,7 +3515,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "models_adapter_resnet_taskbottleneckadapter_forward",
-      "community": 46,
+      "community": 23,
       "norm_label": ".forward()"
     },
     {
@@ -3755,7 +3755,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_base",
-      "community": 0,
+      "community": 23,
       "norm_label": "base.py"
     },
     {
@@ -4005,7 +4005,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "models_lora_resnet_loraresnet_reset_task_lora",
-      "community": 32,
+      "community": 25,
       "norm_label": ".reset_task_lora()"
     },
     {
@@ -4795,7 +4795,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_subnet_vit",
-      "community": 0,
+      "community": 63,
       "norm_label": "subnet_vit.py"
     },
     {
@@ -4825,7 +4825,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetmultiheadattention",
-      "community": 0,
+      "community": 140,
       "norm_label": "subnetmultiheadattention"
     },
     {
@@ -4835,7 +4835,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetmultiheadattention_init",
-      "community": 0,
+      "community": 140,
       "norm_label": ".__init__()"
     },
     {
@@ -4845,7 +4845,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetmultiheadattention_forward",
-      "community": 0,
+      "community": 140,
       "norm_label": ".forward()"
     },
     {
@@ -4885,7 +4885,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetvisiontransformer",
-      "community": 63,
+      "community": 2,
       "norm_label": "subnetvisiontransformer"
     },
     {
@@ -4905,7 +4905,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetvisiontransformer_process_input",
-      "community": 63,
+      "community": 2,
       "norm_label": "._process_input()"
     },
     {
@@ -4915,7 +4915,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetvisiontransformer_forward",
-      "community": 63,
+      "community": 2,
       "norm_label": ".forward()"
     },
     {
@@ -4955,7 +4955,7 @@
       "source_location": "L293",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t8",
-      "community": 0,
+      "community": 2,
       "norm_label": "subnet_vit_t8()"
     },
     {
@@ -4965,7 +4965,7 @@
       "source_location": "L307",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t_8",
-      "community": 0,
+      "community": 2,
       "norm_label": "subnet_vit_t_8()"
     },
     {
@@ -4975,7 +4975,7 @@
       "source_location": "L313",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t_16",
-      "community": 0,
+      "community": 2,
       "norm_label": "subnet_vit_t_16()"
     },
     {
@@ -4985,7 +4985,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "models_subnet_vit_rationale_38",
-      "community": 0,
+      "community": 140,
       "norm_label": "inputs:                 q: (batch_size, seq_len1, d_model)                 k: (b"
     },
     {
@@ -4995,7 +4995,7 @@
       "source_location": "L294",
       "_origin": "ast",
       "id": "models_subnet_vit_rationale_294",
-      "community": 0,
+      "community": 2,
       "norm_label": "vit-tiny/8 sized for 32x32 cifar inputs: 16 patches (+1 cls token).      distinc"
     },
     {
@@ -5015,7 +5015,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention",
-      "community": 0,
+      "community": 140,
       "norm_label": "scaleddotproductattention"
     },
     {
@@ -5025,7 +5025,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention_init",
-      "community": 0,
+      "community": 140,
       "norm_label": ".__init__()"
     },
     {
@@ -5035,7 +5035,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention_forward",
-      "community": 0,
+      "community": 140,
       "norm_label": ".forward()"
     },
     {
@@ -5045,7 +5045,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "models_vit_multiheadattention",
-      "community": 0,
+      "community": 140,
       "norm_label": "multiheadattention"
     },
     {
@@ -5055,7 +5055,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_init",
-      "community": 0,
+      "community": 140,
       "norm_label": ".__init__()"
     },
     {
@@ -5065,7 +5065,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_forward",
-      "community": 0,
+      "community": 140,
       "norm_label": ".forward()"
     },
     {
@@ -5075,7 +5075,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "models_vit_encoderblock",
-      "community": 0,
+      "community": 140,
       "norm_label": "encoderblock"
     },
     {
@@ -5085,7 +5085,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "models_vit_encoderblock_init",
-      "community": 0,
+      "community": 140,
       "norm_label": ".__init__()"
     },
     {
@@ -5095,7 +5095,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "models_vit_encoderblock_forward",
-      "community": 0,
+      "community": 140,
       "norm_label": ".forward()"
     },
     {
@@ -5115,7 +5115,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_init",
-      "community": 0,
+      "community": 140,
       "norm_label": ".__init__()"
     },
     {
@@ -5165,7 +5165,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "models_vit_rationale_16",
-      "community": 0,
+      "community": 140,
       "norm_label": "inputs:                 q: (batch_size, n_head, seq_len1, d_k)                 k"
     },
     {
@@ -5175,7 +5175,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "models_vit_rationale_48",
-      "community": 0,
+      "community": 140,
       "norm_label": "inputs:                 q: (batch_size, seq_len1, d_model)                 k: (b"
     },
     {
@@ -5303,20 +5303,6 @@
       "id": "scripts_sync_to_server_sh__entry",
       "community": 136,
       "norm_label": "sync_to_server.sh script"
-    },
-    {
-      "label": "usage()",
-      "file_type": "code",
-      "source_file": "scripts/sync_to_server.sh",
-      "source_location": "L21",
-      "metadata": {
-        "language": "bash",
-        "kind": "bash_function"
-      },
-      "_origin": "ast",
-      "id": "scripts_sync_to_server_usage",
-      "community": 136,
-      "norm_label": "usage()"
     },
     {
       "label": "aggregate_results.py",
@@ -6722,7 +6708,7 @@
       "label": "audit_overlap()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L577",
+      "source_location": "L589",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_audit_overlap",
       "community": 24,
@@ -6732,7 +6718,7 @@
       "label": "audit_hparams()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L616",
+      "source_location": "L628",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_audit_hparams",
       "community": 24,
@@ -6742,7 +6728,7 @@
       "label": "strip_environments()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L649",
+      "source_location": "L661",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_strip_environments",
       "community": 24,
@@ -6752,7 +6738,7 @@
       "label": "audit_prose()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L655",
+      "source_location": "L667",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_audit_prose",
       "community": 24,
@@ -6762,7 +6748,7 @@
       "label": "print_records()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L693",
+      "source_location": "L705",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_print_records",
       "community": 24,
@@ -6772,7 +6758,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L717",
+      "source_location": "L729",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_main",
       "community": 24,
@@ -6829,14 +6815,14 @@
       "norm_label": "audit and register one already-extracted scalar value."
     },
     {
-      "label": "Verify that the thesis explicitly reports the currently absent ViT rows.",
+      "label": "Audit ViT metrics when present, or an explicit pending row when absent.",
       "file_type": "rationale",
       "source_file": "tools/check_thesis_numbers.py",
       "source_location": "L535",
       "_origin": "ast",
       "id": "tools_check_thesis_numbers_rationale_535",
       "community": 24,
-      "norm_label": "verify that the thesis explicitly reports the currently absent vit rows."
+      "norm_label": "audit vit metrics when present, or an explicit pending row when absent."
     },
     {
       "label": "clean_project.py",
@@ -9655,7 +9641,7 @@
       "source_location": "L527",
       "_origin": "ast",
       "id": "tools_plot_report_results_load_run_samples",
-      "community": 12,
+      "community": 9,
       "norm_label": "load_run_samples()"
     },
     {
@@ -13253,20 +13239,10 @@
       "norm_label": "reproducibility workflow"
     },
     {
-      "label": "Offline Linux Server",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L167",
-      "_origin": "ast",
-      "id": "readme_offline_linux_server",
-      "community": 58,
-      "norm_label": "offline linux server"
-    },
-    {
       "label": "Adapter Variant",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L199",
+      "source_location": "L187",
       "_origin": "ast",
       "id": "readme_adapter_variant",
       "community": 58,
@@ -13276,7 +13252,7 @@
       "label": "Overlap-Aware Adapter Unlearning",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L232",
+      "source_location": "L220",
       "_origin": "ast",
       "id": "readme_overlap_aware_adapter_unlearning",
       "community": 58,
@@ -13286,7 +13262,7 @@
       "label": "Paper-oriented interpretation",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L263",
+      "source_location": "L251",
       "_origin": "ast",
       "id": "readme_paper_oriented_interpretation",
       "community": 58,
@@ -13296,7 +13272,7 @@
       "label": "Run Artifacts",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L286",
+      "source_location": "L274",
       "_origin": "ast",
       "id": "readme_run_artifacts",
       "community": 58,
@@ -13306,7 +13282,7 @@
       "label": "Reference",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L304",
+      "source_location": "L292",
       "_origin": "ast",
       "id": "readme_reference",
       "community": 58,
@@ -13316,7 +13292,7 @@
       "label": "Acknowledgments",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L318",
+      "source_location": "L306",
       "_origin": "ast",
       "id": "readme_acknowledgments",
       "community": 58,
@@ -13441,66 +13417,6 @@
       "id": "docs_pall_modified_hparams_recommended_ablation_grid",
       "community": 35,
       "norm_label": "recommended ablation grid"
-    },
-    {
-      "label": "server_setup.md",
-      "file_type": "document",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "docs_server_setup",
-      "community": 58,
-      "norm_label": "server_setup.md"
-    },
-    {
-      "label": "Offline Linux server setup",
-      "file_type": "document",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "docs_server_setup_offline_linux_server_setup",
-      "community": 58,
-      "norm_label": "offline linux server setup"
-    },
-    {
-      "label": "1. Provision the runtime assets",
-      "file_type": "document",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L7",
-      "_origin": "ast",
-      "id": "docs_server_setup_1_provision_the_runtime_assets",
-      "community": 58,
-      "norm_label": "1. provision the runtime assets"
-    },
-    {
-      "label": "2. Deploy code",
-      "file_type": "document",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L34",
-      "_origin": "ast",
-      "id": "docs_server_setup_2_deploy_code",
-      "community": 58,
-      "norm_label": "2. deploy code"
-    },
-    {
-      "label": "3. Create the offline environment and run",
-      "file_type": "document",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L55",
-      "_origin": "ast",
-      "id": "docs_server_setup_3_create_the_offline_environment_and_run",
-      "community": 58,
-      "norm_label": "3. create the offline environment and run"
-    },
-    {
-      "label": "4. Pull artifacts back",
-      "file_type": "document",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L72",
-      "_origin": "ast",
-      "id": "docs_server_setup_4_pull_artifacts_back",
-      "community": 58,
-      "norm_label": "4. pull artifacts back"
     },
     {
       "label": "standard_vs_overlap.md",
@@ -14439,7 +14355,7 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify claude instructions",
-      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
+      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
     },
     {
       "label": "Graphify Skill Pipeline",
@@ -26863,27 +26779,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "defines",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/sync_to_server.sh",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "scripts_sync_to_server",
-      "target": "scripts_sync_to_server_usage",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/sync_to_server.sh",
-      "source_location": "L40",
-      "weight": 1.0,
-      "context": "call",
-      "source": "scripts_sync_to_server_sh__entry",
-      "target": "scripts_sync_to_server_usage",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -30243,7 +30138,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L616",
+      "source_location": "L628",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_audit_hparams",
@@ -30273,7 +30168,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L577",
+      "source_location": "L589",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_audit_overlap",
@@ -30293,7 +30188,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L655",
+      "source_location": "L667",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_audit_prose",
@@ -30353,7 +30248,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L717",
+      "source_location": "L729",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_main",
@@ -30383,7 +30278,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L693",
+      "source_location": "L705",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_print_records",
@@ -30423,7 +30318,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L649",
+      "source_location": "L661",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers",
       "target": "tools_check_thesis_numbers_strip_environments",
@@ -30497,7 +30392,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L622",
+      "source_location": "L634",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_strip_latex",
@@ -30519,7 +30414,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L588",
+      "source_location": "L600",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_strip_latex",
@@ -30618,7 +30513,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L618",
+      "source_location": "L630",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_table_body",
@@ -30640,7 +30535,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L579",
+      "source_location": "L591",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_table_body",
@@ -30717,7 +30612,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L619",
+      "source_location": "L631",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_data_rows",
@@ -30739,7 +30634,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L587",
+      "source_location": "L599",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_data_rows",
@@ -30793,7 +30688,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L623",
+      "source_location": "L635",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_numbers_in",
@@ -30837,7 +30732,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L557",
+      "source_location": "L569",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_numbers_in",
@@ -30869,7 +30764,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L642",
+      "source_location": "L654",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_values_match",
@@ -30933,7 +30828,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L730",
+      "source_location": "L742",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_csvtable",
@@ -30988,7 +30883,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L638",
+      "source_location": "L650",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_csvtable_find",
@@ -31010,7 +30905,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L599",
+      "source_location": "L611",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_csvtable_find",
@@ -31076,7 +30971,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L640",
+      "source_location": "L652",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_no_match_reason",
@@ -31098,7 +30993,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L600",
+      "source_location": "L612",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_no_match_reason",
@@ -31163,7 +31058,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L635",
+      "source_location": "L647",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_record",
@@ -31196,7 +31091,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L682",
+      "source_location": "L694",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_prose",
       "target": "tools_check_thesis_numbers_record",
@@ -31229,7 +31124,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L561",
+      "source_location": "L573",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_record",
@@ -31240,7 +31135,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L693",
+      "source_location": "L705",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_print_records",
       "target": "tools_check_thesis_numbers_record",
@@ -31272,7 +31167,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L627",
+      "source_location": "L639",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_hparams",
       "target": "tools_check_thesis_numbers_register_value",
@@ -31349,7 +31244,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L602",
+      "source_location": "L614",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_overlap",
       "target": "tools_check_thesis_numbers_audit_metric_cell",
@@ -31363,6 +31258,17 @@
       "source_location": "L318",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_standard",
+      "target": "tools_check_thesis_numbers_audit_metric_cell",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/check_thesis_numbers.py",
+      "source_location": "L565",
+      "weight": 1.0,
+      "source": "tools_check_thesis_numbers_audit_vit_availability",
       "target": "tools_check_thesis_numbers_audit_metric_cell",
       "confidence_score": 1.0
     },
@@ -31402,7 +31308,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L734",
+      "source_location": "L746",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_main_pall",
@@ -31413,7 +31319,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L735",
+      "source_location": "L747",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_standard",
@@ -31424,7 +31330,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L739",
+      "source_location": "L751",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_adapter_ablation",
@@ -31435,7 +31341,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L738",
+      "source_location": "L750",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_anchor_ablation",
@@ -31446,7 +31352,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L740",
+      "source_location": "L752",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_conflict_ablation",
@@ -31457,7 +31363,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L742",
+      "source_location": "L754",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_privacy_table",
@@ -31468,7 +31374,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L737",
+      "source_location": "L749",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_vit_availability",
@@ -31489,7 +31395,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L741",
+      "source_location": "L753",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_overlap",
@@ -31500,7 +31406,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L743",
+      "source_location": "L755",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_hparams",
@@ -31511,7 +31417,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L656",
+      "source_location": "L668",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_audit_prose",
       "target": "tools_check_thesis_numbers_strip_environments",
@@ -31522,7 +31428,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L744",
+      "source_location": "L756",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_audit_prose",
@@ -31533,7 +31439,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tools/check_thesis_numbers.py",
-      "source_location": "L746",
+      "source_location": "L758",
       "weight": 1.0,
       "source": "tools_check_thesis_numbers_main",
       "target": "tools_check_thesis_numbers_print_records",
@@ -45728,16 +45634,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L177",
-      "weight": 1.0,
-      "source": "readme",
-      "target": "docs_server_setup",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
@@ -45751,7 +45647,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L318",
+      "source_location": "L306",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_acknowledgments",
@@ -45761,7 +45657,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L199",
+      "source_location": "L187",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_adapter_variant",
@@ -45781,17 +45677,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L167",
-      "weight": 1.0,
-      "source": "readme_privacy_aware_lifelong_learning",
-      "target": "readme_offline_linux_server",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L232",
+      "source_location": "L220",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_overlap_aware_adapter_unlearning",
@@ -45801,7 +45687,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L304",
+      "source_location": "L292",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_reference",
@@ -45831,7 +45717,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L286",
+      "source_location": "L274",
       "weight": 1.0,
       "source": "readme_privacy_aware_lifelong_learning",
       "target": "readme_run_artifacts",
@@ -45871,7 +45757,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L263",
+      "source_location": "L251",
       "weight": 1.0,
       "source": "readme_overlap_aware_adapter_unlearning",
       "target": "readme_paper_oriented_interpretation",
@@ -45965,56 +45851,6 @@
       "weight": 1.0,
       "source": "docs_pall_modified_hparams_pall_modified_hyperparameters_overlap_aware_selective_forgetting",
       "target": "docs_pall_modified_hparams_scope",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "docs_server_setup",
-      "target": "docs_server_setup_offline_linux_server_setup",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "docs_server_setup_offline_linux_server_setup",
-      "target": "docs_server_setup_1_provision_the_runtime_assets",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L34",
-      "weight": 1.0,
-      "source": "docs_server_setup_offline_linux_server_setup",
-      "target": "docs_server_setup_2_deploy_code",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L55",
-      "weight": 1.0,
-      "source": "docs_server_setup_offline_linux_server_setup",
-      "target": "docs_server_setup_3_create_the_offline_environment_and_run",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/server_setup.md",
-      "source_location": "L72",
-      "weight": 1.0,
-      "source": "docs_server_setup_offline_linux_server_setup",
-      "target": "docs_server_setup_4_pull_artifacts_back",
       "confidence_score": 1.0
     },
     {
@@ -46494,5 +46330,5 @@
       "source_file": "thesis/front/template/images/besmellah.jpg"
     }
   ],
-  "built_at_commit": "6cb9064bb074c5ef51f58a030b988392a6469cda"
+  "built_at_commit": "5c6532e93de35291461c295f0e0dd7f64e9938fe"
 }

@@ -219,29 +219,29 @@ PALL-Original & 0.7066 ± 0.0002 & 0.2090 ± 0.0186 & 0.0075 ± 0.0028 & 0.0190 
 
 \section{ارزیابی میان‌معماری با \lr{ViT}}
 
-جدول \ref{tab:vit-results} وضعیت اجرای میان‌معماری را به‌طور صریح ثبت می‌کند. گروه آزمایشی \lr{g11\_vit} در کد تعریف شده است، اما در خروجی‌های فعلی هیچ ردیفی با برچسب‌های مورد انتظار آن وجود ندارد.
+جدول \ref{tab:vit-results} نتایج اجرای میان‌معماری گروه آزمایشی \lr{g11\_vit} را برای دو مجموعه‌داده گزارش می‌کند.
 
 \begin{table}[H]
 \begin{latin}
 \centering
 \small
-\caption{Availability of the planned ViT-T/8 cross-architecture runs}
+\caption{ViT-T/8 cross-architecture results}
 \label{tab:vit-results}
 \resizebox{\columnwidth}{!}{
 \begin{tabular}{llcccl}
 \toprule
 \textbf{Dataset} & \textbf{Method} & \textbf{Final Acc.} & \textbf{WorstDrop} & \textbf{Au} & \textbf{Status} \\
 \midrule
-CIFAR-10 & PALL-Original & -- & -- & -- & No aggregate row; rerun pending \\
-CIFAR-10 & PALL-Modified & -- & -- & -- & No aggregate row; rerun pending \\
-CIFAR-100 & PALL-Original & -- & -- & -- & No aggregate row; rerun pending \\
-CIFAR-100 & PALL-Modified & -- & -- & -- & No aggregate row; rerun pending \\
+CIFAR-10 & PALL-Original & 0.8346 ± 0.0366 & 0.0192 ± 0.0159 & 0.5135 ± 0.1846 & Aggregated \\
+CIFAR-10 & PALL-Modified & 0.8364 ± 0.0592 & 0.0193 ± 0.0230 & 0.5585 ± 0.0778 & Aggregated \\
+CIFAR-100 & PALL-Original & 0.3921 ± 0.0010 & 0.0190 ± 0.0071 & 0.2160 ± 0.0792 & Aggregated \\
+CIFAR-100 & PALL-Modified & 0.3990 ± 0.0063 & 0.0100 ± 0.0028 & 0.2120 ± 0.0764 & Aggregated \\
 \bottomrule
 \end{tabular}}
 \end{latin}
 \end{table}
 
-نبود عدد در این جدول یک نتیجه‌ی منفی تجربی نیست، بلکه نشان‌دهنده‌ی نبود اجرای کامل یا همگام‌نشده‌بودن خروجی‌هاست. بنابراین داده‌های فعلی فقط از ادعاهای مبتنی بر \lr{ResNet} پشتیبانی می‌کنند و هنوز شاهدی برای تعمیم معماری به \lr{ViT-T/8} فراهم نمی‌سازند. پس از اجرای دو بذر گروه \lr{g11\_vit}، همین ردیف‌ها باید از جدول تجمیعی پر شوند و ممیزی عددی نیز عمدا با ورود آن داده‌ها وضعیت «در انتظار» را رد خواهد کرد.
+در \lr{CIFAR-100}، روش \lr{PALL-Modified} مقدار \lr{WorstDrop} را از $0.0190 \pm 0.0071$ در روش اصلی به $0.0100 \pm 0.0028$ کاهش می‌دهد و از اثر حفاظتی روش اصلاح‌شده در این مجموعه‌داده پشتیبانی می‌کند. در \lr{CIFAR-10}، مقادیر $0.0192 \pm 0.0159$ و $0.0193 \pm 0.0230$ جدایی معناداری نشان نمی‌دهند. بنابراین، این نتایج شواهدی میان‌معماری با قدرت وابسته به مجموعه‌داده فراهم می‌کنند، نه تأییدی جهان‌شمول برای برتری روش اصلاح‌شده.
 
 \section{مطالعه‌ی لنگر محافظتی}
 

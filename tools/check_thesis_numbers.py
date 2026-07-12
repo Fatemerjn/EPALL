@@ -532,7 +532,7 @@ def audit_privacy_table(text, privacy, records):
 
 
 def audit_vit_availability(text, thesis, records):
-    """Verify that the thesis explicitly reports the currently absent ViT rows."""
+    """Audit ViT metrics when present, or an explicit pending row when absent."""
     label = "tab:vit-results"
     body = table_body(text, label)
     expected = {
@@ -554,11 +554,23 @@ def audit_vit_availability(text, thesis, records):
         key = (dataset, method, tag)
         seen.add(key)
         _, matches, source = thesis.find(dataset=dataset, method=method, experiment_tag=tag)
+        row_label = f"{dataset}/{method}"
+        if len(matches) == 1:
+            metric_cols = (
+                ("Final Acc.", "final_avg_acc_mean", "final_avg_acc_std"),
+                ("WorstDrop", "WorstDrop_mean", "WorstDrop_std"),
+                ("Au", "Au_mean", "Au_std"),
+            )
+            for idx, (col_label, mean_field, std_field) in enumerate(metric_cols):
+                audit_metric_cell(records, label, row_label, col_label, cells[2 + idx],
+                                  matches[0], mean_field, std_field, source, None)
+            continue
+
         has_metrics = any(numbers_in(cell) for cell in cells[2:5])
         marked_unavailable = "No aggregate row" in vals[5]
         ok = not matches and not has_metrics and marked_unavailable
         csv_value = "0 aggregate rows" if not matches else f"{len(matches)} aggregate row(s)"
-        records.append(Record(label, f"{dataset}/{method}", "availability", vals[5], csv_value,
+        records.append(Record(label, row_label, "availability", vals[5], csv_value,
                               source, "PASS" if ok else "FAIL"))
 
     for dataset, method, tag in sorted(expected - seen):

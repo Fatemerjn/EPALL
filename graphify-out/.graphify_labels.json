@@ -138,5 +138,8 @@
   "136": "sync_to_server.sh",
   "137": "RehearsalMemory",
   "138": "Controlled overlap grades",
-  "139": "overlap_response_slopes.md"
+  "139": "overlap_response_slopes.md",
+  "140": "ScaledDotProductAttention",
+  "141": "EWC",
+  "142": "LwF"
 }
