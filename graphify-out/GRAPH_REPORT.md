@@ -1,16 +1,16 @@
 # Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-12)
 
 ## Corpus Check
-- 158 files · ~269,100 words
+- 158 files · ~269,431 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1422 nodes · 2997 edges · 143 communities (66 shown, 77 thin omitted)
+- 1423 nodes · 3000 edges · 143 communities (66 shown, 77 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 208 edges (avg confidence: 0.62)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5c6532e9`
+- Built from commit: `c8eb7ff2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -229,7 +229,7 @@ Nodes (31): _betacf(), _betai(), _find_col(), _linregress(), _load_metric_by_met
 
 ### Community 9 - "Thesis Table Builder"
 Cohesion: 0.14
-Nodes (44): aggregate_group(), build_table(), canonicalize_method_variant(), config_group_value(), dedupe_latest_rows(), derive_adapter_param_ratio(), derive_unlearning_score(), derive_updated_param_ratio() (+36 more)
+Nodes (43): aggregate_group(), build_table(), canonicalize_method_variant(), config_group_value(), dedupe_latest_rows(), derive_adapter_param_ratio(), derive_unlearning_score(), derive_updated_param_ratio() (+35 more)
 
 ### Community 10 - "Overlap Summaries"
 Cohesion: 0.22
@@ -241,7 +241,7 @@ Nodes (24): For /graphify add and --watch, For /graphify query, For the commit h
 
 ### Community 12 - "Report Plotting"
 Cohesion: 0.10
-Nodes (75): Axes, Figure, add_global_legend(), aggregate_group_key(), bootstrap_mean_ci(), build_forgetting_quality_points(), build_tradeoff_points(), canonical_group_value() (+67 more)
+Nodes (76): Axes, Figure, add_global_legend(), aggregate_group_key(), bootstrap_mean_ci(), build_forgetting_quality_points(), build_tradeoff_points(), canonical_group_value() (+68 more)
 
 ### Community 14 - "Experiment Summaries"
 Cohesion: 0.21
@@ -340,8 +340,8 @@ Cohesion: 0.33
 Nodes (9): DataFrame, compute_regression_band(), main(), parse_args(), plot_publication_figure(), Namespace, ndarray, Path (+1 more)
 
 ### Community 42 - "Server Experiment Script"
-Cohesion: 0.27
-Nodes (20): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+12 more)
+Cohesion: 0.26
+Nodes (21): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+13 more)
 
 ### Community 44 - "Baseline Runner"
 Cohesion: 0.53

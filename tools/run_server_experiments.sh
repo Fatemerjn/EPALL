@@ -16,6 +16,7 @@
 #   GROUP 11 (g11_vit): ViT-T/8 cross-architecture, pall_original + pall_modified -- ON DEMAND, not in `all`
 #   GROUP 15 (g15_seed2): seed-2 reruns for paper main-table rows only -- ON DEMAND, not in `all`
 #   GROUP 17 (g17_overlap_curve): five-grade overlap-response curves, six methods -- ON DEMAND, not in `all`
+#   GROUP 18 (g18_probe): linear-probe audit on MAIN configs, five methods -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -34,6 +35,7 @@
 #   bash tools/run_server_experiments.sh g14_conflict # conflict-vs-gradient protect_importance ablation (+adaptive_protect for pall_modified)
 #   bash tools/run_server_experiments.sh g15_seed2 # third seed for selected main, standard, and pretrained paper rows
 #   bash tools/run_server_experiments.sh g17_overlap_curve # five-grade overlap-response curves, both CIFAR datasets/seeds
+#   bash tools/run_server_experiments.sh g18_probe # linear-probe audit on MAIN configs, both CIFAR datasets/seeds
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -705,6 +707,57 @@ group17_overlap_curve () {
     done
 }
 
+# ---------------------------------------------------- GROUP 18 linear probe
+# Re-run the exact three-epoch MAIN configurations with the existing linear-probe
+# leakage audit enabled. CLPU inherits its baseline MAIN configuration from group1;
+# the four proposed/PEFT methods inherit their configurations from group2. Fixed to
+# seeds 0/1 and intentionally NOT part of `all`. Total: 20 runs.
+group18_probe () {
+    echo "===== GROUP 18: MAIN-config linear-probe audit (five methods) ====="
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+
+    for s in 0 1; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+
+        launch "probe_c10_pall_original_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_original \
+               --retrain_steps 50 --eval_probe --experiment_tag probe_v1
+        launch "probe_c10_pall_modified_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_modified $PALL_MOD \
+               --eval_probe --experiment_tag probe_v1
+        launch "probe_c10_pall_adapter_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_adapter $ADAPTER \
+               --eval_probe --experiment_tag probe_v1
+        launch "probe_c10_lora_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method lora $LORA \
+               --eval_probe --experiment_tag probe_v1
+        launch "probe_c10_clpu_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method clpu \
+               --eval_probe --experiment_tag probe_v1
+
+        launch "probe_c100_pall_original_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_original \
+               --retrain_steps 50 --eval_probe --experiment_tag probe_v1
+        launch "probe_c100_pall_modified_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_modified $PALL_MOD \
+               --eval_probe --experiment_tag probe_v1
+        launch "probe_c100_pall_adapter_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_adapter $ADAPTER \
+               --eval_probe --experiment_tag probe_v1
+        launch "probe_c100_lora_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method lora $LORA \
+               --eval_probe --experiment_tag probe_v1
+        launch "probe_c100_clpu_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method clpu \
+               --eval_probe --experiment_tag probe_v1
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -726,7 +779,8 @@ case "$WHICH" in
     g14_conflict) group14_conflict ;;
     g15_seed2) group15_seed2 ;;
     g17_overlap_curve) group17_overlap_curve ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2 | g17_overlap_curve)"; exit 1 ;;
+    g18_probe) group18_probe ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2 | g17_overlap_curve | g18_probe)"; exit 1 ;;
 esac
 
 echo "===================================================================="

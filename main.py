@@ -2428,6 +2428,7 @@ def main():
         "WorstDrop": None,
         "Au": None,
         "mia": None,
+        "probe": None,
         "t_reset": None,
         "t_retrain": None,
         "t_forget_total": None,
@@ -2447,6 +2448,7 @@ def main():
             "WorstDrop": last_event.get("WorstDrop"),
             "Au": last_event.get("Au"),
             "mia": last_event.get("mia"),
+            "probe": last_event.get("probe"),
             "t_reset": last_event.get("t_reset"),
             "t_retrain": last_event.get("t_retrain"),
             "t_forget_total": last_event.get("t_forget_total"),
@@ -2483,6 +2485,9 @@ def main():
     summary["mia_auc_after"] = final_mia.get("auc_after")
     summary["mia_acc_before"] = final_mia.get("acc_before")
     summary["mia_acc_after"] = final_mia.get("acc_after")
+    final_probe = final_unlearning.get("probe") if isinstance(final_unlearning.get("probe"), dict) else {}
+    summary["probe_acc_before"] = final_probe.get("acc_before")
+    summary["probe_acc_after"] = final_probe.get("acc_after")
     summary["t_retrain"] = final_unlearning.get("t_retrain")
     summary["t_forget_total"] = final_unlearning.get("t_forget_total")
     summary["num_updated_params"] = final_unlearning.get("num_updated_params")
@@ -2498,6 +2503,8 @@ def main():
         "mia_auc_after": final_mia.get("auc_after"),
         "mia_acc_before": final_mia.get("acc_before"),
         "mia_acc_after": final_mia.get("acc_after"),
+        "probe_acc_before": final_probe.get("acc_before"),
+        "probe_acc_after": final_probe.get("acc_after"),
         "unlearning_score": unlearning_score,
         "t_retrain": final_unlearning.get("t_retrain"),
         "t_forget_total": final_unlearning.get("t_forget_total"),
@@ -2518,6 +2525,8 @@ def main():
     metrics_state["mia_auc_after"] = final_mia.get("auc_after")
     metrics_state["mia_acc_before"] = final_mia.get("acc_before")
     metrics_state["mia_acc_after"] = final_mia.get("acc_after")
+    metrics_state["probe_acc_before"] = final_probe.get("acc_before")
+    metrics_state["probe_acc_after"] = final_probe.get("acc_after")
     metrics_state["t_retrain"] = final_unlearning.get("t_retrain")
     metrics_state["t_forget_total"] = final_unlearning.get("t_forget_total")
     metrics_state["num_updated_params"] = final_unlearning.get("num_updated_params")
