@@ -968,5 +968,10 @@
     "mtime": 1783891459.9459307,
     "ast_hash": "cbd50d5550e5d5286f37577d2ea2ce55",
     "semantic_hash": ""
+  },
+  "tools/analyze_sequential_damage.py": {
+    "mtime": 1783933377.285885,
+    "ast_hash": "dd464ffeef125b8199d9f58e6bf4d9e8",
+    "semantic_hash": ""
   }
 }

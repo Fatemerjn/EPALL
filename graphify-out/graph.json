@@ -665,7 +665,7 @@
       "source_location": "L545",
       "_origin": "ast",
       "id": "main_resolve_device",
-      "community": 5,
+      "community": 2,
       "norm_label": "resolve_device()"
     },
     {
@@ -1135,7 +1135,7 @@
       "source_location": "L546",
       "_origin": "ast",
       "id": "main_rationale_546",
-      "community": 5,
+      "community": 2,
       "norm_label": "select an execution device with macos mps support."
     },
     {
@@ -1265,7 +1265,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_init",
-      "community": 22,
+      "community": 63,
       "norm_label": "__init__.py"
     },
     {
@@ -1275,7 +1275,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_base",
-      "community": 61,
+      "community": 63,
       "norm_label": "base.py"
     },
     {
@@ -1675,7 +1675,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_derpp",
-      "community": 59,
+      "community": 63,
       "norm_label": "derpp.py"
     },
     {
@@ -1685,7 +1685,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "methods_derpp_derpp",
-      "community": 59,
+      "community": 61,
       "norm_label": "derpp"
     },
     {
@@ -1695,7 +1695,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "methods_derpp_derpp_init",
-      "community": 59,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -1705,7 +1705,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "methods_derpp_derpp_der_loss",
-      "community": 59,
+      "community": 61,
       "norm_label": ".der_loss()"
     },
     {
@@ -1715,7 +1715,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "methods_derpp_derpp_learn",
-      "community": 59,
+      "community": 61,
       "norm_label": ".learn()"
     },
     {
@@ -1725,7 +1725,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "methods_derpp_derpp_forget",
-      "community": 59,
+      "community": 61,
       "norm_label": ".forget()"
     },
     {
@@ -1735,7 +1735,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_er",
-      "community": 61,
+      "community": 63,
       "norm_label": "er.py"
     },
     {
@@ -1935,7 +1935,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lora",
-      "community": 61,
+      "community": 63,
       "norm_label": "lora.py"
     },
     {
@@ -2075,7 +2075,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lsf",
-      "community": 142,
+      "community": 63,
       "norm_label": "lsf.py"
     },
     {
@@ -2145,7 +2145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lwf",
-      "community": 142,
+      "community": 63,
       "norm_label": "lwf.py"
     },
     {
@@ -2245,7 +2245,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_adapter",
-      "community": 61,
+      "community": 63,
       "norm_label": "pall_adapter.py"
     },
     {
@@ -2685,7 +2685,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_base",
-      "community": 22,
+      "community": 63,
       "norm_label": "pall_base.py"
     },
     {
@@ -2705,7 +2705,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "methods_pall_base_pallbase_init",
-      "community": 7,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -3145,7 +3145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_salun",
-      "community": 61,
+      "community": 63,
       "norm_label": "salun.py"
     },
     {
@@ -3165,7 +3165,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_salun_salun_init",
-      "community": 31,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -3305,7 +3305,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_sequential",
-      "community": 2,
+      "community": 63,
       "norm_label": "sequential.py"
     },
     {
@@ -3315,7 +3315,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_sequential_sequential",
-      "community": 2,
+      "community": 63,
       "norm_label": "sequential"
     },
     {
@@ -3325,7 +3325,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_sequential_sequential_init",
-      "community": 2,
+      "community": 63,
       "norm_label": ".__init__()"
     },
     {
@@ -3335,7 +3335,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "methods_sequential_sequential_learn",
-      "community": 2,
+      "community": 63,
       "norm_label": ".learn()"
     },
     {
@@ -3345,7 +3345,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_ssd",
-      "community": 61,
+      "community": 63,
       "norm_label": "ssd.py"
     },
     {
@@ -3365,7 +3365,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "methods_ssd_ssd_init",
-      "community": 13,
+      "community": 61,
       "norm_label": ".__init__()"
     },
     {
@@ -4795,7 +4795,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_subnet_vit",
-      "community": 2,
+      "community": 63,
       "norm_label": "subnet_vit.py"
     },
     {
@@ -4825,7 +4825,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetmultiheadattention",
-      "community": 140,
+      "community": 0,
       "norm_label": "subnetmultiheadattention"
     },
     {
@@ -4835,7 +4835,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetmultiheadattention_init",
-      "community": 140,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -4845,7 +4845,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetmultiheadattention_forward",
-      "community": 140,
+      "community": 0,
       "norm_label": ".forward()"
     },
     {
@@ -4885,7 +4885,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetvisiontransformer",
-      "community": 2,
+      "community": 63,
       "norm_label": "subnetvisiontransformer"
     },
     {
@@ -4905,7 +4905,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetvisiontransformer_process_input",
-      "community": 2,
+      "community": 63,
       "norm_label": "._process_input()"
     },
     {
@@ -4915,7 +4915,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "models_subnet_vit_subnetvisiontransformer_forward",
-      "community": 2,
+      "community": 63,
       "norm_label": ".forward()"
     },
     {
@@ -4955,7 +4955,7 @@
       "source_location": "L293",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t8",
-      "community": 2,
+      "community": 63,
       "norm_label": "subnet_vit_t8()"
     },
     {
@@ -4965,7 +4965,7 @@
       "source_location": "L307",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t_8",
-      "community": 2,
+      "community": 63,
       "norm_label": "subnet_vit_t_8()"
     },
     {
@@ -4975,7 +4975,7 @@
       "source_location": "L313",
       "_origin": "ast",
       "id": "models_subnet_vit_subnet_vit_t_16",
-      "community": 2,
+      "community": 63,
       "norm_label": "subnet_vit_t_16()"
     },
     {
@@ -4985,7 +4985,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "models_subnet_vit_rationale_38",
-      "community": 140,
+      "community": 0,
       "norm_label": "inputs:                 q: (batch_size, seq_len1, d_model)                 k: (b"
     },
     {
@@ -4995,7 +4995,7 @@
       "source_location": "L294",
       "_origin": "ast",
       "id": "models_subnet_vit_rationale_294",
-      "community": 2,
+      "community": 63,
       "norm_label": "vit-tiny/8 sized for 32x32 cifar inputs: 16 patches (+1 cls token).      distinc"
     },
     {
@@ -5015,7 +5015,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention",
-      "community": 140,
+      "community": 0,
       "norm_label": "scaleddotproductattention"
     },
     {
@@ -5025,7 +5025,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention_init",
-      "community": 140,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5035,7 +5035,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention_forward",
-      "community": 140,
+      "community": 0,
       "norm_label": ".forward()"
     },
     {
@@ -5045,7 +5045,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "models_vit_multiheadattention",
-      "community": 140,
+      "community": 0,
       "norm_label": "multiheadattention"
     },
     {
@@ -5055,7 +5055,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_init",
-      "community": 140,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5065,7 +5065,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_forward",
-      "community": 140,
+      "community": 0,
       "norm_label": ".forward()"
     },
     {
@@ -5075,7 +5075,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "models_vit_encoderblock",
-      "community": 140,
+      "community": 0,
       "norm_label": "encoderblock"
     },
     {
@@ -5085,7 +5085,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "models_vit_encoderblock_init",
-      "community": 140,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5095,7 +5095,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "models_vit_encoderblock_forward",
-      "community": 140,
+      "community": 0,
       "norm_label": ".forward()"
     },
     {
@@ -5115,7 +5115,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_init",
-      "community": 140,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5165,7 +5165,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "models_vit_rationale_16",
-      "community": 140,
+      "community": 0,
       "norm_label": "inputs:                 q: (batch_size, n_head, seq_len1, d_k)                 k"
     },
     {
@@ -5175,7 +5175,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "models_vit_rationale_48",
-      "community": 140,
+      "community": 0,
       "norm_label": "inputs:                 q: (batch_size, seq_len1, d_model)                 k: (b"
     },
     {
@@ -5993,6 +5993,326 @@
       "id": "tools_analyze_overlap_vs_damage_main",
       "community": 5,
       "norm_label": "main()"
+    },
+    {
+      "label": "analyze_sequential_damage.py",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage",
+      "community": 2,
+      "norm_label": "analyze_sequential_damage.py"
+    },
+    {
+      "label": "parse_args()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L141",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_parse_args",
+      "community": 2,
+      "norm_label": "parse_args()"
+    },
+    {
+      "label": "Namespace",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_py_namespace",
+      "community": 2,
+      "norm_label": "namespace"
+    },
+    {
+      "label": "load_json()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L155",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_load_json",
+      "community": 2,
+      "norm_label": "load_json()"
+    },
+    {
+      "label": "Path",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_py_path",
+      "community": 2,
+      "norm_label": "path"
+    },
+    {
+      "label": "Any",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_py_any",
+      "community": 2,
+      "norm_label": "any"
+    },
+    {
+      "label": "values_equal()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L163",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_values_equal",
+      "community": 2,
+      "norm_label": "values_equal()"
+    },
+    {
+      "label": "expected_arch()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L176",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_expected_arch",
+      "community": 2,
+      "norm_label": "expected_arch()"
+    },
+    {
+      "label": "expected_schedule()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L187",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_expected_schedule",
+      "community": 2,
+      "norm_label": "expected_schedule()"
+    },
+    {
+      "label": "allowed_tags()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L191",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_allowed_tags",
+      "community": 2,
+      "norm_label": "allowed_tags()"
+    },
+    {
+      "label": "expected_config()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L196",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_expected_config",
+      "community": 2,
+      "norm_label": "expected_config()"
+    },
+    {
+      "label": "config_mismatches()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L212",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_config_mismatches",
+      "community": 2,
+      "norm_label": "config_mismatches()"
+    },
+    {
+      "label": "main_signature()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L224",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_main_signature",
+      "community": 2,
+      "norm_label": "main_signature()"
+    },
+    {
+      "label": "raw_events()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L233",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_raw_events",
+      "community": 2,
+      "norm_label": "raw_events()"
+    },
+    {
+      "label": "event_payload_is_complete()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L240",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_event_payload_is_complete",
+      "community": 2,
+      "norm_label": "event_payload_is_complete()"
+    },
+    {
+      "label": "iter_preliminary_candidates()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L259",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "community": 2,
+      "norm_label": "iter_preliminary_candidates()"
+    },
+    {
+      "label": "filter_clpu_probe_matches()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L304",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_filter_clpu_probe_matches",
+      "community": 2,
+      "norm_label": "filter_clpu_probe_matches()"
+    },
+    {
+      "label": "select_runs()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L334",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_select_runs",
+      "community": 2,
+      "norm_label": "select_runs()"
+    },
+    {
+      "label": "print_and_verify_selection()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L356",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_print_and_verify_selection",
+      "community": 2,
+      "norm_label": "print_and_verify_selection()"
+    },
+    {
+      "label": "as_accuracy_map()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L372",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_as_accuracy_map",
+      "community": 2,
+      "norm_label": "as_accuracy_map()"
+    },
+    {
+      "label": "analyze_run()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L381",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_analyze_run",
+      "community": 2,
+      "norm_label": "analyze_run()"
+    },
+    {
+      "label": "sample_mean_std()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L411",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_sample_mean_std",
+      "community": 2,
+      "norm_label": "sample_mean_std()"
+    },
+    {
+      "label": "aggregate_rows()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L415",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_aggregate_rows",
+      "community": 2,
+      "norm_label": "aggregate_rows()"
+    },
+    {
+      "label": "write_csv()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L454",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_write_csv",
+      "community": 2,
+      "norm_label": "write_csv()"
+    },
+    {
+      "label": "summary_lookup()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L469",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_summary_lookup",
+      "community": 2,
+      "norm_label": "summary_lookup()"
+    },
+    {
+      "label": "format_mean_std()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L477",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_format_mean_std",
+      "community": 2,
+      "norm_label": "format_mean_std()"
+    },
+    {
+      "label": "damage_trend()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L481",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_damage_trend",
+      "community": 2,
+      "norm_label": "damage_trend()"
+    },
+    {
+      "label": "write_markdown()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L492",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_write_markdown",
+      "community": 2,
+      "norm_label": "write_markdown()"
+    },
+    {
+      "label": "plot_dataset()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L579",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_plot_dataset",
+      "community": 2,
+      "norm_label": "plot_dataset()"
+    },
+    {
+      "label": "print_event_values()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L624",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_print_event_values",
+      "community": 2,
+      "norm_label": "print_event_values()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L649",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_main",
+      "community": 2,
+      "norm_label": "main()"
+    },
+    {
+      "label": "Signature of every explicit training argument in the corresponding MAIN command.",
+      "file_type": "rationale",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L225",
+      "_origin": "ast",
+      "id": "tools_analyze_sequential_damage_rationale_225",
+      "community": 2,
+      "norm_label": "signature of every explicit training argument in the corresponding main command."
     },
     {
       "label": "audit_privacy.py",
@@ -8041,7 +8361,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "runtimeerror",
-      "community": 5,
+      "community": 2,
       "norm_label": "runtimeerror"
     },
     {
@@ -14389,7 +14709,7 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify claude instructions",
-      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
+      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
     },
     {
       "label": "Graphify Skill Pipeline",
@@ -28975,6 +29295,1034 @@
       "weight": 1.0,
       "source": "tools_analyze_overlap_vs_damage_main",
       "target": "tools_analyze_overlap_vs_damage_plot_metric",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_run_selection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L415",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_aggregate_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_allowed_tags",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L381",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_analyze_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L372",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_as_accuracy_map",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L212",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_config_mismatches",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L481",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_damage_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_event_payload_is_complete",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_expected_arch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_expected_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L187",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_expected_schedule",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L304",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_filter_clpu_probe_matches",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L477",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_format_mean_std",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L259",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_load_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L649",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L224",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_main_signature",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_parse_args",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L579",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_plot_dataset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L356",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_print_and_verify_selection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L624",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_print_event_values",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L233",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_raw_events",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L411",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_sample_mean_std",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L334",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_select_runs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L469",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_summary_lookup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_values_equal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L454",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_write_csv",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L492",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage",
+      "target": "tools_analyze_sequential_damage_write_markdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L650",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_parse_args",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_parse_args",
+      "target": "tools_analyze_sequential_damage_py_namespace",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L145",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_parse_args",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L269",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_load_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_load_json",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_load_json",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L217",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_config_mismatches",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L323",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_filter_clpu_probe_matches",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L259",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L229",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main_signature",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L579",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_plot_dataset",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L334",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_select_runs",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L454",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_write_csv",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L492",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_write_markdown",
+      "target": "tools_analyze_sequential_damage_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L415",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_aggregate_rows",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L381",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_analyze_run",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L372",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_as_accuracy_map",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L212",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_config_mismatches",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L481",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_damage_trend",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_event_payload_is_complete",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_expected_config",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L304",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_filter_clpu_probe_matches",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L259",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L224",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main_signature",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L579",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_plot_dataset",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L356",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_print_and_verify_selection",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L624",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_print_event_values",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L233",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_raw_events",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L334",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_select_runs",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L469",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_summary_lookup",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_values_equal",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L454",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_write_csv",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L492",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_write_markdown",
+      "target": "tools_analyze_sequential_damage_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L215",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_config_mismatches",
+      "target": "tools_analyze_sequential_damage_values_equal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L282",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_values_equal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L205",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_expected_config",
+      "target": "tools_analyze_sequential_damage_expected_arch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L218",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_config_mismatches",
+      "target": "tools_analyze_sequential_damage_expected_schedule",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L275",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_allowed_tags",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L214",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_config_mismatches",
+      "target": "tools_analyze_sequential_damage_expected_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L227",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main_signature",
+      "target": "tools_analyze_sequential_damage_expected_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L289",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_config_mismatches",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L324",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_filter_clpu_probe_matches",
+      "target": "tools_analyze_sequential_damage_main_signature",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L225",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_rationale_225",
+      "target": "tools_analyze_sequential_damage_main_signature",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L286",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_raw_events",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L287",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "target": "tools_analyze_sequential_damage_event_payload_is_complete",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L335",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_select_runs",
+      "target": "tools_analyze_sequential_damage_iter_preliminary_candidates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L335",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_select_runs",
+      "target": "tools_analyze_sequential_damage_filter_clpu_probe_matches",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L652",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_select_runs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L352",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_select_runs",
+      "target": "runtimeerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L336",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_select_runs",
+      "target": "tools_run_selection_select_latest_seed_rows"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L655",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_print_and_verify_selection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L361",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_print_and_verify_selection",
+      "target": "runtimeerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L386",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_analyze_run",
+      "target": "tools_analyze_sequential_damage_as_accuracy_map",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L656",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_analyze_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L429",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_aggregate_rows",
+      "target": "tools_analyze_sequential_damage_sample_mean_std",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L428",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_aggregate_rows",
+      "target": "runtimeerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L657",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_aggregate_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L665",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_write_csv",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L482",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_damage_trend",
+      "target": "tools_analyze_sequential_damage_summary_lookup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L601",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_plot_dataset",
+      "target": "tools_analyze_sequential_damage_summary_lookup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L636",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_print_event_values",
+      "target": "tools_analyze_sequential_damage_summary_lookup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L556",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_write_markdown",
+      "target": "tools_analyze_sequential_damage_summary_lookup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L645",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_print_event_values",
+      "target": "tools_analyze_sequential_damage_format_mean_std",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L543",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_write_markdown",
+      "target": "tools_analyze_sequential_damage_format_mean_std",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L553",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_write_markdown",
+      "target": "tools_analyze_sequential_damage_damage_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L667",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_write_markdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L672",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_plot_dataset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/analyze_sequential_damage.py",
+      "source_location": "L675",
+      "weight": 1.0,
+      "source": "tools_analyze_sequential_damage_main",
+      "target": "tools_analyze_sequential_damage_print_event_values",
       "confidence_score": 1.0
     },
     {
@@ -46526,5 +47874,5 @@
       "source_file": "thesis/front/template/images/besmellah.jpg"
     }
   ],
-  "built_at_commit": "b6c23b121f51625cacbbef87ad658d0d433a6a34"
+  "built_at_commit": "93f630f05ef296701f67df57e1b6b45f8fc4c52f"
 }

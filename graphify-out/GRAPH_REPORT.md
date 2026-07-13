@@ -1,16 +1,16 @@
 # Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-13)
 
 ## Corpus Check
-- 158 files · ~269,622 words
+- 159 files · ~271,910 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1425 nodes · 3012 edges · 142 communities (67 shown, 75 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 208 edges (avg confidence: 0.62)
+- 1457 nodes · 3108 edges · 140 communities (67 shown, 73 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 212 edges (avg confidence: 0.63)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b6c23b12`
+- Built from commit: `93f630f0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -74,7 +74,6 @@
 - [[_COMMUNITY_Smoke Test Script|Smoke Test Script]]
 - [[_COMMUNITY_Example Run Script|Example Run Script]]
 - [[_COMMUNITY_Dataset Constraints|Dataset Constraints]]
-- [[_COMMUNITY_Drop Plotting|Drop Plotting]]
 - [[_COMMUNITY_What You Must Do When Invoked|What You Must Do When Invoked]]
 - [[_COMMUNITY_SalUn|SalUn]]
 - [[_COMMUNITY_Code Review Notes & Open Decisions (for advisor meeting)|Code Review Notes & Open Decisions (for advisor meeting)]]
@@ -155,7 +154,6 @@
 - [[_COMMUNITY_RehearsalMemory|RehearsalMemory]]
 - [[_COMMUNITY_Controlled overlap grades|Controlled overlap grades]]
 - [[_COMMUNITY_overlap_response_slopes|overlap_response_slopes.md]]
-- [[_COMMUNITY_ScaledDotProductAttention|ScaledDotProductAttention]]
 - [[_COMMUNITY_LwF|LwF]]
 
 ## God Nodes (most connected - your core abstractions)
@@ -188,19 +186,19 @@
 ## Hyperedges (group relationships)
 - **Besmellah Calligraphic Invocation** — thesis_front_template_images_besmellah_image, thesis_front_template_images_besmellah_bismillah_al_rahman_al_rahim, thesis_front_template_images_besmellah_arabic_calligraphy, thesis_front_template_images_besmellah_islamic_invocation [INFERRED 0.85]
 
-## Communities (142 total, 75 thin omitted)
+## Communities (140 total, 73 thin omitted)
 
 ### Community 0 - "Subnet Mask Layers"
-Cohesion: 0.10
-Nodes (15): MaskByScores, SubnetClassifier, SubnetConv2d, SubnetLinear, maskedSequential, subnet_conv1x1(), subnet_conv3x3(), subnet_resnet18() (+7 more)
+Cohesion: 0.07
+Nodes (22): MaskByScores, SubnetClassifier, SubnetConv2d, SubnetLinear, maskedSequential, subnet_conv1x1(), subnet_conv3x3(), subnet_resnet18() (+14 more)
 
 ### Community 1 - "Training Main Metrics"
 Cohesion: 0.06
 Nodes (68): acc_list_to_dict(), _agreement_argmax_preds(), avg_for_tasks(), build_mia_event(), build_probe_event(), build_requests_with_active_tasks(), _coerce_float_or_none(), _coerce_int_or_none() (+60 more)
 
 ### Community 2 - "Swift Overlap Plots"
-Cohesion: 0.27
-Nodes (6): Sequential, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, subnet_vit_t8(), subnet_vit_t_16(), subnet_vit_t_8(), SubnetVisionTransformer
+Cohesion: 0.16
+Nodes (34): Select an execution device with macOS MPS support., resolve_device(), RuntimeError, aggregate_rows(), allowed_tags(), analyze_run(), as_accuracy_map(), config_mismatches() (+26 more)
 
 ### Community 3 - "Dataset Loading"
 Cohesion: 0.07
@@ -211,8 +209,8 @@ Cohesion: 0.11
 Nodes (9): PALLAdapter, Parameter-efficient, overlap-aware adapter forgetting.      Architecture: frozen, Cross-entropy of the forget task's logits against a UNIFORM target.          Imp, Per-parameter gradient-CONFLICT energy on the shared adapter.          ``relu(-g, WorstDrop first-order bound verification (Theorem thm:worstdrop).          Phase, Single gradient-ASCENT step on the forget task's true-label loss.          The l, Phase 3: ITERATIVE uniform-target soft-masked forgetting on the shared adapter., Continuous conflict-weighted soft mask (``--adapter_mask_mode continuous``). (+1 more)
 
 ### Community 5 - "Device Overlap Analysis"
-Cohesion: 0.17
-Nodes (35): Select an execution device with macOS MPS support., resolve_device(), RuntimeError, build_correlation_summary(), build_row(), canonicalize_method_variant(), extract_overlap_analysis(), extract_overlap_from_csv() (+27 more)
+Cohesion: 0.19
+Nodes (32): build_correlation_summary(), build_row(), canonicalize_method_variant(), extract_overlap_analysis(), extract_overlap_from_csv(), extract_value(), first_non_none(), format_markdown_value() (+24 more)
 
 ### Community 6 - "Method Review Docs"
 Cohesion: 0.20
@@ -271,7 +269,7 @@ Cohesion: 0.09
 Nodes (48): audit_run(), _beta_ppf(), _betacf(), _betai(), cp_lower(), cp_upper(), eps_hat(), find_score_dirs() (+40 more)
 
 ### Community 22 - "Method Modules"
-Cohesion: 0.30
+Cohesion: 0.24
 Nodes (5): PALLModified, PALL-Modified -- the MAIN overlap-aware selective-forgetting method.  Identifies, PALLOriginal, PALL-Original -- the PALL baseline (no overlap protection).  Forgetting resets t, Backward-compatibility shim.  The PALL implementation was split into:   * ``meth
 
 ### Community 23 - "Model Factories"
@@ -382,13 +380,17 @@ Nodes (13): Acknowledgments, Adapter Variant, Implemented Methods, Method taxono
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
+### Community 61 - "SalUn"
+Cohesion: 0.15
+Nodes (3): Derpp, ER, RehearsalMemory
+
 ### Community 62 - "Code Review Notes & Open Decisions (for advisor meeting)"
 Cohesion: 0.14
 Nodes (13): 1. RESOLVED (implemented 2026-06-10): `pall_modified` now uses gradient-magnitude importance, 2. RESOLVED (2026-06-16): `pall_adapter` Phase-3 is now the iterative uniform-target loop, 3. RESOLVED (documented): the two methods are two operationalizations of ONE concept, 4. `pall_adapter` defaults make it a reset-only prototype, 5. RESOLVED (documented as a limitation): `pall_adapter` overlap matrix is degenerate, 6. `shared_protect_strength` semantics, 7. FIXED in this pass (engineering / reproducibility), 8. Stale documentation (+5 more)
 
 ### Community 63 - "SSD"
-Cohesion: 0.26
-Nodes (4): EWC, VisionTransformer, vit_t_16(), vit_t_8()
+Cohesion: 0.17
+Nodes (10): EWC, Sequential, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, subnet_vit_t8(), subnet_vit_t_16(), subnet_vit_t_8(), SubnetVisionTransformer, VisionTransformer (+2 more)
 
 ### Community 64 - "graphify reference: extra exports and benchmark"
 Cohesion: 0.22
@@ -450,28 +452,24 @@ Nodes (31): adapter_config(), audit(), config_label(), expected_specs(), Expecte
 Cohesion: 0.50
 Nodes (3): Controlled overlap grades, Generation and validation, Legacy filenames
 
-### Community 140 - "ScaledDotProductAttention"
-Cohesion: 0.16
-Nodes (7): inputs:                 Q: (batch_size, seq_len1, d_model)                 K: (b, SubnetMultiHeadAttention, EncoderBlock, MultiHeadAttention, inputs:                 Q: (batch_size, n_head, seq_len1, d_k)                 K, inputs:                 Q: (batch_size, seq_len1, d_model)                 K: (b, ScaledDotProductAttention
-
 ### Community 142 - "LwF"
-Cohesion: 0.22
+Cohesion: 0.21
 Nodes (4): LSF, LwF, modified_kl_div(), smooth()
 
 ## Knowledge Gaps
 - **186 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `DatasetPreset` (+181 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **75 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **73 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `SubnetVisionTransformer` connect `Swift Overlap Plots` to `Subnet Mask Layers`, `PALL Base Forgetting`, `CLPU Method`, `ScaledDotProductAttention`, `Regularization Methods`, `LwF`, `Base Model Params`, `Method Modules`, `Drop Plotting`, `SalUn`, `SalUn`, `SSD`?**
-  _High betweenness centrality (0.077) - this node is a cross-community bridge._
-- **Why does `RehearsalMemory` connect `SalUn` to `Swift Overlap Plots`, `PALL Adapter Logic`, `PALL Base Forgetting`, `Regularization Methods`, `Replay Methods`, `Method Modules`, `Drop Plotting`, `SalUn`, `SSD`?**
-  _High betweenness centrality (0.074) - this node is a cross-community bridge._
-- **Why does `BaseModel` connect `Base Model Params` to `Subnet Mask Layers`, `ResNet Backbone`, `Swift Overlap Plots`, `Model Factories`, `LoRA ResNet`, `Adapter ResNet`, `SSD`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `RehearsalMemory` connect `SalUn` to `PALL Adapter Logic`, `PALL Base Forgetting`, `Regularization Methods`, `Replay Methods`, `SSD`, `SalUn`?**
+  _High betweenness centrality (0.080) - this node is a cross-community bridge._
+- **Why does `SubnetVisionTransformer` connect `SSD` to `Subnet Mask Layers`, `PALL Base Forgetting`, `CLPU Method`, `Regularization Methods`, `LwF`, `Base Model Params`, `SalUn`, `SalUn`?**
+  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+- **Why does `BaseModel` connect `Base Model Params` to `Subnet Mask Layers`, `ResNet Backbone`, `Model Factories`, `LoRA ResNet`, `Adapter ResNet`, `SSD`?**
+  _High betweenness centrality (0.053) - this node is a cross-community bridge._
 - **Are the 25 inferred relationships involving `SubnetVisionTransformer` (e.g. with `CLPU` and `.learn()`) actually correct?**
   _`SubnetVisionTransformer` has 25 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 6 inferred relationships involving `PALLBase` (e.g. with `RehearsalMemory` and `.__init__()`) actually correct?**
