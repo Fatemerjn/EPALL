@@ -17,6 +17,7 @@
 #   GROUP 15 (g15_seed2): seed-2 reruns for paper main-table rows only -- ON DEMAND, not in `all`
 #   GROUP 17 (g17_overlap_curve): five-grade overlap-response curves, six methods -- ON DEMAND, not in `all`
 #   GROUP 18 (g18_probe): linear-probe audit on MAIN configs, five methods -- ON DEMAND, not in `all`
+#   GROUP 20 (g20_paper_completion): only missing paper-completion reruns -- ON DEMAND, not in `all`
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -36,6 +37,7 @@
 #   bash tools/run_server_experiments.sh g15_seed2 # third seed for selected main, standard, and pretrained paper rows
 #   bash tools/run_server_experiments.sh g17_overlap_curve # five-grade overlap-response curves, both CIFAR datasets/seeds
 #   bash tools/run_server_experiments.sh g18_probe # linear-probe audit on MAIN configs, both CIFAR datasets/seeds
+#   bash tools/run_server_experiments.sh g20_paper_completion # 15 missing paper-completion runs only
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -758,6 +760,65 @@ group18_probe () {
     done
 }
 
+# ----------------------------------------------- GROUP 20 paper completion
+# Only the remaining paper-completion runs: corrected standard CIFAR-100 LoRA
+# seeds 0/1, TinyImageNet seed 1, and the standard ER/DER++/EWC/LwF seed-2 rows
+# omitted from g15_seed2. Fixed to these seeds and intentionally NOT in `all`.
+# Total: 2 + 5 + 8 = 15 runs.
+group20_paper_completion () {
+    echo "===== GROUP 20: missing paper-completion runs only (15 runs) ====="
+
+    # ---- corrected standard Split-CIFAR-100 LoRA, seeds 0/1 ----
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    for s in 0 1; do
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        launch "paper_completion_std_c100_lora_s${s}" $C100_STD $COMMON_E20 \
+               --seed $s --request_schedule_file $c100 --method lora $LORA \
+               --lr 1e-3 --experiment_tag cifar100_standard
+    done
+
+    # ---- TinyImageNet seed 1, exact g7_tiny configurations ----
+    local s=1
+    local sch="schedules/tinyimagenet_t20_f3_seed1.json"
+    local TINY="--dataset tinyimagenet --class_per_task 10 --n_tasks 20 --n_forget 3 --arch resnet18"
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth --cache_features"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    launch "paper_completion_tiny_pall_original_s${s}" $TINY $COMMON --seed $s \
+           --request_schedule_file $sch --method pall_original \
+           --retrain_steps 50 --experiment_tag tiny_main
+    launch "paper_completion_tiny_pall_modified_grad_s${s}" $TINY $COMMON --seed $s \
+           --request_schedule_file $sch --method pall_modified $PALL_MOD \
+           --experiment_tag tiny_main
+    launch "paper_completion_tiny_clpu_s${s}" $TINY $COMMON --seed $s \
+           --request_schedule_file $sch --method clpu \
+           --experiment_tag tiny_main
+    launch "paper_completion_tiny_pall_adapter_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
+           --request_schedule_file $sch --method pall_adapter $ADAPTER \
+           --experiment_tag tiny_pretrained
+    launch "paper_completion_tiny_lora_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
+           --request_schedule_file $sch --method lora $LORA \
+           --experiment_tag tiny_pretrained
+
+    # ---- standard Split-CIFAR seed 2 baselines omitted from g15_seed2 ----
+    local s=2
+    local c10="schedules/cifar10_t5_f3_fixed_seed2.json"
+    local c100="schedules/cifar100_t10_f3_seed2.json"
+    local FI="--forget_iters 50"
+    launch "paper_completion_std_c10_er_s${s}"    $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method er $FI --experiment_tag cifar10_standard
+    launch "paper_completion_std_c10_derpp_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method derpp $FI --experiment_tag cifar10_standard
+    launch "paper_completion_std_c10_ewc_s${s}"   $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method ewc --experiment_tag cifar10_standard
+    launch "paper_completion_std_c10_lwf_s${s}"   $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lwf --experiment_tag cifar10_standard
+    launch "paper_completion_std_c100_er_s${s}"    $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method er $FI --experiment_tag cifar100_standard
+    launch "paper_completion_std_c100_derpp_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method derpp $FI --experiment_tag cifar100_standard
+    launch "paper_completion_std_c100_ewc_s${s}"   $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method ewc --experiment_tag cifar100_standard
+    launch "paper_completion_std_c100_lwf_s${s}"   $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lwf --experiment_tag cifar100_standard
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -780,7 +841,8 @@ case "$WHICH" in
     g15_seed2) group15_seed2 ;;
     g17_overlap_curve) group17_overlap_curve ;;
     g18_probe) group18_probe ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2 | g17_overlap_curve | g18_probe)"; exit 1 ;;
+    g20_paper_completion) group20_paper_completion ;;
+    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2 | g17_overlap_curve | g18_probe | g20_paper_completion)"; exit 1 ;;
 esac
 
 echo "===================================================================="
