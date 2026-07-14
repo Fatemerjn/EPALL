@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1783871429.843995,
-    "ast_hash": "ad180512ae4b145484fdde6474368605",
+    "mtime": 1783948375.4626646,
+    "ast_hash": "7927cead492b0cc4f460c7d7fb452726",
     "semantic_hash": ""
   },
   "tools/run_small_ablation.py": {
@@ -470,8 +470,8 @@
     "semantic_hash": "82efb97a359f5c7290bf2513d14686be"
   },
   "README.md": {
-    "mtime": 1783854933.8214116,
-    "ast_hash": "064b2643f0337a14597a2cc9de151ea2",
+    "mtime": 1783948375.5814927,
+    "ast_hash": "a68b18236252323d0003dbf8429e1fa8",
     "semantic_hash": ""
   },
   "configs/README.md": {
@@ -905,73 +905,78 @@
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_slopes.md": {
-    "mtime": 1783891669.252185,
+    "mtime": 1783949097.1139245,
     "ast_hash": "6df631952f90fd34c86d80893020471f",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/adapter_bottleneck_ablation.pdf": {
-    "mtime": 1783891461.1581466,
-    "ast_hash": "fc9a9cb29753c424a4ffedba8ed56c97",
+    "mtime": 1783949095.200218,
+    "ast_hash": "8f7b251d4900e8bf0b05d0f2f96c3ef2",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/au_bars_by_dataset_regime.pdf": {
-    "mtime": 1783891460.2092357,
-    "ast_hash": "970236274bada808064770b5116ae3be",
+    "mtime": 1783949094.161904,
+    "ast_hash": "c4470666018f1d052d1ff6e24e9ba99e",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/bound_verification.pdf": {
-    "mtime": 1783891462.7324579,
-    "ast_hash": "d02313887cbcaebe56e8aea1c9492901",
+    "mtime": 1783949096.8292897,
+    "ast_hash": "221b5ff2f6419e06a10051702e540dfe",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/final_accuracy_bars_by_dataset_regime.pdf": {
-    "mtime": 1783891459.6574965,
-    "ast_hash": "77693cd0102dc7ac56aef3e72e923e2e",
+    "mtime": 1783949093.5571299,
+    "ast_hash": "410e64bdc5dba8b0a8be27386836eb06",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/mia_before_after_by_dataset_regime.pdf": {
-    "mtime": 1783891462.3883052,
-    "ast_hash": "433bd79ab2d0dfdd237aeada540c82d3",
+    "mtime": 1783949096.5000665,
+    "ast_hash": "1bd5a6cc2279b7e8594e6dccef48b68d",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_cifar10.pdf": {
-    "mtime": 1783891669.2517138,
-    "ast_hash": "7c7eaf401e1b68b4b5843f48bda29995",
+    "mtime": 1783949097.1127675,
+    "ast_hash": "08a4c19ca6031773b418f3cf5e6a6caa",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_cifar100.pdf": {
-    "mtime": 1783891669.1612618,
-    "ast_hash": "d740c0531b6227ad27da77aff3d97bdf",
+    "mtime": 1783949097.026145,
+    "ast_hash": "1edf89d73980de3310b70abd2223b2a9",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/representative_pall_adapter_accuracy_heatmap.pdf": {
-    "mtime": 1783891462.2530212,
-    "ast_hash": "f62b78ef49360516a281ff08cefe2574",
+    "mtime": 1783949096.356366,
+    "ast_hash": "9b5481af7243fe99479154026b45306e",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/shared_bottleneck_ablation.pdf": {
-    "mtime": 1783891461.3233826,
-    "ast_hash": "233583d2fea7668951d7cc26910a8022",
+    "mtime": 1783949095.3960338,
+    "ast_hash": "c658a921bf638908d12d59a9db227689",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/tradeoff_updated_vs_final_accuracy_by_dataset_regime.pdf": {
-    "mtime": 1783891460.9678755,
-    "ast_hash": "25ef31aab400cbfbb24c9c3a592f9c24",
+    "mtime": 1783949094.9734604,
+    "ast_hash": "048fd56441b57b7ca9d29fede2e0b759",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/tradeoff_updated_vs_worstdrop_by_dataset_regime.pdf": {
-    "mtime": 1783891460.5801063,
-    "ast_hash": "b993d907ead6272ddef176f36d079aee",
+    "mtime": 1783949094.5622072,
+    "ast_hash": "c47ec938a3427b9e3a5bdcbc53df3db1",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/worstdrop_bars_by_dataset_regime.pdf": {
-    "mtime": 1783891459.9459307,
-    "ast_hash": "cbd50d5550e5d5286f37577d2ea2ce55",
+    "mtime": 1783949093.8731802,
+    "ast_hash": "7800e9bca54d612dc6622d63bd46d76e",
     "semantic_hash": ""
   },
   "tools/analyze_sequential_damage.py": {
     "mtime": 1783933377.285885,
     "ast_hash": "dd464ffeef125b8199d9f58e6bf4d9e8",
+    "semantic_hash": ""
+  },
+  "thesis/images/bound_verification.pdf": {
+    "mtime": 1783935626.3784003,
+    "ast_hash": "e9252e095d46bfce48ef33c6628f0590",
     "semantic_hash": ""
   }
 }

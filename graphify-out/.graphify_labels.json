@@ -58,6 +58,7 @@
   "56": "Smoke Test Script",
   "57": "Example Run Script",
   "58": "Dataset Constraints",
+  "59": "LoRA",
   "60": "What You Must Do When Invoked",
   "61": "SalUn",
   "62": "Code Review Notes & Open Decisions (for advisor meeting)",
@@ -138,5 +139,5 @@
   "137": "RehearsalMemory",
   "138": "Controlled overlap grades",
   "139": "overlap_response_slopes.md",
-  "142": "LwF"
+  "140": "EWC"
 }
