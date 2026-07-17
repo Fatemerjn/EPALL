@@ -18,6 +18,7 @@
 #   GROUP 17 (g17_overlap_curve): five-grade overlap-response curves, six methods -- ON DEMAND, not in `all`
 #   GROUP 18 (g18_probe): linear-probe audit on MAIN configs, five methods -- ON DEMAND, not in `all`
 #   GROUP 20 (g20_paper_completion): only missing paper-completion reruns -- ON DEMAND, not in `all`
+#   GROUP 21 (g21_standard_unlearning): standard SSD + SalUn, both CIFAR datasets, seeds 0/1/2 -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -38,6 +39,7 @@
 #   bash tools/run_server_experiments.sh g17_overlap_curve # five-grade overlap-response curves, both CIFAR datasets/seeds
 #   bash tools/run_server_experiments.sh g18_probe # linear-probe audit on MAIN configs, both CIFAR datasets/seeds
 #   bash tools/run_server_experiments.sh g20_paper_completion # 15 missing paper-completion runs only
+#   bash tools/run_server_experiments.sh g21_standard_unlearning --dry-run # inspect the exact 12-run standard SSD/SalUn matrix
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -46,6 +48,48 @@ cd "$(dirname "$0")/.."
 PY="${PYTHON:-python}"
 SEEDS="${SEEDS:-0 1}"
 WHICH="${1:-all}"
+DRY_RUN=0
+
+usage () {
+    printf '%s\n' \
+        "Usage: bash tools/run_server_experiments.sh [GROUP] [--dry-run]" \
+        "" \
+        "Default GROUP is 'all' (g1 + g2 + g3)." \
+        "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
+        "and g21_standard_unlearning." \
+        "" \
+        "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
+        "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
+        "        g12_agreement g3b_bottleneck_seed1 g13_shared_bottleneck" \
+        "        g13_bottleneck g14_conflict g15_seed2 g17_overlap_curve" \
+        "        g18_probe g20_paper_completion g21_standard_unlearning"
+}
+
+if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
+    usage
+    exit 0
+fi
+if [[ "${2:-}" == "--dry-run" ]]; then
+    DRY_RUN=1
+elif [[ -n "${2:-}" ]]; then
+    echo "unknown option: ${2}" >&2
+    usage >&2
+    exit 1
+fi
+if [[ -n "${3:-}" ]]; then
+    echo "too many arguments" >&2
+    usage >&2
+    exit 1
+fi
+if (( DRY_RUN )); then
+    case "$WHICH" in
+        g15_seed2|g20_paper_completion|g21_standard_unlearning) ;;
+        *)
+            echo "--dry-run is supported only for g15_seed2, g20_paper_completion, and g21_standard_unlearning" >&2
+            exit 1
+            ;;
+    esac
+fi
 mkdir -p logs results/aggregates
 FAILED_RUNS=0
 FAILED_AGGREGATIONS=0
@@ -68,6 +112,45 @@ launch () {  # launch <logname> <main.py args...>
         ((FAILED_RUNS += 1))
         echo "    FAIL ${name}  (see logs/${name}.log)"
     fi
+}
+
+launch_resume_safe () {  # launch_resume_safe <logname> <main.py args...>
+    local name="$1"; shift
+    local completed_path=""
+    local resume_status=0
+    if completed_path="$($PY tools/find_exact_completed_run.py --root runs -- "$@")"; then
+        echo ">>> ${name}"
+        echo "    SKIP exact completed config/seed match: ${completed_path}"
+        return 0
+    else
+        resume_status=$?
+    fi
+    if (( resume_status != 1 )); then
+        ((FAILED_RUNS += 1))
+        echo "    FAIL ${name}: exact-resume check exited ${resume_status}" >&2
+        return 0
+    fi
+    if (( DRY_RUN )); then
+        local dataset="" method="" seed="" n_tasks="" n_forget=""
+        local -a argv=("$@")
+        local i
+        for ((i = 0; i < ${#argv[@]}; i++)); do
+            case "${argv[$i]}" in
+                --dataset) dataset="${argv[$((i + 1))]}" ;;
+                --method) method="${argv[$((i + 1))]}" ;;
+                --seed) seed="${argv[$((i + 1))]}" ;;
+                --n_tasks) n_tasks="${argv[$((i + 1))]}" ;;
+                --n_forget) n_forget="${argv[$((i + 1))]}" ;;
+            esac
+        done
+        echo ">>> ${name}"
+        echo "    DRY-RUN output: runs/${dataset}/T${n_tasks}_F${n_forget}/${method}/seed_${seed}/<timestamp>"
+        printf '    COMMAND %q -u main.py' "$PY"
+        printf ' %q' "$@"
+        printf '\n'
+        return 0
+    fi
+    launch "$name" "$@"
 }
 
 # -------------------------------------------------------------------- GROUP 1
@@ -579,60 +662,60 @@ group15_seed2 () {
     local LORA="--lora_rank 8 --lora_alpha 16"
 
     # ---- overlap-heavy main rows (three PALL methods + LoRA) ----
-    launch "c10_pall_original_s${s}" $C10 $COMMON --seed $s \
+    launch_resume_safe "c10_pall_original_s${s}" $C10 $COMMON --seed $s \
            --request_schedule_file $c10 --method pall_original \
            --retrain_steps 50 --experiment_tag cifar10_main
-    launch "c10_pall_modified_grad_s${s}" $C10 $COMMON --seed $s \
+    launch_resume_safe "c10_pall_modified_grad_s${s}" $C10 $COMMON --seed $s \
            --request_schedule_file $c10 --method pall_modified $PALL_MOD \
            --experiment_tag cifar10_main
-    launch "c10_pall_adapter_s${s}" $C10 $COMMON --seed $s \
+    launch_resume_safe "c10_pall_adapter_s${s}" $C10 $COMMON --seed $s \
            --request_schedule_file $c10 --method pall_adapter $ADAPTER \
            --experiment_tag cifar10_main
-    launch "c10_lora_s${s}" $C10 $COMMON --seed $s \
+    launch_resume_safe "c10_lora_s${s}" $C10 $COMMON --seed $s \
            --request_schedule_file $c10 --method lora $LORA \
            --experiment_tag cifar10_main
 
-    launch "c100_pall_original_s${s}" $C100 $COMMON --seed $s \
+    launch_resume_safe "c100_pall_original_s${s}" $C100 $COMMON --seed $s \
            --request_schedule_file $c100 --method pall_original \
            --retrain_steps 50 --experiment_tag cifar100_main
-    launch "c100_pall_modified_grad_s${s}" $C100 $COMMON --seed $s \
+    launch_resume_safe "c100_pall_modified_grad_s${s}" $C100 $COMMON --seed $s \
            --request_schedule_file $c100 --method pall_modified $PALL_MOD \
            --experiment_tag cifar100_main
-    launch "c100_pall_adapter_s${s}" $C100 $COMMON --seed $s \
+    launch_resume_safe "c100_pall_adapter_s${s}" $C100 $COMMON --seed $s \
            --request_schedule_file $c100 --method pall_adapter $ADAPTER \
            --experiment_tag cifar100_main
-    launch "c100_lora_s${s}" $C100 $COMMON --seed $s \
+    launch_resume_safe "c100_lora_s${s}" $C100 $COMMON --seed $s \
            --request_schedule_file $c100 --method lora $LORA \
            --experiment_tag cifar100_main
 
     # ---- selected standard rows (three PALL methods + LoRA + CLPU) ----
     local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
     local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
-    launch "std_c10_pall_original_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_original --retrain_steps 50 --experiment_tag cifar10_standard
-    launch "std_c10_pall_modified_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_modified $PALL_MOD --experiment_tag cifar10_standard
-    launch "std_c10_pall_adapter_s${s}"  $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_adapter $ADAPTER --experiment_tag cifar10_standard
-    launch "std_c10_lora_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lora $LORA --experiment_tag cifar10_standard
-    launch "std_c10_clpu_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method clpu --experiment_tag cifar10_standard
+    launch_resume_safe "std_c10_pall_original_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_original --retrain_steps 50 --experiment_tag cifar10_standard
+    launch_resume_safe "std_c10_pall_modified_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_modified $PALL_MOD --experiment_tag cifar10_standard
+    launch_resume_safe "std_c10_pall_adapter_s${s}"  $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method pall_adapter $ADAPTER --experiment_tag cifar10_standard
+    launch_resume_safe "std_c10_lora_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lora $LORA --experiment_tag cifar10_standard
+    launch_resume_safe "std_c10_clpu_s${s}"          $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method clpu --experiment_tag cifar10_standard
 
-    launch "std_c100_pall_original_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_original --retrain_steps 50 --experiment_tag cifar100_standard
-    launch "std_c100_pall_modified_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_modified $PALL_MOD --experiment_tag cifar100_standard
-    launch "std_c100_pall_adapter_s${s}"  $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_adapter $ADAPTER --experiment_tag cifar100_standard
-    launch "std_c100_lora_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lora $LORA --lr 1e-3 --experiment_tag cifar100_standard
-    launch "std_c100_clpu_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method clpu --experiment_tag cifar100_standard
+    launch_resume_safe "std_c100_pall_original_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_original --retrain_steps 50 --experiment_tag cifar100_standard
+    launch_resume_safe "std_c100_pall_modified_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_modified $PALL_MOD --experiment_tag cifar100_standard
+    launch_resume_safe "std_c100_pall_adapter_s${s}"  $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method pall_adapter $ADAPTER --experiment_tag cifar100_standard
+    launch_resume_safe "std_c100_lora_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lora $LORA --lr 1e-3 --experiment_tag cifar100_standard
+    launch_resume_safe "std_c100_clpu_s${s}"          $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method clpu --experiment_tag cifar100_standard
 
     # ---- pretrained PEFT rows (PALL-Adapter + LoRA) ----
     local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
     local C100_R18="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9"
-    launch "c10_pall_adapter_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+    launch_resume_safe "c10_pall_adapter_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
            --request_schedule_file $c10 --method pall_adapter $ADAPTER \
            --experiment_tag cifar10_pretrained
-    launch "c10_lora_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+    launch_resume_safe "c10_lora_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
            --request_schedule_file $c10 --method lora $LORA \
            --experiment_tag cifar10_pretrained
-    launch "c100_pall_adapter_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+    launch_resume_safe "c100_pall_adapter_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
            --request_schedule_file $c100 --method pall_adapter $ADAPTER \
            --experiment_tag cifar100_pretrained
-    launch "c100_lora_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+    launch_resume_safe "c100_lora_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
            --request_schedule_file $c100 --method lora $LORA \
            --experiment_tag cifar100_pretrained
 }
@@ -774,7 +857,7 @@ group20_paper_completion () {
     local LORA="--lora_rank 8 --lora_alpha 16"
     for s in 0 1; do
         local c100="schedules/cifar100_t10_f3_seed${s}.json"
-        launch "paper_completion_std_c100_lora_s${s}" $C100_STD $COMMON_E20 \
+        launch_resume_safe "paper_completion_std_c100_lora_s${s}" $C100_STD $COMMON_E20 \
                --seed $s --request_schedule_file $c100 --method lora $LORA \
                --lr 1e-3 --experiment_tag cifar100_standard
     done
@@ -788,19 +871,19 @@ group20_paper_completion () {
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
-    launch "paper_completion_tiny_pall_original_s${s}" $TINY $COMMON --seed $s \
+    launch_resume_safe "paper_completion_tiny_pall_original_s${s}" $TINY $COMMON --seed $s \
            --request_schedule_file $sch --method pall_original \
            --retrain_steps 50 --experiment_tag tiny_main
-    launch "paper_completion_tiny_pall_modified_grad_s${s}" $TINY $COMMON --seed $s \
+    launch_resume_safe "paper_completion_tiny_pall_modified_grad_s${s}" $TINY $COMMON --seed $s \
            --request_schedule_file $sch --method pall_modified $PALL_MOD \
            --experiment_tag tiny_main
-    launch "paper_completion_tiny_clpu_s${s}" $TINY $COMMON --seed $s \
+    launch_resume_safe "paper_completion_tiny_clpu_s${s}" $TINY $COMMON --seed $s \
            --request_schedule_file $sch --method clpu \
            --experiment_tag tiny_main
-    launch "paper_completion_tiny_pall_adapter_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
+    launch_resume_safe "paper_completion_tiny_pall_adapter_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
            --request_schedule_file $sch --method pall_adapter $ADAPTER \
            --experiment_tag tiny_pretrained
-    launch "paper_completion_tiny_lora_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
+    launch_resume_safe "paper_completion_tiny_lora_pretrained_s${s}" $TINY $COMMON $PRE --seed $s \
            --request_schedule_file $sch --method lora $LORA \
            --experiment_tag tiny_pretrained
 
@@ -809,14 +892,49 @@ group20_paper_completion () {
     local c10="schedules/cifar10_t5_f3_fixed_seed2.json"
     local c100="schedules/cifar100_t10_f3_seed2.json"
     local FI="--forget_iters 50"
-    launch "paper_completion_std_c10_er_s${s}"    $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method er $FI --experiment_tag cifar10_standard
-    launch "paper_completion_std_c10_derpp_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method derpp $FI --experiment_tag cifar10_standard
-    launch "paper_completion_std_c10_ewc_s${s}"   $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method ewc --experiment_tag cifar10_standard
-    launch "paper_completion_std_c10_lwf_s${s}"   $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lwf --experiment_tag cifar10_standard
-    launch "paper_completion_std_c100_er_s${s}"    $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method er $FI --experiment_tag cifar100_standard
-    launch "paper_completion_std_c100_derpp_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method derpp $FI --experiment_tag cifar100_standard
-    launch "paper_completion_std_c100_ewc_s${s}"   $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method ewc --experiment_tag cifar100_standard
-    launch "paper_completion_std_c100_lwf_s${s}"   $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lwf --experiment_tag cifar100_standard
+    launch_resume_safe "paper_completion_std_c10_er_s${s}"    $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method er $FI --experiment_tag cifar10_standard
+    launch_resume_safe "paper_completion_std_c10_derpp_s${s}" $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method derpp $FI --experiment_tag cifar10_standard
+    launch_resume_safe "paper_completion_std_c10_ewc_s${s}"   $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method ewc --experiment_tag cifar10_standard
+    launch_resume_safe "paper_completion_std_c10_lwf_s${s}"   $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 --method lwf --experiment_tag cifar10_standard
+    launch_resume_safe "paper_completion_std_c100_er_s${s}"    $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method er $FI --experiment_tag cifar100_standard
+    launch_resume_safe "paper_completion_std_c100_derpp_s${s}" $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method derpp $FI --experiment_tag cifar100_standard
+    launch_resume_safe "paper_completion_std_c100_ewc_s${s}"   $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method ewc --experiment_tag cifar100_standard
+    launch_resume_safe "paper_completion_std_c100_lwf_s${s}"   $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 --method lwf --experiment_tag cifar100_standard
+}
+
+# ----------------------------------------- GROUP 21 standard unlearning only
+# Literature-comparable SSD + SalUn completion group. This deliberately reuses
+# the valid g6_standard protocol (20 epochs, schedules, architectures, optimizer,
+# evaluation flow, and CIFAR-100 10x10 random-disjoint split), not the
+# overlap-heavy three-epoch g9/g17 setup. Fixed to seeds 0/1/2, independent of
+# SEEDS, so expansion is always 2 datasets x 2 methods x 3 seeds = 12 runs.
+# launch_resume_safe skips only a fully completed, exact effective config+seed
+# match; partial runs and differently tagged/configured runs are preserved and
+# do not suppress a launch.
+group21_standard_unlearning () {
+    echo "===== GROUP 21: standard SSD + SalUn (12 resume-safe runs) ====="
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    local SSD_ARGS="--ssd_alpha 1.0 --ssd_lambda 1.0"
+    local SALUN_ARGS="--salun_mask_ratio 0.1 --salun_target uniform --forget_iters 50"
+    local TAG="standard_unlearning_ssd_salun_v1"
+
+    for s in 0 1 2; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        for m in ssd salun; do
+            local extra="$SSD_ARGS"
+            if [[ "$m" == "salun" ]]; then
+                extra="$SALUN_ARGS"
+            fi
+            launch_resume_safe "std_unlearning_c10_${m}_s${s}" \
+                $C10 $COMMON_E20 --seed $s --request_schedule_file $c10 \
+                --method $m $extra --experiment_tag $TAG
+            launch_resume_safe "std_unlearning_c100_${m}_s${s}" \
+                $C100_STD $COMMON_E20 --seed $s --request_schedule_file $c100 \
+                --method $m $extra --experiment_tag $TAG
+        done
+    done
 }
 
 case "$WHICH" in
@@ -842,8 +960,18 @@ case "$WHICH" in
     g17_overlap_curve) group17_overlap_curve ;;
     g18_probe) group18_probe ;;
     g20_paper_completion) group20_paper_completion ;;
-    *)   echo "unknown arg: $WHICH (use: all | g1 | g2 | g3 | g4 | g5 | g6_standard | g7_tiny | g8_mia | g9_extra_baselines | g9b_ssd_tune | g10_anchor | g11_vit | g12_agreement | g3b_bottleneck_seed1 | g13_shared_bottleneck | g13_bottleneck | g14_conflict | g15_seed2 | g17_overlap_curve | g18_probe | g20_paper_completion)"; exit 1 ;;
+    g21_standard_unlearning) group21_standard_unlearning ;;
+    *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
+
+if (( DRY_RUN )); then
+    if (( FAILED_RUNS > 0 )); then
+        echo "[FAILED] ${FAILED_RUNS} dry-run validation check(s) failed." >&2
+        exit 1
+    fi
+    echo "DRY-RUN complete. No training or aggregation was executed."
+    exit 0
+fi
 
 echo "===================================================================="
 echo "AGGREGATING TABLES ..."
