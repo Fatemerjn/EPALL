@@ -50,6 +50,8 @@ METHOD_MAP = {
     "EWC": "ewc",
     "LoRA": "lora",
     "LwF": "lwf",
+    "SalUn": "salun",
+    "SSD": "ssd",
 }
 DATASET_MAP = {"CIFAR-10": "cifar10", "CIFAR-100": "cifar100", "TinyImageNet": "tinyimagenet"}
 
@@ -292,27 +294,14 @@ def audit_standard(text, thesis, records, label, dataset, tag):
         if method is None:
             continue
         row_label = f"{dataset}/standard/{vals[0]}"
-        csv_row, matches, source = thesis.find(dataset=dataset, method=method, experiment_tag=tag)
-
-        # The corrected lr=1e-3 CIFAR-100 LoRA launch exists, but the current
-        # aggregates still contain only the invalid, diverged lr=1e-2 pair.
-        # Require an explicit non-numeric pending row while that remains true;
-        # once a corrected aggregate arrives this check fails and forces the
-        # thesis table to be regenerated with real values.
-        if dataset == "cifar100" and method == "lora" and not any(
-            numbers_in(cell) for cell in cells[1:7]
-        ):
-            collapsed = (
-                len(matches) == 1
-                and values_match("0.1000", csv_row.get("final_avg_acc_mean"))[0]
-                and values_match("0.0000", csv_row.get("final_avg_acc_std"))[0]
-                and values_match("0.1000", csv_row.get("Au_mean"))[0]
-            )
-            status = "PASS" if collapsed else "FAIL"
-            csv_value = "only collapsed lr=1e-2 aggregate" if collapsed else no_match_reason(matches)
-            records.append(Record(label, row_label, "corrected-run availability", "pending", csv_value,
-                                  source, status))
-            continue
+        method_tag = (
+            "standard_unlearning_ssd_salun_v1"
+            if method in {"ssd", "salun"}
+            else tag
+        )
+        csv_row, matches, source = thesis.find(
+            dataset=dataset, method=method, experiment_tag=method_tag
+        )
         reason = None if len(matches) == 1 else no_match_reason(matches)
         for idx, (col_label, mean_f, std_f) in enumerate(STANDARD_METRIC_COLS):
             audit_metric_cell(records, label, row_label, col_label, cells[1 + idx],

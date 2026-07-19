@@ -19,6 +19,7 @@ from make_thesis_table import CONFIG_GROUP_COLUMNS, extract_run_row, group_key, 
 
 
 SEEDS_01 = ("0", "1")
+SEEDS_012 = ("0", "1", "2")
 METHODS_STANDARD = (
     "pall_original",
     "pall_modified",
@@ -183,11 +184,20 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             METHODS_STANDARD,
             f"{prefix}_standard",
             "standard_split",
+            seeds=SEEDS_012,
             configs={
                 "pall_original": retrain_config(),
                 "pall_modified": protected_retrain_config(),
                 "pall_adapter": adapter_config(),
             },
+        )
+        add(
+            "standard unlearning baselines",
+            dataset,
+            ("ssd", "salun"),
+            "standard_unlearning_ssd_salun_v1",
+            "standard_split",
+            seeds=SEEDS_012,
         )
         add(
             "MIA from-scratch",

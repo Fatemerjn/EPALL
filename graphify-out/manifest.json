@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1783948375.4626646,
-    "ast_hash": "7927cead492b0cc4f460c7d7fb452726",
+    "mtime": 1784293154.4484954,
+    "ast_hash": "7acd6ff0718b07f5a24dd8dea5cf3039",
     "semantic_hash": ""
   },
   "tools/run_small_ablation.py": {
@@ -479,11 +479,6 @@
     "ast_hash": "c704584db900a29604a2cee474d6a555",
     "semantic_hash": "c704584db900a29604a2cee474d6a555"
   },
-  "paper/REVIEW_NOTES.md": {
-    "mtime": 1783804780.9049852,
-    "ast_hash": "f7dc708c611d886c242fca2351cebe96",
-    "semantic_hash": ""
-  },
   "requirements.txt": {
     "mtime": 1783343938.0462308,
     "ast_hash": "ee97e3bbdc88c3d3d6cdceb8764b55ad",
@@ -520,28 +515,8 @@
     "semantic_hash": ""
   },
   "tools/audit_seed_completeness.py": {
-    "mtime": 1783804780.9060295,
-    "ast_hash": "86344d7515b465f7fb981414faface32",
-    "semantic_hash": ""
-  },
-  "paper/drop_decomposition.pdf": {
-    "mtime": 1783343938.0446196,
-    "ast_hash": "f9629509320a56ae6ad24ee4834de238",
-    "semantic_hash": ""
-  },
-  "paper/overlap_results.pdf": {
-    "mtime": 1783343938.045204,
-    "ast_hash": "c8a56115de56eb45e94898b86b6af01c",
-    "semantic_hash": ""
-  },
-  "paper/tradeoff_results.pdf": {
-    "mtime": 1783343938.0457437,
-    "ast_hash": "c16df7c0b45b4270a0ca6db4790cdc4b",
-    "semantic_hash": ""
-  },
-  "paper/worstdrop_chart.pdf": {
-    "mtime": 1783343938.0460243,
-    "ast_hash": "118a388adc6ccf2ac97eb8683771a219",
+    "mtime": 1784380456.705643,
+    "ast_hash": "1c2fbdf7137e1d6f4209dbb1b931cdb2",
     "semantic_hash": ""
   },
   "thesis/front/template/images/logo.pdf": {
@@ -655,8 +630,8 @@
     "semantic_hash": ""
   },
   "tools/check_thesis_numbers.py": {
-    "mtime": 1783892696.930861,
-    "ast_hash": "8ed0457cf2efc4af1fb033e93d6ecab3",
+    "mtime": 1784380456.8140855,
+    "ast_hash": "201151fdcdee3f03ed75727c070f6739",
     "semantic_hash": ""
   },
   "scripts/sync_from_server.sh": {
@@ -905,68 +880,68 @@
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_slopes.md": {
-    "mtime": 1783949097.1139245,
-    "ast_hash": "6df631952f90fd34c86d80893020471f",
+    "mtime": 1784380751.4181452,
+    "ast_hash": "6cc521cbba46a1d22c9682571965bb96",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/adapter_bottleneck_ablation.pdf": {
-    "mtime": 1783949095.200218,
-    "ast_hash": "8f7b251d4900e8bf0b05d0f2f96c3ef2",
+    "mtime": 1784380749.383964,
+    "ast_hash": "c9beda590021f81e0e6e39cd04c6dc21",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/au_bars_by_dataset_regime.pdf": {
-    "mtime": 1783949094.161904,
-    "ast_hash": "c4470666018f1d052d1ff6e24e9ba99e",
+    "mtime": 1784380748.3010702,
+    "ast_hash": "bdadaa2d1dc5c55ad0352ac07787d8fd",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/bound_verification.pdf": {
-    "mtime": 1783949096.8292897,
-    "ast_hash": "221b5ff2f6419e06a10051702e540dfe",
+    "mtime": 1784380751.1209326,
+    "ast_hash": "706de206152f5743c92024be73fefea3",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/final_accuracy_bars_by_dataset_regime.pdf": {
-    "mtime": 1783949093.5571299,
-    "ast_hash": "410e64bdc5dba8b0a8be27386836eb06",
+    "mtime": 1784380747.6723,
+    "ast_hash": "59548ecb613355705144788b17446571",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/mia_before_after_by_dataset_regime.pdf": {
-    "mtime": 1783949096.5000665,
-    "ast_hash": "1bd5a6cc2279b7e8594e6dccef48b68d",
+    "mtime": 1784380750.7751846,
+    "ast_hash": "4860432f20f44412acffb9ca0f117a1b",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_cifar10.pdf": {
-    "mtime": 1783949097.1127675,
-    "ast_hash": "08a4c19ca6031773b418f3cf5e6a6caa",
+    "mtime": 1784380751.4174352,
+    "ast_hash": "92249dcf61a4a73e97084ef9b63402a0",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/overlap_response_cifar100.pdf": {
-    "mtime": 1783949097.026145,
-    "ast_hash": "1edf89d73980de3310b70abd2223b2a9",
+    "mtime": 1784380751.328738,
+    "ast_hash": "7dd1a1c2ccc0adcd0a6a7dc5416afba5",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/representative_pall_adapter_accuracy_heatmap.pdf": {
-    "mtime": 1783949096.356366,
-    "ast_hash": "9b5481af7243fe99479154026b45306e",
+    "mtime": 1784380750.629727,
+    "ast_hash": "b4f71ec1167594286cbd5fde1956abe2",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/shared_bottleneck_ablation.pdf": {
-    "mtime": 1783949095.3960338,
-    "ast_hash": "c658a921bf638908d12d59a9db227689",
+    "mtime": 1784380749.573219,
+    "ast_hash": "d4065c84a73d7ecccd415060f4688808",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/tradeoff_updated_vs_final_accuracy_by_dataset_regime.pdf": {
-    "mtime": 1783949094.9734604,
-    "ast_hash": "048fd56441b57b7ca9d29fede2e0b759",
+    "mtime": 1784380749.150763,
+    "ast_hash": "da70a9a1eb02d2763307b0d3c4b6e3ac",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/tradeoff_updated_vs_worstdrop_by_dataset_regime.pdf": {
-    "mtime": 1783949094.5622072,
-    "ast_hash": "c47ec938a3427b9e3a5bdcbc53df3db1",
+    "mtime": 1784380748.7184577,
+    "ast_hash": "902cceeb1dda5071aeb903e7607c2cb9",
     "semantic_hash": ""
   },
   "results/thesis/plots_v2/worstdrop_bars_by_dataset_regime.pdf": {
-    "mtime": 1783949093.8731802,
-    "ast_hash": "7800e9bca54d612dc6622d63bd46d76e",
+    "mtime": 1784380748.0033128,
+    "ast_hash": "1fdf841e0dd6e0035f041e0cf78cd323",
     "semantic_hash": ""
   },
   "tools/analyze_sequential_damage.py": {
@@ -977,6 +952,16 @@
   "thesis/images/bound_verification.pdf": {
     "mtime": 1783935626.3784003,
     "ast_hash": "e9252e095d46bfce48ef33c6628f0590",
+    "semantic_hash": ""
+  },
+  "tools/find_exact_completed_run.py": {
+    "mtime": 1784293176.338016,
+    "ast_hash": "2d126d860cffae69a43b66658457b619",
+    "semantic_hash": ""
+  },
+  "tools/make_aaai_figures.py": {
+    "mtime": 1784400973.9204295,
+    "ast_hash": "35984d43c3babf487ae1210020ffa165",
     "semantic_hash": ""
   }
 }

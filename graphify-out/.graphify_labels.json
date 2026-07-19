@@ -61,7 +61,7 @@
   "59": "LoRA",
   "60": "What You Must Do When Invoked",
   "61": "SalUn",
-  "62": "Code Review Notes & Open Decisions (for advisor meeting)",
+  "62": "LSF",
   "63": "SSD",
   "64": "graphify reference: extra exports and benchmark",
   "65": "graphify reference: extra exports and benchmark",
@@ -105,13 +105,7 @@
   "103": "Graphify Update Flow",
   "104": "Graphify Skill Pipeline",
   "105": "Configs Directory",
-  "106": "Code Review Notes and Open Decisions",
-  "107": "Conflict Energy",
-  "108": "Gradient-Conflict Protection",
-  "109": "Gradient-Magnitude Importance Resolution",
-  "110": "Method Taxonomy",
-  "111": "Phase-3 Iterative Uniform-Target Loop",
-  "112": "Requirements Fix",
+  "106": "main",
   "113": "Adapter Protected",
   "114": "Adapter Reset",
   "115": "Adapter Shared",
@@ -138,6 +132,5 @@
   "136": "sync_to_server.sh",
   "137": "RehearsalMemory",
   "138": "Controlled overlap grades",
-  "139": "overlap_response_slopes.md",
-  "140": "EWC"
+  "139": "overlap_response_slopes.md"
 }
