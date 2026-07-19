@@ -960,8 +960,13 @@
     "semantic_hash": ""
   },
   "tools/make_aaai_figures.py": {
-    "mtime": 1784400973.9204295,
-    "ast_hash": "35984d43c3babf487ae1210020ffa165",
+    "mtime": 1784471918.7420285,
+    "ast_hash": "b5f3d58edcee1382996811a06f9ca618",
+    "semantic_hash": ""
+  },
+  "tools/generate_main_standard_table.py": {
+    "mtime": 1784481114.0208876,
+    "ast_hash": "f510b151eb94ef9aed0b358e9eb87966",
     "semantic_hash": ""
   }
 }

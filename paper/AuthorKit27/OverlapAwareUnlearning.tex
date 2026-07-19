@@ -1,3 +1,5 @@
+% !TEX program = pdflatex
+% The AAAI 2027 style requires pdfTeX; do not compile this paper with XeLaTeX.
 \documentclass[letterpaper]{article} % DO NOT CHANGE THIS
 \usepackage[submission]{aaai2027}  % DO NOT CHANGE THIS
 \usepackage[hyphens]{url}  % DO NOT CHANGE THIS
@@ -14,15 +16,10 @@
 \usepackage{multirow}
 \usepackage{amsmath,amssymb,amsthm}
 
-% Theorem environments for the methodology guarantee.
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
-\newtheorem{corollary}{Corollary}
 \theoremstyle{definition}
 \newtheorem{assumption}{Assumption}
-\newtheorem{definition}{Definition}
-\theoremstyle{remark}
-\newtheorem{remark}{Remark}
 
 \pdfinfo{
 /TemplateVersion (2027.1)
@@ -30,7 +27,7 @@
 
 \setcounter{secnumdepth}{2}
 
-\title{Controlled Machine Unlearning in Continual Learning via\\Parameter-Efficient Overlap-Aware Adapters}
+\title{Overlap-Aware Selective Forgetting in Continual Learning via\\Protected Subnetworks and Parameter-Efficient Adapters}
 \author{
     Anonymous Submission
 }
@@ -42,7 +39,7 @@
 \maketitle
 
 \begin{abstract}
-Selective forgetting (or machine unlearning) in Continual Learning (CL) architectures aims to intentionally eradicate specific task knowledge from a previously trained deep neural network, under the critical constraint of preserving classification fidelity on the remaining active tasks. Conventional unlearning mechanisms, including the standard Privacy-Aware Lifelong Learning (PALL) framework, suffer degradation caused by implicit parameter overlaps between the forgetting target and the retained tasks, alongside large parameter update footprints. We propose two overlap-aware frameworks that mitigate this fundamental trade-off: \textbf{PALL-Modified} and \textbf{PALL-Adapter}. PALL-Modified explicitly computes the critical parameter intersection between the forget footprint and the retained-task support and protects it with an anchored regularization objective during retention repair. PALL-Adapter replaces full-network tuning with modular task adapters coupled with a shared bottleneck adapter, confining unlearning updates to sub-modular pathways through a three-phase soft-masked optimization procedure with explicit classifier unlearning. We prove that the soft-scaling multiplier contracts the worst-case retained-task degradation (WorstDrop) by the protection factor $(1-p)$ to first order, and verify the resulting bound empirically on logged unlearning trajectories. Across CIFAR-10, CIFAR-100, and TinyImageNet, PALL-Modified attains the highest retention accuracy among forgetting-capable methods---within $0.5$ points of the non-forgetting CLPU upper bound under the standard protocol---while driving forgotten-task accuracy to the random-guess level. PALL-Adapter reduces the updated parameter ratio by up to $87.5\%$ relative to full-network variants and, with a pretrained frozen backbone, matches the accuracy of a LoRA baseline while keeping WorstDrop at or near zero. Membership-inference attacks, empirical privacy auditing, and linear-probe analyses characterize both the strengths and the honest limits of the resulting approximate unlearning.
+Selective forgetting asks a continual learner to drop a requested task without hurting the tasks that stay active, which is hardest exactly when those tasks share weights. We build two overlap-aware variants of Privacy-Aware Lifelong Learning (PALL). \textbf{PALL-Modified} locates the shared support of the forgotten and retained tasks, ranks the coordinates that matter most to retention, and anchors them during replay-based repair. \textbf{PALL-Adapter} freezes the backbone and splits computation into task-specific and shared bottleneck adapters; forget and retained gradients then drive a soft-masked update of the shared adapter, followed by classifier unlearning and a short retained-task repair. For that shared-adapter step we prove that the soft mask shrinks its first-order interference on the critical overlap by the protection factor. In a matched Split-CIFAR comparison CLPU is the strongest baseline, but it buys isolation by storing a full network per active task; among shared-model methods, PALL-Modified stays within $0.5$ points of CLPU's final accuracy while forcing forgotten-task accuracy to chance. PALL-Adapter cuts the nominal retained-repair scope by up to $87.5\%$, and a pretrained backbone removes its from-scratch accuracy bottleneck. Membership inference, an attack-threshold leakage audit, and linear probes keep the claim where the evidence puts it: approximate task-level forgetting, not exact, certified, or storage-level data removal.
 \end{abstract}
 
 % Uncomment to link to code once a de-anonymized/camera-ready version is prepared.
@@ -52,46 +49,41 @@ Selective forgetting (or machine unlearning) in Continual Learning (CL) architec
 
 \section{Introduction}
 
-The ubiquitous deployment of Deep Neural Networks (DNNs) in real-world, privacy-sensitive applications is increasingly governed by strict legal and ethical data frameworks, most notably the European Union's General Data Protection Regulation (GDPR) \cite{gdpr2016} and the California Consumer Privacy Act (CCPA) \cite{ccpa2018}. These legislative milestones enforce the ``Right to be Forgotten'' \cite{gdpr2016}, granting individual users the authority to request the deletion of their personal data from trained machine learning systems. Concurrently, modern artificial intelligence relies heavily on Continual Learning (CL) environments, wherein models autonomously and sequentially assimilate knowledge from non-stationary streaming datasets.
+Continual learning (CL) systems acquire tasks sequentially while trying to prevent catastrophic forgetting \cite{mccloskey1989catastrophic,kirkpatrick2017overcoming}. Selective forgetting poses the inverse operational problem: after a task-level deletion request, the model should suppress that task without catastrophically degrading the tasks that remain active \cite{cao2015towards,bourtoule2021machine}. We study this task-incremental setting and do not equate task suppression with deleting individual records, raw data, checkpoints, or external copies.
 
-While classical CL methodologies focus extensively on mitigating catastrophic forgetting \cite{mccloskey1989catastrophic,kirkpatrick2017overcoming}, the emerging problem of selective forgetting (or machine unlearning) introduces an inverse challenge \cite{cao2015towards,bourtoule2021machine}. It necessitates the intentional, surgical removal of specific previously acquired knowledge without inducing catastrophic degradation on the remaining, active tasks.
+The core difficulty is \emph{parameter overlap}: a high-capacity network spreads each task's knowledge across many shared weights. Running an unconstrained unlearning step on a target task $D_f$---gradient ascent, or Fisher-based scrubbing \cite{golatkar2020forgetting}---therefore also moves weights that the retained tasks $D_r$ depend on, and their accuracy drops as a side effect.
 
-The dominant barrier to effective selective forgetting within multi-task neural networks is the \emph{parameter overlap} phenomenon. High-capacity neural networks implicitly distribute conceptual representations across vast, entangled arrays of shared parameters. When traditional unlearning techniques, such as unconstrained gradient ascent or Fisher-based network scrubbing \cite{golatkar2020forgetting}, are executed on a target task dataset $D_f$, they inadvertently disrupt the functional representations of the retained tasks $D_r$ that rely on those identical parameter spaces.
+The original Privacy-Aware Lifelong Learning (PALL) framework \cite{ozdenizci2025pall} modularizes task knowledge with stored subnetworks. Its request-time reset and retained-task repair, however, do not distinguish shared coordinates by their sensitivity to retained tasks. This matters under heavy overlap, where perturbing a small but important shared region can damage multiple active tasks.
 
-The original Privacy-Aware Lifelong Learning (PALL) framework \cite{ozdenizci2025pall} was introduced as a mechanism to modularize task knowledge. However, the standard implementation (PALL-Original) still operates over large network sub-spaces and lacks a granular mechanism to control feature-level overlaps, updating on the order of roughly $1$--$4\%$ of a deep network's total parameters per unlearning request \cite{ozdenizci2025pall}.
-
-\paragraph{Contributions.} To circumvent these limitations, we propose two distinct, synergistic methodologies:
+\paragraph{Contributions.} We make three contributions:
 \begin{enumerate}
-    \item \textbf{PALL-Modified:} an extension that explicitly quantifies the \emph{critical overlap} between forgotten and active parameters and protects it with an anchored regularization penalty during retention repair.
-    \item \textbf{PALL-Adapter:} a parameter-efficient CL unlearning architecture that freezes the deep feature extraction backbone and reroutes sequential task learning through localized task-specific bottleneck adapters and a shared bottleneck adapter.
-    \item \textbf{Three-phase soft protection:} an optimization masking algorithm (eradication, quantification, and soft scaling) that governs gradient updates during unlearning, insulating critical shared features while explicitly unlearning the associated classifier head. We prove that this mechanism contracts the worst-case retained-task degradation by the protection factor $(1-p)$ and verify the bound on logged unlearning trajectories.
+    \item \textbf{PALL-Modified:} it measures the \emph{critical overlap} between the forgotten and the active parameters and protects it with an anchored penalty during retention repair.
+    \item \textbf{PALL-Adapter:} a parameter-efficient design that freezes the backbone and routes learning through task-specific bottleneck adapters and one shared adapter, so a forget request can be confined to a small module.
+    \item \textbf{Ordered overlap-aware forgetting, with analysis:} a request-time procedure that estimates the forget and retained gradients before reset, soft-masks the shared-adapter update, unlearns the classifier, deletes the target rehearsal entry, and repairs the rest. We prove that the soft mask contracts this step's first-order interference by the protection factor, and measure end-to-end stability with WorstDrop rather than claiming exact or certified removal.
 \end{enumerate}
 
 \section{Related Work}
 
 \subsection{Continual Learning and Memory Replay}
-The continual learning paradigm seeks to accumulate knowledge across sequentially presented tasks \cite{thrun1995lifelong}. Regularization methodologies, such as Elastic Weight Consolidation (EWC) \cite{kirkpatrick2017overcoming} and Learning without Forgetting (LwF) \cite{li2017learning}, aim to anchor parameters. Experience Replay (ER) and Dark Experience Replay (DER++) \cite{buzzega2020dark} maintain an episodic memory buffer of historical samples. Recently, frameworks such as Continual Learning and Private Unlearning (CLPU) \cite{liu2022clpu} have combined DER++ with task-specific temporary networks, but they often require complex sub-model management.
+Continual learning accumulates knowledge across a stream of tasks \cite{thrun1998lifelong}. Regularization methods such as Elastic Weight Consolidation (EWC) \cite{kirkpatrick2017overcoming} and Learning without Forgetting (LwF) \cite{li2017learning} anchor parameters, while Experience Replay (ER) and Dark Experience Replay (DER++) \cite{buzzega2020dark} keep an episodic memory buffer. CLPU \cite{liu2022clpu} is the strongest isolation-based reference here: in the implementation we evaluate, each active task gets its own full network and a request is served by deleting that network. Interference is then impossible by construction, but storage grows with the number of active tasks. PALL targets the complementary case, where tasks already share one model and cannot be separated by discarding a task network.
 
 \subsection{Machine Unlearning Strategies}
-Exact unlearning frameworks, such as SISA \cite{bourtoule2021machine}, partition data streams into isolated ensemble models. Approximate unlearning techniques manipulate gradients to scrub information \cite{golatkar2020forgetting}. Boundary Unlearning approaches shift the decision boundaries of the output space, achieving rapid forgetting speeds \cite{chen2023boundary}. In CL settings, however, unconstrained gradient updates blindly destroy the feature spaces utilized by other active tasks. Saliency Unlearning (SalUn) \cite{fan2024salun} utilizes gradient-based weight saliency to restrict unlearning updates strictly to highly influential weights. Similarly, Selective Synaptic Dampening (SSD) \cite{foster2024ssd} dampens specific parameters proportionally to their Fisher-based importance.
+Retraining-based methods such as SISA \cite{bourtoule2021machine} partition the data into isolated ensemble members. Approximate methods instead edit gradients to scrub information \cite{golatkar2020forgetting}, and Boundary Unlearning shifts output decision boundaries for speed \cite{chen2023boundary}. In a continual setting, though, an unconstrained update can damage feature space that active tasks still use. Saliency Unlearning (SalUn) \cite{fan2024salun} confines updates to influential weights; Selective Synaptic Dampening (SSD) \cite{foster2024ssd} dampens parameters by Fisher-based importance.
 
 \subsection{Parameter-Efficient Fine-Tuning}
-Parameter-efficient fine-tuning (PEFT) methods, initially conceptualized in natural language processing via Adapter modules \cite{houlsby2019parameter} and LoRA \cite{hu2021lora}, limit trainable parameters by injecting low-rank bottleneck layers into frozen networks. In CL and unlearning contexts, frameworks such as BID-LoRA \cite{rachapudi2026bidlora} and UnCLe \cite{adhikari2026uncle} have demonstrated that PEFT can effectively compartmentalize task knowledge. Our proposed PALL-Adapter framework explicitly maps overlapping representations within these modules to prevent degradation.
+Parameter-efficient fine-tuning (PEFT), through adapters \cite{houlsby2019parameter} and LoRA \cite{hu2021lora}, restricts training to compact modules inserted into a frozen network. The recent BID-LoRA preprint \cite{rachapudi2026bidlora} explores a related continual-learning/unlearning combination. PALL-Adapter instead measures overlap inside a shared bottleneck and controls how that bottleneck moves at request time.
 
 \section{Methodology}
 
 \subsection{The Limitation of Unconstrained Forgetting}
-In the standard PALL framework, the unlearning process identifies task-specific parameters but fails to dynamically isolate features critical to other active tasks. Consequently, executing gradient ascent on a target task blindly overwrites overlapping decision boundaries, causing catastrophic performance drops (WorstDrop) across retained tasks. Our methodology directly addresses this by explicitly mapping and protecting the functional intersection.
+PALL identifies task-specific parameters, resets or reconstructs coordinates from stored masks, and repairs the retained tasks. What it does not do is separate shared coordinates by how sensitive the retained tasks are to them. Under heavy overlap, reset and repair can therefore disturb pathways that several active tasks lean on. We map that intersection and protect it directly.
 
 \subsection{Proposed Method 1: PALL-Modified}
-To identify critical knowledge boundaries without the full computational overhead of Fisher Information Matrices, we approximate parameter importance using absolute gradients computed over a limited episodic memory (replay buffer). Let $S_{forget}$ represent the top-$K$ subset of parameters exhibiting high gradient sensitivity ($|\nabla_w \mathcal{L}|$) to the target data $D_{forget}$. Let $S_{active}$ denote the top-$K$ union of critical parameters necessary to maintain the empirical risk bounds of all actively retained tasks. We explicitly calculate the critical shared intersection:
+Let $M_f$ be the binary subnetwork mask stored for the task requested for deletion and let $M_r$ be the union of the masks of the retained tasks. Their shared support is
 \begin{equation}
-S_{share\_crit} = S_{forget} \cap S_{active}.
+S_{share}=M_f\cap M_r.
 \end{equation}
-
-Computing $S_{forget}$ assumes momentary access, at the time of the unlearning request, to a small sample of the target task's own data in order to localize its parameter footprint via $|\nabla_w \mathcal{L}|$. In our implementation this sample is drawn from the rehearsal buffer and is purged immediately afterward, together with the task's stored exemplars, as part of the same forgetting operation. The privacy cost is therefore bounded: the to-be-forgotten data is touched only to estimate importance and is deleted in situ, leaving no retained copy of the forgotten task.
-
-Rather than optimizing a single combined objective, PALL-Modified separates \emph{forgetting} from \emph{retention repair} into two distinct stages. \textbf{(i) Forgetting (reset).} The weights that are exclusive to the target task---those in its subnetwork but outside the retained-task support, $S_{forget}\setminus S_{active}$---are reset to their initialization, erasing the task-specific pathway without any gradient step. \textbf{(ii) Retention repair.} The model is then briefly fine-tuned on the rehearsal buffer of the \emph{remaining} tasks to restore knowledge transfer, minimizing a combined dark-experience-replay and cross-entropy objective with an $\ell_2$ anchor applied \emph{only} on the critical shared region:
+PALL-Modified ranks coordinates inside $S_{share}$ by retained-buffer gradient magnitude (or, in an ablation, gradient-conflict energy) and selects a critical subset $S_{share\_crit}$. The target rehearsal entry is used only during request-time diagnostics and is then removed from the in-process rehearsal memory; the method does not claim deletion of raw data, checkpoints, or other external copies. The subsequent reset is inherited from PALL and is branch-dependent because retained task-specific backups and historical fine-tuning masks determine which base coordinates must be preserved or reconstructed. Retention repair is then restricted to the nominal shared repair mask and minimizes
 \begin{equation}
 \label{eq:repair}
 \begin{aligned}
@@ -99,41 +91,35 @@ Rather than optimizing a single combined objective, PALL-Modified separates \emp
 &+ \lambda \sum_{w \in S_{share\_crit}} \big\| w - w_{anchor} \big\|^2 .
 \end{aligned}
 \end{equation}
-Here $\mathcal{L}_{DER}$ matches the stored logits and $\mathcal{L}_{CE}$ the labels of the retained tasks, while the final term holds the shared critical weights near an anchor $w_{anchor}$. Our default anchor is the pre-forget value $w_{old}$; because $w_{old}$ itself may carry information about the task being removed, we additionally study a data-independent reinitialization anchor $w_{reinit}$ in the experiments. The two stages thus play complementary roles: the reset performs the erasure, and the anchored repair protects the shared functional space, yielding the highest retention accuracy albeit operating over the entire network capacity.
+Here $\mathcal{L}_{DER}$ matches stored logits, $\mathcal{L}_{CE}$ uses retained labels, and the final term limits drift on the selected critical shared coordinates. The default anchor is the pre-request value $w_{old}$; we separately evaluate a fresh reinitialization anchor $w_{reinit}$ because $w_{old}$ can itself encode information about the forgotten task.
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.95\columnwidth]{Figures/architecture.pdf}
-    \caption{The proposed PALL-Adapter architecture. The backbone is strictly frozen ($\theta_{base}$, blue), while representations are routed sequentially through the shared bottleneck adapter ($\phi_{shared}$, orange) and the task-specific adapter ($\phi_{t}$, green) before the task classifier head. Only the adapters and the head are trainable.}
-    \label{fig:architecture}
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{Figures/architecture_ai.pdf}
+\caption{Overview of PALL-Adapter. (a) A frozen backbone feeds shared and task-specific residual adapters. (b) A request resets the target modules, applies the soft-masked shared update and classifier ascent, deletes the target rehearsal entry, and repairs retained tasks.}
+\label{fig:architecture}
 \end{figure}
 
 \subsection{Proposed Method 2: PALL-Adapter}
-To radically reduce the computational overhead and isolate task interference, we freeze the deep feature extraction layers of the primary architecture ($\theta_{base}$). The trainable domain $\Phi$ is constrained solely to:
+To cut the update footprint and keep tasks from interfering, we freeze the feature-extraction layers ($\theta_{base}$). Only three groups stay trainable:
 \begin{enumerate}
     \item \textbf{Shared bottleneck adapter} ($\phi_{shared}$),
     \item \textbf{Task-specific adapters} ($\phi_{t}$),
     \item \textbf{Task-specific classifier heads.}
 \end{enumerate}
 
-For an input activation tensor $x$, the forward propagation logic through a residual block utilizing ReLU \cite{nair2010relu} is formulated as:
+For an input activation $x$, a residual block with ReLU \cite{nair2010relu} computes
 \begin{align}
 z_{shared} &= x + \mathbf{W}_{up}^{(s)} \cdot \mathrm{ReLU}\left(\mathbf{W}_{down}^{(s)} \cdot x\right), \\
 z_{final} &= z_{shared} + \mathbf{W}_{up}^{(t)} \cdot \mathrm{ReLU}\left(\mathbf{W}_{down}^{(t)} \cdot z_{shared}\right).
 \end{align}
 
-\subsection{Three-Phase Soft-Masked Unlearning}
-The unlearning execution in the PALL-Adapter framework operates through three distinct phases, explicitly incorporating classifier management.
-
-\paragraph{Phase 1: Domain-specific eradication.} Without requiring backpropagation, the task-specific module for the forgotten task ($\phi_{t_{forget}}$) is instantly destroyed. We reinitialize $\mathbf{W}_{down}$ via the Kaiming distribution \cite{he2015delving} and zero out $\mathbf{W}_{up}$, eradicating isolated knowledge pathways. Additionally, the classifier head corresponding to the targeted task is reinitialized to ensure no residual decision boundaries persist.
-
-\paragraph{Phase 2: Shared overlap quantification.} Utilizing a limited replay buffer, we compute absolute gradients ($|\nabla \mathcal{L}|$) strictly over the parameters of the shared adapter $\phi_{shared}$. This explicitly yields the critical shared overlap $S_{share\_crit}$ between the target task and retained tasks.
-
-\paragraph{Phase 3: Soft-masked optimization.} We iteratively optimize $\phi_{shared}$ using cross-entropy \cite{goodfellow2016deep} to force the target outputs toward a uniform distribution:
+\subsection{Ordered Soft-Masked Unlearning}
+The implementation uses a strict order so that every forget-dependent gradient is estimated while the target rehearsal entry is still available. First, absolute shared-adapter gradients on the target and retained buffers define top-ratio sets $S_{forget}$ and $S_{active}$ and their intersection $S_{share\_crit}$. A top-ranked subset $H\subseteq S_{share\_crit}$ is hard protected. Second, the target task adapter is reinitialized (Kaiming down-projection and zero up-projection) and its classifier slice is reset. The shared adapter is then optimized toward a uniform target:
 \begin{equation}
 \mathcal{L}_{unlearn} = \mathbb{E}_{(x,y) \in D_{forget}} \Big[ -\sum_{c} \tfrac{1}{|C|} \log p(y=c\,|\,x; \Phi) \Big].
 \end{equation}
-Crucially, gradient updates are dynamically constrained using a \emph{soft-scaling} multiplier $m_{soft}$:
+Each coordinate's update is then scaled by a \emph{soft-scaling} multiplier $m_{soft}$:
 \begin{equation}
 \label{eq:softupdate}
 w^{(i+1)} = w^{(i)} - \eta \cdot m_{soft}(w) \cdot \nabla_{w} \mathcal{L}_{unlearn},
@@ -142,261 +128,144 @@ where $m_{soft}(w)$ is defined as:
 \begin{equation}
 \label{eq:softmask}
 m_{soft}(w) = \begin{cases}
-(1.0 - p), & \text{if } w \in S_{share\_crit} \\
-1.0, & \text{if } w \in S_{forget} \setminus S_{active} \\
+0, & \text{if } w \in H, \\
+(1-p), & \text{if } w \in S_{share\_crit}\setminus H, \\
+1, & \text{if } w \in S_{forget}\setminus S_{active}, \\
 0.0, & \text{otherwise,}
 \end{cases}
 \end{equation}
-with $p \triangleq \texttt{protect\_strength} \in [0,1]$. This mechanism acts as a robust friction barrier, severely dampening updates in the critical overlap region while permitting surgical eradication of exclusively targeted weights. Algorithm~\ref{alg:unlearning} summarizes the procedure.
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.95\columnwidth]{Figures/overlap_concept.pdf}
-    \caption{Conceptual representation of parameter overlap ($S_{share\_crit}$). The soft-scaling mechanism acts as a shield over this specific intersection.}
-    \label{fig:overlap_concept}
-\end{figure}
+with $p\in[0,1]$. Third, the target classifier receives a gradient-ascent update computed from its pre-reset forget gradient, the target rehearsal entry is deleted, and all trainable adapter and classifier parameters are briefly repaired on retained-task buffers. Thus the soft mask governs the uniform-target shared-adapter subphase; it is not a permanent protection mask over the entire request.
 
 \begin{algorithm}[tb]
-\caption{Three-Phase Soft-Masked Unlearning}
+\caption{Ordered PALL-Adapter Forgetting}
 \label{alg:unlearning}
 \textbf{Input}: target task $t_{forget}$, active tasks $\mathcal{T}_{active}$, shared adapter $\phi_{shared}$, task adapter $\phi_{t_{forget}}$, classifier head $C_{t_{forget}}$\\
 \textbf{Parameter}: $\alpha_f = 0.3$, $\alpha_p = 0.2$, learning rate $\eta$, protection strength $p$
 \begin{algorithmic}[1]
-\STATE \textbf{Phase 1:} reinit $\phi_{t_{forget}}.\mathbf{W}_{down} \sim \mathcal{U}(\text{Kaiming})$; $\phi_{t_{forget}}.\mathbf{W}_{up} \leftarrow \mathbf{0}$; reinit $C_{t_{forget}}$
-\STATE \textbf{Phase 2:} $S_{forget} \leftarrow$ top-$\alpha_f$ coords of $|\nabla \mathcal{L}_{forget}|$; $S_{active} \leftarrow$ top-$\alpha_p$ coords of $|\nabla \mathcal{L}_{active}|$ (replay buffer)
+\STATE Compute forget and retained shared-adapter gradients from their rehearsal entries
+\STATE $S_{forget} \leftarrow$ top-$\alpha_f$ coords of $|\nabla \mathcal{L}_{forget}|$; $S_{active} \leftarrow$ top-$\alpha_p$ coords of $|\nabla \mathcal{L}_{active}|$
 \STATE $S_{share\_crit} \leftarrow S_{forget} \cap S_{active}$; \quad $S_{forget\_only} \leftarrow S_{forget} \setminus S_{active}$
+\STATE Select hard-protected $H\subseteq S_{share\_crit}$; reset $\phi_{t_{forget}}$ and classifier slice $C_{t_{forget}}$
 \FOR{iteration $= 1, \dots, N_{iters}$}
     \STATE sample batch $(x, y) \in D_{t_{forget}}$; compute $\mathcal{L}_{unlearn}$ against the uniform target
     \STATE $\nabla \phi_{shared} \leftarrow \mathrm{backward}(\mathcal{L}_{unlearn})$
     \FORALL{$w \in \phi_{shared}$}
-        \STATE $m_{soft} \leftarrow (1-p)$ if $w \in S_{share\_crit}$; $1$ if $w \in S_{forget\_only}$; else $0$
+        \STATE $m_{soft} \leftarrow 0$ on $H$; $(1-p)$ on $S_{share\_crit}\setminus H$; $1$ on $S_{forget\_only}$; else $0$
         \STATE $w \leftarrow w - \eta \cdot m_{soft} \cdot \nabla_{w}$
     \ENDFOR
 \ENDFOR
+\STATE Apply classifier ascent from the cached forget gradient; delete the target rehearsal entry
+\STATE Repair retained tasks for $N_{repair}$ steps on their rehearsal entries
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Theoretical Guarantee: Soft Scaling Bounds the WorstDrop}
+\subsection{Mechanism Scope}
+The multiplier in Eq.~\eqref{eq:softmask} directly scales the shared-adapter displacement during the uniform-target subphase, but it does not by itself bound end-to-end retained accuracy: the target adapter reset, classifier ascent, and unmasked retained repair also affect the final model. We therefore treat $(1-p)$ as an implementation-level damping factor and evaluate its practical effect through measured WorstDrop. Because the final shared adapter remains a function of target-buffer gradients, neither method is an exact-unlearning or privacy-certified mechanism.
+
+\subsection{Contraction of the Shared-Adapter Subphase}
 \label{subsec:theory}
+We now formalize the single component the soft mask directly controls. Consider the uniform-target subphase (Algorithm~\ref{alg:unlearning}, lines~5--10), during which $\theta_{base}$ and every task adapter are frozen and only $\phi_{shared}\in\mathbb{R}^d$ is updated by Eq.~\eqref{eq:softupdate} for $N$ steps. Let $\phi^{(0)}$ be its pre-subphase value and $\Delta_t^{\mathrm{sub}}\triangleq R_t(\phi^{(N)})-R_t(\phi^{(0)})$ the change this subphase \emph{alone} induces in a retained task's risk $R_t$; the reset, classifier ascent, and unmasked repair are separate, which is why this is not an end-to-end bound (cf.\ Mechanism Scope). Partition the coordinates into $\mathcal{F}^{\!\circ}=S_{forget}\setminus S_{active}$ ($m_i{=}1$), $\mathcal{S}=S_{share\_crit}\setminus H$ ($m_i{=}1{-}p$), and the frozen remainder ($m_i{=}0$). We assume (i) each $R_t$ is $\beta$-smooth; (ii) $|g_i^{(k)}|\le G$, so $\Gamma_i\triangleq|\sum_{k}g_i^{(k)}|\le NG$; and (iii) $|\partial_i R_t(\phi^{(0)})|\le\epsilon$ on $\mathcal{F}^{\!\circ}$---which Phase~2 enforces, since $S_{active}$ is the top-$K$ retained-gradient support.
 
-We now establish that the soft-scaling multiplier of Eq.~\eqref{eq:softmask} is not a heuristic damping term but a quantity that provably \emph{contracts} the catastrophic-forgetting error (the WorstDrop) induced on the active tasks, relative to standard unconstrained unlearning. Throughout this analysis the deep backbone $\theta_{base}$ and the task-specific adapters $\{\phi_{t}\}$ are frozen during the unlearning request; the only parameters that are mutated, and hence the only parameters capable of inducing cross-task interference, are the shared bottleneck adapter weights $\phi_{shared}\in\mathbb{R}^{d}$. We therefore restrict the entire analysis to $\phi \triangleq \phi_{shared}$.
-
-Let $\phi^{(0)}$ denote the shared-adapter parameters immediately before Phase~3 and let $\phi^{(N)}$ denote the parameters after $N$ soft-masked optimization steps. For each coordinate $i\in\{1,\dots,d\}$ the update of Eq.~\eqref{eq:softupdate} reads
-\begin{equation}
-\label{eq:coord-update}
-\phi^{(k+1)}_{i} = \phi^{(k)}_{i} - \eta\, m_{i}\, g^{(k)}_{i},
-\quad
-g^{(k)}_{i}\triangleq\partial_{i}\,\mathcal{L}_{unlearn}\!\left(\phi^{(k)}\right),
-\end{equation}
-where $m_{i}\in[0,1]$ is the per-coordinate soft-scaling multiplier, held fixed across the $N$ steps because the masks $S_{forget},S_{active}$ are computed once in Phase~2. Following the implementation, the index set $\{1,\dots,d\}$ is partitioned into four disjoint regions:
-\begin{equation}
-\label{eq:partition}
-\begin{aligned}
-\mathcal{F}^{\!\circ} &\triangleq S_{forget}\setminus S_{active}
-   && (m_i = 1), \\
-\mathcal{S} &\triangleq \big(S_{share\_crit}\big)\setminus H
-   && (m_i = 1-p), \\
-H &\subseteq S_{share\_crit}
-   && (m_i = 0,\ \text{hard-protected}), \\
-\mathcal{N} &\triangleq \{1,\dots,d\}\setminus S_{forget}
-   && (m_i = 0),
-\end{aligned}
-\end{equation}
-where $S_{share\_crit}=S_{forget}\cap S_{active}$ and $H$ is the optional hard-protected subset selected inside the critical overlap (with $H=\varnothing$ recovering the pure three-case mask of Eq.~\eqref{eq:softmask}).
-
-\begin{definition}[Retained risk and parameter drop]
-\label{def:drop}
-For an active task $t\in\mathcal{T}_{active}$ let $R_{t}(\phi)\triangleq\mathbb{E}_{(x,y)\sim D_{t}}\big[\ell\big(f(x;\phi),y\big)\big]$ be its expected risk as a function of the shared adapter. The \emph{drop} inflicted on task $t$ by an unlearning trajectory $\phi^{(0)}\!\to\!\phi^{(N)}$ is $\Delta_{t}\triangleq R_{t}(\phi^{(N)})-R_{t}(\phi^{(0)})$, and the worst-case interference is $\mathrm{WorstDrop}\triangleq\max_{t\in\mathcal{T}_{active}}\Delta_{t}$.
-\end{definition}
-
-\noindent
-The empirical metric of Eq.~\eqref{eq:worstdrop} reports an \emph{accuracy} drop; Assumption~\ref{ass:lipschitz-acc} below makes the standard bridge to the risk drop of Definition~\ref{def:drop} explicit, so that a bound on the risk drop transfers to the reported quantity up to a fixed constant.
-
-\begin{assumption}[Smoothness of retained risks]
-\label{ass:smooth}
-Each retained risk $R_{t}$ is $\beta$-smooth on the trajectory's convex hull, i.e.\ $\big\|\nabla R_{t}(\phi)-\nabla R_{t}(\phi')\big\|_{2}\le\beta\,\|\phi-\phi'\|_{2}$.
-\end{assumption}
-
-\begin{assumption}[Bounded unlearning gradients]
-\label{ass:bounded}
-The per-coordinate unlearning gradients are uniformly bounded along the trajectory, $|g^{(k)}_{i}|\le G$ for all $i,k$, so that the total coordinate displacement obeys $\Gamma_{i}\triangleq\big|\sum_{k=0}^{N-1} g^{(k)}_{i}\big|\le NG$.
-\end{assumption}
-
-\begin{assumption}[Overlap concentration of retained sensitivity]
-\label{ass:concentration}
-The sensitivity of every retained task to the \emph{forget-exclusive} weights is uniformly small: there exists $\epsilon\ge 0$ such that $|\partial_{i} R_{t}(\phi^{(0)})|\le\epsilon$ for all $i\in\mathcal{F}^{\!\circ}=S_{forget}\setminus S_{active}$ and all $t\in\mathcal{T}_{active}$.
-\end{assumption}
-
-\begin{assumption}[Accuracy--risk Lipschitzness]
-\label{ass:lipschitz-acc}
-There is a constant $L_{a}\ge 0$ such that the per-task accuracy drop is dominated by the risk drop, $A_{t}^{before}-A_{t}^{after}\le L_{a}\,\Delta_{t}$, for every $t\in\mathcal{T}_{active}$.
-\end{assumption}
-
-\noindent
-Assumption~\ref{ass:concentration} is precisely the property that Phase~2 \emph{constructs}: $S_{active}$ is defined as the top-$K$ support of the retained-task gradient magnitude, so any coordinate that is \emph{not} in $S_{active}$ carries, by definition, a retained-task gradient below the selection threshold $\epsilon$. The analysis below is therefore self-consistent with the algorithm rather than an external regularity condition.
-
-\begin{theorem}[Soft scaling contracts the WorstDrop]
-\label{thm:worstdrop}
-Let Assumptions~\ref{ass:smooth}--\ref{ass:lipschitz-acc} hold and fix a learning rate $\eta>0$ and step count $N$. Define, for each active task $t$, the \emph{critical interference energy}
-\begin{equation}
-\label{eq:Ecrit}
-\begin{aligned}
-E^{\mathrm{crit}}_{t}&\triangleq
-\eta\!\!\sum_{i\in S_{share\_crit}}\!\!
-\big|\partial_{i}R_{t}(\phi^{(0)})\big|\,\Gamma_{i}\\
-&\le \eta\,NG\!\!\sum_{i\in S_{share\_crit}}\!\!\big|\partial_{i}R_{t}(\phi^{(0)})\big|,
-\end{aligned}
-\end{equation}
-and the residual forget-exclusive energy $C_{t}\triangleq\eta\sum_{i\in\mathcal{F}^{\!\circ}}\Gamma_{i}$. Then the soft-masked update with protection strength $p$ satisfies, for every active task $t$,
-\begin{equation}
-\label{eq:soft-bound}
-\begin{aligned}
-\Delta_{t}^{\,\mathrm{soft}}
-\le{}&
-(1-p)\,E^{\mathrm{crit}}_{t}
-+\epsilon\,C_{t}\\
-&+\tfrac{\beta}{2}\,\eta^{2}N^{2}G^{2}
-      \Big(|\mathcal{F}^{\!\circ}| + (1-p)^{2}|\mathcal{S}|\Big),
-\end{aligned}
-\end{equation}
-whereas the standard unconstrained update ($m_{i}=1$ for all $i\in S_{forget}$) satisfies
-\begin{equation}
-\label{eq:unc-bound}
-\Delta_{t}^{\,\mathrm{unc}}
-\le
-E^{\mathrm{crit}}_{t}
-+\epsilon\,C_{t}
-+\tfrac{\beta}{2}\,\eta^{2}N^{2}G^{2}\,|S_{forget}|.
-\end{equation}
-Consequently, taking the maximum over active tasks,
-\begin{equation}
-\label{eq:worstdrop-gap}
-\begin{aligned}
-\mathrm{WorstDrop}^{\,\mathrm{soft}}
-\le{}&
-\mathrm{WorstDrop}^{\,\mathrm{unc}}
--p\,\max_{t\in\mathcal{T}_{active}}E^{\mathrm{crit}}_{t}\\
-&+\mathcal{O}\!\big(\eta^{2}N^{2}G^{2}\big).
-\end{aligned}
-\end{equation}
-In particular, in the first-order (small-step) regime $\eta NG\!\to\!0$, if the worst-case interference is dominated by the critical overlap (i.e.\ $\epsilon\,C_{t}=o(E^{\mathrm{crit}}_{t})$), then
-\begin{equation}
-\label{eq:contraction}
-\mathrm{WorstDrop}^{\,\mathrm{soft}}
-\le(1-p)\,\mathrm{WorstDrop}^{\,\mathrm{unc}}
-+\mathcal{O}\!\big(\eta^{2}N^{2}G^{2}\big).
-\end{equation}
-\end{theorem}
-
-The full proof, together with the monotone-protection corollary (the first-order bound is non-increasing in $p$, and at $p=1$ the entire critical-overlap contribution is annihilated to all orders), is given in the technical appendix.
-
-\begin{remark}[Interpretation]
-\label{rem:interpretation}
-Theorem~\ref{thm:worstdrop} formalizes the geometric intuition of Figure~\ref{fig:overlap_concept}. The damage an unlearning request can inflict on a retained task decomposes into three additive sources: (i)~weights that move but do not matter to the retained task ($\mathcal{F}^{\!\circ}$, bounded by $\epsilon$); (ii)~weights that matter but are frozen ($H\cup\mathcal{N}$, contributing zero); and (iii)~weights that both move and matter---precisely the critical overlap $S_{share\_crit}$. Unconstrained unlearning pays this third cost in full, whereas the soft-scaling multiplier attenuates it by the exact factor $(1-p)$. The metric WorstDrop is thus controlled at its \emph{source}: the algorithm spends its protection budget only where forgetting and retention genuinely compete.
-\end{remark}
-
-\begin{remark}[Empirical status of the bound]
-\label{rem:empirical}
-Section \emph{Empirical Verification of the Bound} audits the first-order prediction of Eq.~\eqref{eq:soft-bound} directly against logged shared-adapter trajectories: three of the four audited per-task points satisfy the measured-drop $\le$ prediction condition, while one violates it, consistent with uncalibrated higher-order terms and the accuracy--risk constant $L_a$. The bound should therefore be read as a mechanism-level explanation whose leading term is empirically plausible, not as a certified numerical guarantee.
-\end{remark}
-
-\subsection{From Approximate Unlearning to an $(\varepsilon,\delta)$ Bound}
-\label{subsec:approx-to-ed}
-
-The guarantee above should not be read as an exact-unlearning claim. PALL-Adapter resets the task-specific adapter and the corresponding classifier head, but the shared adapter $\phi_s\equiv\phi_{shared}$ is still updated by gradients computed from the forget request. In the notation of our algorithm, the Phase~3 update uses $g_D^{(k)}\triangleq \nabla_{\phi_s}\mathcal{L}_{unlearn}(D_{forget};\phi_s^{(k)})$ and is written as
-\begin{equation}
-\label{eq:privacy-update}
-\phi_s^{(k+1)}
-=
-\phi_s^{(k)}
--\eta\big(m_{soft}\odot g_D^{(k)}\big),
-\qquad
-k=0,\ldots,N_{f}-1,
-\end{equation}
-where $m_{soft}=1-p$ on the critical overlap $S_{share\_crit}$, $m_{soft}=1$ on $S_{forget}\setminus S_{active}$, and $m_{soft}=0$ elsewhere.
-
-\begin{theorem}[No exact unlearning for the shared adapter]
-\label{thm:shared-adapter-impossibility}
-If some coordinate $i$ of $\phi_s$ has $m_{soft,i}>0$ and $\partial_i\mathcal{L}_{unlearn}(D_{forget};\phi_s)$ depends non-trivially on the forget data, then the final shared adapter $\phi_s^{(N_{f})}$ is not statistically independent of $D_{forget}$. Hence the shared-adapter component of PALL-Adapter does not satisfy exact unlearning.
+\begin{theorem}[Critical-overlap contraction]
+\label{thm:contraction}
+Let $E_t^{\mathrm{crit}}=\eta\!\sum_{i\in S_{share\_crit}}\!|\partial_i R_t(\phi^{(0)})|\,\Gamma_i$ and $C_t=\eta\!\sum_{i\in\mathcal{F}^{\!\circ}}\!\Gamma_i$. Under (i)--(iii), the soft-masked subphase satisfies
+\begin{equation*}
+\Delta_t^{\mathrm{sub}}\!\le\!(1{-}p)E_t^{\mathrm{crit}}\!+\!\epsilon C_t\!+\!\tfrac{\beta}{2}\eta^2N^2G^2\big(|\mathcal{F}^{\!\circ}|\!+\!(1{-}p)^2|\mathcal{S}|\big),
+\end{equation*}
+whereas the unconstrained update ($m_i{=}1$ on all of $S_{forget}$) replaces $(1{-}p)E_t^{\mathrm{crit}}$ by $E_t^{\mathrm{crit}}$. Thus on the critical overlap the soft mask contracts the first-order subphase interference by the factor $(1{-}p)$; as $\eta NG\to0$ the curvature term vanishes and $\Delta_t^{\mathrm{sub,soft}}\le(1{-}p)\,\Delta_t^{\mathrm{sub,unc}}+o(1)$.
 \end{theorem}
 
 \begin{proof}[Proof sketch]
-Summing \eqref{eq:privacy-update} gives $\phi_s^{(N_{f})} = \phi_s^{(0)} -\eta\sum_{k=0}^{N_{f}-1} m_{soft}\odot g_D^{(k)}$. For a fixed initialization and random seed, the right-hand side is a measurable function of $D_{forget}$. On $S_{share\_crit}$ the dependence is attenuated by $1-p$, but for $p<1$ it is not removed; on forget-exclusive coordinates the multiplier is still one. Exact distributional equivalence would therefore require reinitializing the shared adapter, zeroing every data-dependent coordinate, or adding a separate randomized certification mechanism.
+Summing Eq.~\eqref{eq:softupdate}, $\delta_i=-\eta m_i\sum_k g_i^{(k)}$, so $|\delta_i|\le\eta m_i\Gamma_i$. The descent lemma gives $\Delta_t^{\mathrm{sub}}\le\langle\nabla R_t,\delta\rangle+\tfrac{\beta}{2}\|\delta\|_2^2$; the $m_i{=}0$ coordinates vanish, $\mathcal{F}^{\!\circ}$ contributes $\le\epsilon C_t$ by~(iii), and $\mathcal{S}\subseteq S_{share\_crit}$ contributes $\le(1{-}p)E_t^{\mathrm{crit}}$. The curvature term uses $m_i^2\in\{1,(1{-}p)^2,0\}$; dropping $(1{-}p)$ recovers the unconstrained bound.
 \end{proof}
 
-This motivates an approximate, certificate-oriented view. Following certified removal and differential-privacy analyses \cite{guo2020certified,dwork2014algorithmic}, a randomized unlearning mechanism $\mathcal{M}$ would be $(\varepsilon,\delta)$-unlearning if, for neighboring inputs $D,D'$ that differ only in the forget data and for every measurable event $A$,
-\begin{equation}
-\label{eq:ed-def}
-\Pr[\mathcal{M}(D)\in A]
-\le
-e^\varepsilon \Pr[\mathcal{M}(D')\in A]+\delta.
-\end{equation}
-Assume the coordinate-wise gradient difference along the unlearning trajectory is bounded by $G$. Since the critical coordinates move with multiplier $1-p$, their accumulated sensitivity is, up to constants,
-\begin{equation}
-\label{eq:crit-sensitivity}
-\Delta_{crit}
-\lesssim
-\eta\,N_{f}\,G\,(1-p)\,|S_{share\_crit}|.
-\end{equation}
-If Gaussian noise with scale $\sigma$ is added to the released shared adapter update, the Gaussian-mechanism calculation yields the roadmap bound
-\begin{equation}
-\label{eq:epsilon-roadmap}
-\varepsilon
-=
-\mathcal{O}\!\left(
-\frac{\eta\,N_{f}\,G\,(1-p)\,|S_{share\_crit}|}{\sigma}
-\sqrt{\log(1/\delta)}
-\right).
-\end{equation}
-The constants depend on the privacy accountant, the chosen sensitivity norm, and whether noise is injected per step or only at release.
+\noindent This matches the logged trajectories: the measured subphase drop stays at or below the first-order prediction for three of four audited retained-task probes, the residual being uncalibrated curvature and accuracy--risk constants.
 
-The same design variable therefore controls both results. The soft mask provably shrinks the sensitivity of the unlearning update by the factor $(1-p)$ on the critical set, exactly the factor that appears in the WorstDrop contraction of Theorem~\ref{thm:worstdrop}. Likewise, reducing $|S_{share\_crit}|$ through sharper overlap selection lowers both the interference budget and the prospective privacy budget. This paper does not claim a certified numerical $\varepsilon$: our current experiments add no calibrated Gaussian noise, so $\sigma=0$ and the bound is vacuous. The empirical evidence is instead the reported membership-inference behavior and the empirical privacy audit, while \eqref{eq:epsilon-roadmap} specifies the path toward future certification \cite{steinke2024privacy}.
+% Declared before the setup text so the full-width primary table can occupy the
+% next available page top without leaving a half-empty column.
+\input{generated/main_standard_comparison.tex}
 
 \section{Experimental Setup}
 
-We evaluate multi-task continual unlearning over three benchmarks with fixed, pre-registered request schedules (each schedule interleaves task-training requests with forgetting requests, e.g.\ five tasks and three forgetting requests on the first benchmark):
+We evaluate task-level continual forgetting over three public benchmarks with fixed schedules that interleave task-training and forgetting requests. The benchmarks span a small coarse-grained problem, a larger fine-grained problem, and a higher-resolution 200-class problem, allowing us to test increasing task count and representation difficulty:
 \begin{itemize}
     \item \textbf{CIFAR-10} \cite{krizhevsky2009learning}: 5 sequential tasks, 2 disjoint classes per task (random-guess forgotten-task accuracy $0.5$).
     \item \textbf{CIFAR-100} \cite{krizhevsky2009learning}: 10 sequential tasks, 5 disjoint classes per task in the overlap-heavy protocol (chance $0.2$), and 10-class tasks in the standard protocol (chance $0.1$).
     \item \textbf{TinyImageNet} \cite{le2015tinyimagenet}: 20 tasks, 10 disjoint classes per task (chance $0.1$).
 \end{itemize}
-All algorithms use a ResNet-18 backbone \cite{he2016deep} trained with stochastic gradient descent \cite{robbins1951sgd} at a learning rate of $0.01$. We report three evaluation regimes. The \emph{overlap-heavy} from-scratch protocol (Table~\ref{tab:main_results}) trains $3$ epochs per task and stresses selective forgetting under high inter-task parameter sharing. The literature-comparable \emph{standard} Split-CIFAR protocol (Tables~\ref{tab:standard_cifar10} and \ref{tab:standard_cifar100}) trains $20$ epochs per task. The \emph{pretrained} regime (Table~\ref{tab:pretrained}) freezes an ImageNet-pretrained backbone and is the intended deployment setting for the PEFT methods. CIFAR results are means over three seeds and TinyImageNet over two seeds unless noted; all numbers are extracted automatically from per-run metric files, and given these seed counts we treat cross-method gaps as descriptive rather than statistically confirmed. Baselines span replay methods (ER \cite{thrun1995lifelong}, DER++ \cite{buzzega2020dark}), regularization and distillation methods (EWC \cite{kirkpatrick2017overcoming}, LwF \cite{li2017learning}), the task-isolation method CLPU \cite{liu2022clpu} (an exact-unlearning reference that stores per-task sub-models), a LoRA parameter-efficient baseline \cite{hu2021lora}, and two unlearning-specific baselines (SSD \cite{foster2024ssd}, SalUn \cite{fan2024salun}).
+Architectures follow the recorded run configurations: CIFAR-10 and the pretrained-frozen and TinyImageNet runs use ResNet-18 variants (plain, subnet, LoRA, or adapter), whereas standard and overlap-heavy CIFAR-100 use ResNet-34 variants \cite{he2016deep}. All regimes use SGD \cite{robbins1951sgd} (learning rate $0.01$, momentum $0.9$, weight decay $5\times10^{-4}$, batch size $32$) with a rehearsal budget of $500$; standard Split-CIFAR-100 LoRA uses $10^{-3}$ because $10^{-2}$ diverges. The \emph{standard} protocol (Table~\ref{tab:main_standard}) trains $20$ epochs per task, the \emph{overlap-heavy} from-scratch protocol (Table~\ref{tab:pall_overlap_heavy}) trains $3$, and the \emph{pretrained} regime (Table~\ref{tab:pretrained}) freezes an ImageNet backbone as the intended PEFT setting. Per-method hyperparameters are: PALL-Adapter bottleneck $16$, $\alpha_f{=}0.3$, $\alpha_p{=}0.2$, $10$ uniform-target and $50$ repair steps; PALL-Modified protection ratio $0.2$, $\lambda{=}1$; LoRA rank $8$; subnet sparsity $0.8$. Python, NumPy, and PyTorch RNGs are seeded, but deterministic kernels were not enabled. CIFAR uses seeds $\{0,1,2\}$ and TinyImageNet $\{0,1\}$ (MIA and anchor studies $\{0,1\}$); with these counts, cross-method gaps are descriptive rather than statistically confirmed. Baselines include ER, DER++, EWC, LwF, CLPU, LoRA, SSD, and SalUn \cite{thrun1998lifelong,buzzega2020dark,kirkpatrick2017overcoming,li2017learning,liu2022clpu,hu2021lora,foster2024ssd,fan2024salun}.
 
-We report the final average accuracy over retained tasks $A_{final}$ ($\uparrow$), the standard average forgetting $F_{avg}$ ($\downarrow$), the retained-average drop at the forgetting step Fu ($\approx 0$ desired), the worst per-task retained accuracy drop
+We report the final average accuracy over retained tasks $A_{\mathrm{final}}$ ($\uparrow$), the standard average forgetting $F_{\mathrm{avg}}$ ($\downarrow$), the retained-average drop at the forgetting step Fu ($\approx 0$ desired), the worst per-task retained accuracy drop
 \begin{equation}
 \label{eq:worstdrop}
 \mathrm{WorstDrop} = \max_{t \in \mathcal{T}_{active}} \left( A_{t}^{before} - A_{t}^{after} \right)
 \end{equation}
-($\downarrow$), the post-forget accuracy on the forgotten task Au (ideal forgetting reaches the random-guess level), and the updated parameter ratio $R_{updated} = N_{updated}/N_{total}$ ($\downarrow$).
-
-\begin{table*}[t]
-\centering
-\small
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{@{}llcccccc@{}}
-\toprule
-\textbf{Dataset} & \textbf{Method} & \textbf{$A_{final}$ ($\uparrow$)} & \textbf{$F_{avg}$ ($\downarrow$)} & \textbf{Fu} & \textbf{WorstDrop ($\downarrow$)} & \textbf{Au} & \textbf{$R_{upd}$ ($\downarrow$)} \\ \midrule
-\multirow{3}{*}{\textbf{CIFAR-10}}
-& PALL-Original & 0.9087${\pm}$0.0266 & 0.2684${\pm}$0.0301 & 0.0031${\pm}$0.0060 & 0.0040${\pm}$0.0069 & 0.5000${\pm}$0.0000 & 0.0240 \\
-& \textbf{PALL-Modified (Ours)} & \textbf{0.9152${\pm}$0.0291} & 0.2662${\pm}$0.0330 & \textbf{0.0003${\pm}$0.0029} & \textbf{0.0008${\pm}$0.0033} & 0.5000${\pm}$0.0000 & 0.0240 \\
-& \textbf{PALL-Adapter (Ours)} & 0.7829${\pm}$0.0610 & \textbf{0.1383${\pm}$0.0116} & 0.0018${\pm}$0.0022 & 0.0107${\pm}$0.0101 & 0.4802${\pm}$0.0816 & \textbf{0.0030} \\ \midrule
-\multirow{3}{*}{\textbf{CIFAR-100}}
-& PALL-Original & 0.5013${\pm}$0.0107 & 0.0897${\pm}$0.0252 & 0.0019${\pm}$0.0113 & 0.0187${\pm}$0.0095 & 0.2033${\pm}$0.0058 & 0.0210 \\
-& \textbf{PALL-Modified (Ours)} & \textbf{0.5093${\pm}$0.0148} & 0.0894${\pm}$0.0256 & \textbf{$-$0.0045${\pm}$0.0045} & \textbf{0.0047${\pm}$0.0050} & 0.2033${\pm}$0.0058 & 0.0210 \\
-& \textbf{PALL-Adapter (Ours)} & 0.3284${\pm}$0.0257 & \textbf{0.0728${\pm}$0.0027} & 0.0132${\pm}$0.0189 & 0.0427${\pm}$0.0333 & 0.2147${\pm}$0.0261 & \textbf{0.0055} \\ \midrule
-\multirow{3}{*}{\textbf{TinyImageNet}}
-& PALL-Original & 0.3361${\pm}$0.0141 & 0.1949${\pm}$0.0147 & 0.0534${\pm}$0.0103 & 0.0940${\pm}$0.0028 & 0.0960${\pm}$0.0113 & 0.0960 \\
-& \textbf{PALL-Modified (Ours)} & \textbf{0.4566${\pm}$0.0054} & 0.0869${\pm}$0.0071 & 0.0157${\pm}$0.0091 & 0.0600${\pm}$0.0368 & 0.0960${\pm}$0.0057 & 0.0960 \\
-& \textbf{PALL-Adapter (Ours)} & 0.3256${\pm}$0.0064 & \textbf{0.0758${\pm}$0.0017} & \textbf{$-$0.0057${\pm}$0.0028} & \textbf{0.0080${\pm}$0.0000} & \textbf{0.0800${\pm}$0.0311} & \textbf{0.0292} \\ \bottomrule
-\end{tabular}
-\caption{Overlap-heavy from-scratch evaluation of the PALL methods (3 epochs/task). CIFAR rows are means${\pm}$std over three seeds; TinyImageNet rows over two seeds. All rows use identical fixed request schedules, so every method faces the same training and forgetting sequence.}
-\label{tab:main_results}
-\end{table*}
+($\downarrow$), the post-forget accuracy on the forgotten task Au (ideal forgetting reaches the random-guess level), and $R_{\mathrm{upd}}$: the nominal fraction of total model parameters included in the retained-repair trainable scope ($\downarrow$). This logged scope is an efficiency proxy; it is not a count of every coordinate whose value changes during reset, classifier unlearning, and repair.
 
 \section{Experimental Results and Analysis}
 
-\subsection{Accuracy vs.\ Forgetting Stability Trade-Off}
-As shown in Table~\ref{tab:main_results}, \textbf{PALL-Modified} attains the highest retention accuracy among the three PALL variants on every benchmark ($0.9152$ vs.\ $0.9087$ on CIFAR-10; $0.5093$ vs.\ $0.5013$ on CIFAR-100; $0.4566$ vs.\ $0.3361$ on TinyImageNet) while simultaneously lowering the side damage: WorstDrop shrinks from $0.0040$ to $0.0008$ on CIFAR-10 and from $0.0187$ to $0.0047$ on CIFAR-100 relative to PALL-Original. \textbf{PALL-Adapter} plays a complementary role: it updates an order of magnitude fewer parameters and keeps Au at or below the chance level everywhere, at the cost of retention accuracy when trained from scratch. On TinyImageNet it is the most stable method of all, with WorstDrop $0.0080$ against $0.0940$ for PALL-Original---a direct instance of the contraction predicted by Theorem~\ref{thm:worstdrop}. Given three (two) seeds, we present these gaps as consistent descriptive trends rather than statistically confirmed rankings; the adapter's CIFAR-10 spread ($\pm 0.0610$) in particular precludes strong claims. Figure~\ref{fig:worstdrop_bars} visualizes the WorstDrop comparison across datasets and regimes.
+\subsection{Matched Standard Split-CIFAR Comparison}
+\label{subsec:standard-protocol}
+Table~\ref{tab:main_standard} is the primary comparison. It uses 20 epochs per task, three seeds, and the same standard Split-CIFAR request schedule for all eleven methods. SSD and SalUn come from their matched-protocol aggregates; the separate single-seed SSD tuning runs are not used.
+
+CLPU is the strongest row overall, and we do not claim to outperform it. Its result follows directly from task isolation: the evaluated implementation stores one full network per active task, routes each task through its own network, and forgets by deleting that entry. The measured sub-millisecond $T_f$ therefore times a dictionary deletion, not the training or memory cost of maintaining several full networks. CLPU is attractive when that isolation is operationally acceptable; it is not a shared-model unlearning solution.
+
+Among the shared-model methods, PALL-Modified holds $A_{\mathrm{final}}$ within half a point of CLPU ($0.9555$ vs.\ $0.9604$ on CIFAR-10; $0.7346$ vs.\ $0.7391$ on CIFAR-100), puts $A_u$ at chance ($0.5000$ and $0.0903$), and keeps WorstDrop at $0.0035$ and $0.0010$. That combination is the empirical case for the method: it comes close to the isolation reference without giving every task its own network. The remaining columns are just as telling. EWC and LwF post zero WorstDrop on CIFAR-10, but their $A_u$ sits at $0.9418$ and $0.9582$, so they preserve the task rather than forget it. SSD leaves $A_u=0.8030$ on CIFAR-10, and both SSD and SalUn stay well above the $0.1$ target on CIFAR-100. With three seeds these gaps are descriptive, not statistically confirmed.
+
+The two daggered PEFT rows are diagnostics, not capacity-matched competitors. Under this from-scratch protocol LoRA and PALL-Adapter both sit on a randomly initialized frozen ResNet and train only small modules and the classifier. Their CIFAR-100 accuracies are nearly the same ($0.2686$ and $0.2643$) despite quite different forgetting mechanisms, and both recover once the backbone is pretrained (Table~\ref{tab:pretrained}), so the bottleneck is the representation rather than the forgetting step. We therefore evaluate PALL-Adapter in its intended pretrained-frozen setting next.
+
+\subsection{The Intended Pretrained-Frozen PEFT Regime}
+\label{subsec:pretrained}
+Table~\ref{tab:pretrained} holds the PEFT premise fixed by giving LoRA and PALL-Adapter the same frozen ImageNet-pretrained ResNet-18. PALL-Adapter reaches $0.9838$ on CIFAR-10 with a measured WorstDrop of zero, $0.8267$ on CIFAR-100, and $0.9069$ on TinyImageNet with WorstDrop $0.0120$. Its mean accuracy is higher than LoRA's on all three datasets, though the CIFAR-10 gap is small next to the across-seed spread, and its forgotten-task accuracy is not uniformly closer to chance.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{1.2pt}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Dataset} & \textbf{Method} & \textbf{$A_{\mathrm{final}}$} & \textbf{W.Drop} & \textbf{Au} \\ \midrule
+\multirow{2}{*}{C10} & LoRA & 0.9836${\pm}$.0160 & 0.0003${\pm}$.0006 & 0.5222${\pm}$.0974 \\
+ & Adapter & \textbf{0.9838${\pm}$.0163} & \textbf{0.0000${\pm}$.0000} & 0.5207${\pm}$.0991 \\ \midrule
+\multirow{2}{*}{C100} & LoRA & 0.8190${\pm}$.0125 & 0.0227${\pm}$.0201 & 0.1587${\pm}$.0635 \\
+ & Adapter & \textbf{0.8267${\pm}$.0017} & \textbf{0.0187${\pm}$.0133} & 0.1887${\pm}$.1018 \\ \midrule
+\multirow{2}{*}{Tiny-IN} & LoRA & 0.8992${\pm}$.0063 & 0.0210${\pm}$.0071 & 0.0980${\pm}$.0085 \\
+ & Adapter & \textbf{0.9069${\pm}$.0045} & \textbf{0.0120${\pm}$.0057} & 0.1150${\pm}$.0240 \\ \bottomrule
+\end{tabular}
+\caption{Pretrained frozen-backbone regime, the intended PEFT deployment setting (C10/C100/Tiny-IN denote CIFAR-10/CIFAR-100/TinyImageNet). CIFAR rows use three seeds and TinyImageNet two. Chance-level Au is $0.5$ / $0.2$ / $0.1$, respectively. Bold marks the better of the two methods for $A_{\mathrm{final}}$ and WorstDrop only; Au is interpreted by distance to chance rather than by a monotone ranking.}
+\label{tab:pretrained}
+\end{table}
+
+\subsection{PALL Variants under the Overlap-Heavy Protocol}
+\label{subsec:pall-overlap-heavy}
+This separate from-scratch protocol uses three epochs per task and compares only the three PALL variants; it does not share the standard protocol's schedule or regime.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Method} & \textbf{$A_{\mathrm{final}}$} & \textbf{W.Drop} & \textbf{Au} \\ \midrule
+\multicolumn{4}{@{}l}{\textit{CIFAR-10}} \\
+PALL-Original & .9087${\pm}$.0266 & .0040${\pm}$.0069 & .5000${\pm}$.0000 \\
+\textbf{PALL-Modified} & .9152${\pm}$.0291 & .0008${\pm}$.0033 & .5000${\pm}$.0000 \\
+\textbf{PALL-Adapter} & .7829${\pm}$.0610 & .0107${\pm}$.0101 & .4802${\pm}$.0816 \\ \addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{CIFAR-100}} \\
+PALL-Original & .5013${\pm}$.0107 & .0187${\pm}$.0095 & .2033${\pm}$.0058 \\
+\textbf{PALL-Modified} & .5093${\pm}$.0148 & .0047${\pm}$.0050 & .2033${\pm}$.0058 \\
+\textbf{PALL-Adapter} & .3284${\pm}$.0257 & .0427${\pm}$.0333 & .2147${\pm}$.0261 \\ \addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{TinyImageNet}} \\
+PALL-Original & .3361${\pm}$.0141 & .0940${\pm}$.0028 & .0960${\pm}$.0113 \\
+\textbf{PALL-Modified} & .4566${\pm}$.0054 & .0600${\pm}$.0368 & .0960${\pm}$.0057 \\
+\textbf{PALL-Adapter} & .3256${\pm}$.0064 & .0080${\pm}$.0000 & .0800${\pm}$.0311 \\ \bottomrule
+\end{tabular}
+% Provenance: CIFAR rows use cifar10_main/cifar100_main; TinyImageNet rows use the matched tiny_e3_{original,modified,adapter}_v1 tags.
+\caption{PALL variants in the separate overlap-heavy from-scratch regime (3 epochs/task). CIFAR rows use three seeds and TinyImageNet two. The repair-scope ratios and remaining metrics are discussed in the text.}
+\label{tab:pall_overlap_heavy}
+\end{table}
+
+As shown in Table~\ref{tab:pall_overlap_heavy}, \textbf{PALL-Modified} attains the highest retention accuracy among the three PALL variants on every benchmark ($0.9152$ vs.\ $0.9087$ on CIFAR-10; $0.5093$ vs.\ $0.5013$ on CIFAR-100; $0.4566$ vs.\ $0.3361$ on TinyImageNet) while lowering WorstDrop from $0.0040$ to $0.0008$ on CIFAR-10 and from $0.0187$ to $0.0047$ on CIFAR-100 relative to PALL-Original. \textbf{PALL-Adapter} trades in the other direction: a much smaller repair scope and an Au at or below chance in these runs, paid for with retention accuracy when training starts from scratch. On TinyImageNet its measured WorstDrop is $0.0080$, against $0.0940$ for PALL-Original. Given three (two) seeds, these are descriptive trends rather than confirmed rankings; the adapter's CIFAR-10 spread ($\pm 0.0610$) precludes strong claims (Figure~\ref{fig:worstdrop_bars}).
 
 \begin{figure}[t]
 \centering
@@ -407,253 +276,67 @@ As shown in Table~\ref{tab:main_results}, \textbf{PALL-Modified} attains the hig
 
 \subsection{Parameter Efficiency}
 \label{subsec:efficiency}
-By quarantining weight updates strictly to the bottleneck modules, PALL-Adapter sharply reduces the updated-parameter ratio in the same from-scratch regime as the full-network baselines: from $0.0240$ to $0.0030$ on CIFAR-10 (an $87.5\%$ reduction), from $0.0210$ to $0.0055$ on CIFAR-100 (${\sim}74\%$), and from $0.0960$ to $0.0292$ on TinyImageNet (${\sim}70\%$). This matters for systems facing frequent deletion requests, where the cost of applying, versioning, and auditing each modification scales with its footprint. Figure~\ref{fig:tradeoff} shows the joint picture: the adapter occupies the low-update region of the update-ratio/WorstDrop plane while keeping the worst drop small.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.95\columnwidth]{Figures/aaai_tradeoff.pdf}
-\caption{Updated parameter ratio vs.\ WorstDrop for the nine from-scratch runs of Table~\ref{tab:main_results}. The desirable region is the lower left; PALL-Adapter combines the smallest update footprint with a bounded worst drop.}
-\label{fig:tradeoff}
-\end{figure}
-
-\subsection{Standard Split-CIFAR Protocol}
-\label{subsec:standard-protocol}
-The standard protocol (20 epochs per task, three seeds, identical schedules for all eleven methods) makes our numbers directly comparable to the continual-learning and unlearning literature. SSD and SalUn are run under this same partition, epoch budget, and evaluation protocol.\footnote{LoRA on standard Split-CIFAR-100 uses a learning rate of $10^{-3}$ (all other methods and datasets use $10^{-2}$). At $10^{-2}$ the LoRA baseline diverges to NaN over the 20-epoch schedule on the frozen backbone, collapsing to chance; $10^{-3}$ trains stably. This affects only the LoRA cells.}
-
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{1.5pt}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-\textbf{Method} & \textbf{$A_{final}$} & \textbf{$F_{avg}$} & \textbf{W.Drop} & \textbf{Au} & \textbf{$T_f$ (s)} \\ \midrule
-CLPU & 0.960${\pm}$.019 & 0.295 & 0.000 & 0.521 & 0.00 \\
-DER++ & 0.919${\pm}$.036 & 0.270 & 0.004 & 0.523 & 2.32 \\
-ER & 0.905${\pm}$.040 & 0.306 & 0.012 & 0.449 & 2.06 \\
-EWC & 0.844${\pm}$.072 & 0.296 & 0.000 & 0.942 & 0.00 \\
-LoRA & 0.786${\pm}$.081 & 0.169 & 0.004 & 0.500 & 3.27 \\
-LwF & 0.941${\pm}$.019 & 0.087 & 0.000 & 0.958 & 0.00 \\
-SalUn & 0.903${\pm}$.011 & 0.308 & 0.010 & 0.545 & 2.17 \\
-SSD & 0.901${\pm}$.058 & 0.224 & 0.003 & 0.803 & 0.23 \\
-Adapter (Ours) & 0.782${\pm}$.075 & 0.170 & 0.008 & 0.493 & 3.51 \\
-Modified (Ours) & 0.956${\pm}$.015 & 0.296 & 0.004 & 0.500 & 2.79 \\
-PALL-Original & 0.951${\pm}$.012 & 0.298 & 0.007 & 0.500 & 2.13 \\ \bottomrule
-\end{tabular}
-\caption{Standard Split-CIFAR-10 (20 epochs/task), means over three seeds ($\pm$ std for $A_{final}$). Random-guess Au $=0.5$. $T_f$ is wall-clock forget time.}
-\label{tab:standard_cifar10}
-\end{table}
-
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{1.5pt}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-\textbf{Method} & \textbf{$A_{final}$} & \textbf{$F_{avg}$} & \textbf{W.Drop} & \textbf{Au} & \textbf{$T_f$ (s)} \\ \midrule
-CLPU & 0.739${\pm}$.008 & 0.194 & 0.000 & 0.102 & 0.00 \\
-DER++ & 0.672${\pm}$.027 & 0.257 & 0.036 & 0.230 & 10.72 \\
-ER & 0.606${\pm}$.041 & 0.273 & 0.074 & 0.355 & 6.20 \\
-EWC & 0.469${\pm}$.042 & 0.400 & 0.000 & 0.449 & 0.00 \\
-LoRA & 0.269${\pm}$.006 & 0.060 & 0.017 & 0.110 & 7.04 \\
-LwF & 0.694${\pm}$.039 & 0.144 & 0.000 & 0.774 & 0.00 \\
-SalUn & 0.619${\pm}$.045 & 0.268 & 0.075 & 0.333 & 6.16 \\
-SSD & 0.638${\pm}$.021 & 0.305 & 0.004 & 0.298 & 0.41 \\
-Adapter (Ours) & 0.264${\pm}$.026 & 0.077 & 0.029 & 0.103 & 8.13 \\
-Modified (Ours) & 0.735${\pm}$.010 & 0.199 & 0.001 & 0.090 & 14.81 \\
-PALL-Original & 0.716${\pm}$.016 & 0.212 & 0.021 & 0.104 & 10.83 \\ \bottomrule
-\end{tabular}
-\caption{Standard Split-CIFAR-100 (20 epochs/task, 10-class tasks), means over three seeds. Random-guess Au $=0.1$.}
-\label{tab:standard_cifar100}
-\end{table}
-
-Under this protocol, PALL-Modified is the strongest forgetting-capable method: it keeps $A_{final}$ within half a point of the non-forgetting CLPU upper bound ($0.9555$ vs.\ $0.9604$ on CIFAR-10; $0.7346$ vs.\ $0.7391$ on CIFAR-100) while driving Au to the chance level ($0.5000$ and $0.0903$) with the smallest WorstDrop among the accurate methods ($0.0035$ and $0.0010$). Three qualitatively distinct failure modes appear among the baselines. Regularization methods (EWC, LwF) do not forget at all: their Au remains at $0.94$--$0.96$ on CIFAR-10, confirming that continual-learning stability alone does not deliver selective removal. The unlearning-specific baselines forget only partially at matched accuracy: SSD preserves accuracy ($0.9011$) but leaves Au at $0.8030$ (with a very large $\pm 0.2715$ spread across seeds) on CIFAR-10, and both SSD and SalUn sit at Au $\approx 0.30$--$0.33$ on CIFAR-100---three times the chance level---while SalUn additionally incurs a WorstDrop of $0.0750$. Finally, replay methods forget somewhat but damage retained tasks (ER: WorstDrop $0.0740$ on CIFAR-100).
-
-\subsection{The Frozen-Backbone Regime for PEFT Methods}
-\label{subsec:pretrained}
-In Tables~\ref{tab:standard_cifar10} and \ref{tab:standard_cifar100}, both PEFT methods (LoRA and PALL-Adapter) reach only $A_{final}\approx 0.26$--$0.27$ on CIFAR-100. This is a property of the regime, not of the unlearning mechanism: in the from-scratch protocol the backbone is frozen at its random initialization, so the $\sim$$10^5$ trainable adapter parameters must classify 100 classes on top of random features. The near-identical collapse of LoRA ($0.2686$) and PALL-Adapter ($0.2643$) isolates the effect to the shared premise of all PEFT methods---that a meaningful representation exists to adapt. Table~\ref{tab:pretrained} completes the picture in the intended deployment setting: with an ImageNet-pretrained frozen backbone, PALL-Adapter reaches $0.9838$ on CIFAR-10 with a measured WorstDrop of exactly zero, $0.8267$ on CIFAR-100, and $0.9069$ on TinyImageNet with WorstDrop $0.0120$, matching or slightly exceeding LoRA on every dataset while retaining its structural unlearning mechanism.
-
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{@{}llccc@{}}
-\toprule
-\textbf{Dataset} & \textbf{Method} & \textbf{$A_{final}$} & \textbf{W.Drop} & \textbf{Au} \\ \midrule
-\multirow{2}{*}{CIFAR-10} & LoRA & 0.9836${\pm}$0.0160 & 0.0003 & 0.5222 \\
- & Adapter (Ours) & \textbf{0.9838${\pm}$0.0163} & \textbf{0.0000} & 0.5207 \\ \midrule
-\multirow{2}{*}{CIFAR-100} & LoRA & 0.8190${\pm}$0.0125 & 0.0227 & 0.1587 \\
- & Adapter (Ours) & \textbf{0.8267${\pm}$0.0017} & \textbf{0.0187} & 0.1887 \\ \midrule
-\multirow{2}{*}{TinyImageNet} & LoRA & 0.8992${\pm}$0.0063 & 0.0210 & 0.0980 \\
- & Adapter (Ours) & \textbf{0.9069${\pm}$0.0045} & \textbf{0.0120} & 0.1150 \\ \bottomrule
-\end{tabular}
-\caption{Pretrained frozen-backbone regime (the intended PEFT deployment setting). CIFAR rows: three seeds; TinyImageNet: two seeds. Chance-level Au is $0.5$ / $0.2$ / $0.1$ respectively.}
-\label{tab:pretrained}
-\end{table}
-
-\subsection{Empirical Verification of the Bound}
-\label{subsec:bound-verification}
-Figure~\ref{fig:bound} audits Theorem~\ref{thm:worstdrop} directly: for logged shared-adapter unlearning trajectories we compute the first-order prediction $(1-p)E^{\mathrm{crit}}_t + \epsilon C_t$ from the recorded gradients and masks, and compare it against the measured per-task drop. Three of the four audited task points satisfy the measured $\le$ predicted condition; one point violates it. We report this honestly: the prediction is built from gradient/loss energies while the measurement is an accuracy drop, and neither the higher-order curvature terms nor the accuracy--risk constant $L_a$ are calibrated. The audit covers only the shared-adapter coordinates---exactly the domain of the theorem---and does not extend to the task adapters or classifier.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.85\columnwidth]{Figures/bound_verification.pdf}
-\caption{Measured per-task drop vs.\ the first-order prediction of the WorstDrop bound on logged shared-adapter trajectories. Three of four audited points fall at or below the prediction.}
-\label{fig:bound}
-\end{figure}
+PALL-Adapter sharply reduces the logged nominal retained-repair scope relative to the full-network variants: from $0.0240$ to $0.0030$ on CIFAR-10 (an $87.5\%$ reduction), from $0.0210$ to $0.0055$ on CIFAR-100 (${\sim}74\%$), and from $0.0960$ to $0.0292$ on TinyImageNet (${\sim}70\%$). These ratios compare the trainable repair scope, not the union of all coordinates changed across reset, shared forgetting, ascent, and repair. This smaller scope coincides with the bounded WorstDrop of Table~\ref{tab:pall_overlap_heavy} rather than trading it away.
 
 \subsection{Overlap Composition and Temporal Behavior}
 \label{subsec:overlap-analysis}
-Across all adapter runs, the measured critical-overlap ratio $|S_{share\_crit}|/|S_{forget}|$ ranges from $0.35$ (pretrained) to $0.56$ (from-scratch CIFAR-100), yet the hard-protected fraction stays at $0.07$--$0.11$: the method restricts only a subset of the critical region rather than freezing the entire shared space, which is what preserves the ability to forget. Figure~\ref{fig:heatmap} shows the resulting temporal behavior on a representative CIFAR-10 sequence: each forgetting request collapses the target task's accuracy while the retained rows stay intact across the schedule. We also fitted pooled regressions of the (signed) WorstDrop on the measured overlap across all runs; the $95\%$ heteroskedasticity-robust confidence intervals of every slope include zero in the measured overlap ranges, so we do not claim an empirical overlap--damage dose-response curve---the protection mechanism operates regardless of where a run falls in the observed range.
+Across the adapter configurations, the measured critical-overlap ratio $|S_{share\_crit}|/|S_{forget}|$ ranges from $0.35$ to $0.56$ and the hard-protected fraction from $0.07$ to $0.11$; request-level logs show the targeted task collapsing while retained-task trajectories persist. Pooled regressions of signed WorstDrop on measured overlap have $95\%$ heteroskedasticity-robust confidence intervals that include zero, so we make no overlap--damage dose-response claim.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.95\columnwidth]{Figures/representative_pall_adapter_accuracy_heatmap.pdf}
-\caption{Per-task accuracy over a representative PALL-Adapter request sequence on CIFAR-10. Vertical markers denote forgetting requests; the targeted row collapses while retained rows persist.}
-\label{fig:heatmap}
-\end{figure}
-
-\subsection{Privacy Evidence: MIA, Empirical Audit, and Linear Probes}
+\subsection{Privacy Evidence: MIA, Leakage Audit, and Linear Probes}
 \label{subsec:mia}
-Because Theorem~\ref{thm:shared-adapter-impossibility} rules out \emph{exact} unlearning for the shared adapter, we assess the \emph{approximate}-unlearning claim with three complementary probes, none of which individually constitutes a formal guarantee.
+Because the shared adapter remains a function of target-buffer gradients, we assess approximate task-level forgetting with three complementary probes; none is a formal removal guarantee.
 
-\paragraph{Membership inference.} The MIA-AUC (chance $=0.5$) stays near chance in every configuration that logged it (Figure~\ref{fig:mia}): PALL-Modified moves from $0.5045$ to $0.4961$ on CIFAR-10 and from $0.4998$ to $0.5279$ on CIFAR-100 across the forget request. No configuration shows an after-forget AUC that meaningfully exceeds chance.
+\paragraph{Membership inference.} For each request, members are up to $512$ forgotten-task training examples and non-members up to $512$ held-out test examples; the score is negative cross-entropy over maximum softmax confidence (larger $=$ more member-like) and we report its ROC-AUC. Logged AUC stays near $0.5$ (PALL-Modified: $0.5045\!\to\!0.4961$ on CIFAR-10, $0.4998\!\to\!0.5279$ on CIFAR-100); with two seeds and no significance test we read these descriptively, not as proof of indistinguishability.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\columnwidth]{Figures/aaai_mia.pdf}
-\caption{Membership-inference AUC before and after each forget request (CLPU and PALL-Modified: from-scratch; LoRA and PALL-Adapter: pretrained-frozen). The dashed line marks the chance level $0.5$.}
+\caption{Mean membership-inference AUC over six forget-request events per configuration (two seeded schedules, each with three requests). CLPU and PALL-Modified are from-scratch; LoRA and PALL-Adapter use pretrained frozen backbones. The dashed line marks chance.}
 \label{fig:mia}
 \end{figure}
 
-\paragraph{Empirical privacy audit.} Following the one-run audit protocol \cite{steinke2024privacy}, we compute attack-based lower bounds $\hat{\varepsilon}$ (one-sided $95\%$ Clopper--Pearson) from per-sample MIA scores over six schedules per configuration (Table~\ref{tab:privacy}). After forgetting, PALL-Adapter's mean $\hat{\varepsilon}$ is $0.0058$ on CIFAR-10 and $0.0000$ on CIFAR-100, on par with the exact-unlearning reference CLPU ($0.0000$ on both). PALL-Modified averages ${\approx}0.10$ with per-request maxima of $0.4555$ and $0.5544$, showing that the mean hides heterogeneity across requests. A zero $\hat{\varepsilon}$ certifies nothing---it only means this audit could not demonstrate positive leakage.
+\paragraph{Attack-threshold leakage audit.} Inspired by confidence-bound privacy auditing \cite{steinke2023privacy}, we threshold the stored MIA scores and report $\hat{\varepsilon}_{attack}=\max_\tau\log(\mathrm{TPR}^{L}_{95}/\mathrm{FPR}^{U}_{95})$, clipped at zero (one-sided Clopper--Pearson). Because our setup uses no randomized canaries or DP mechanism, $\hat{\varepsilon}_{attack}$ is an attack-specific leakage statistic, not a bound on the model's DP parameter. Over six request events per configuration, PALL-Adapter's post-forget mean is $0.0058$ (CIFAR-10) and $0.0000$ (CIFAR-100), while PALL-Modified averages ${\approx}0.10$ with maxima $0.4555$ and $0.5544$. A zero value certifies nothing---only that this audit found no positive leakage.
 
 \begin{table}[t]
 \centering
 \small
 \setlength{\tabcolsep}{2pt}
-\begin{tabular}{@{}llccc@{}}
+\begin{tabular}{@{}llrrr@{}}
 \toprule
-\textbf{Dataset} & \textbf{Method} & \textbf{Mean $\hat{\varepsilon}$ bef.} & \textbf{Mean $\hat{\varepsilon}$ aft.} & \textbf{Max aft.} \\ \midrule
+\textbf{Data} & \textbf{Method} & \textbf{Mean before} & \textbf{Mean after} & \textbf{Max after} \\ \midrule
 \multirow{4}{*}{CIFAR-10} & CLPU & 0.0023 & 0.0000 & 0.0000 \\
  & LoRA & 0.0002 & 0.0080 & 0.0249 \\
- & Adapter (Ours) & 0.0005 & 0.0058 & 0.0169 \\
- & Modified (Ours) & 0.0000 & 0.0993 & 0.4555 \\ \midrule
+ & Adapter & 0.0005 & 0.0058 & 0.0169 \\
+ & Modified & 0.0000 & 0.0993 & 0.4555 \\ \midrule
 \multirow{4}{*}{CIFAR-100} & CLPU & 0.0000 & 0.0000 & 0.0000 \\
  & LoRA & 0.0016 & 0.0018 & 0.0108 \\
- & Adapter (Ours) & 0.0075 & 0.0000 & 0.0000 \\
- & Modified (Ours) & 0.0000 & 0.0995 & 0.5544 \\ \bottomrule
+ & Adapter & 0.0075 & 0.0000 & 0.0000 \\
+ & Modified & 0.0000 & 0.0995 & 0.5544 \\ \bottomrule
 \end{tabular}
-\caption{Empirical privacy-audit lower bounds $\hat{\varepsilon}$ from per-sample MIA scores ($n=6$ schedules each). CLPU and Modified: from-scratch; LoRA and Adapter: pretrained-frozen regime.}
+\caption{Attack-threshold leakage statistic $\hat{\varepsilon}_{attack}$ from per-sample MIA scores ($n=6$ request events per configuration). CLPU and Modified are from-scratch; LoRA and Adapter use pretrained frozen backbones.}
 \label{tab:privacy}
 \end{table}
 
-\paragraph{Linear probes on frozen representations.} Finally, we train linear probes on the frozen features before and after forgetting to measure residual linearly decodable information about the forgotten task. Full-network methods and CLPU show large probe-accuracy decreases (e.g., PALL-Modified: $-0.2168$ on CIFAR-10, $-0.1790$ on CIFAR-100), whereas PALL-Adapter and LoRA change by ${\approx}{-}0.01$: because their backbone is frozen, the forgotten task remains linearly decodable from the (unchanged) features even though the task head and adapter are removed. This is an honest structural limitation of frozen-backbone PEFT unlearning at the representation level, and it complements---rather than contradicts---the near-chance Au and MIA results, which are measured through the model's own decision pathway.
+\paragraph{Linear probes on deployed representations.} Finally, we fit a fresh linear classifier on the forgotten task's full training split and evaluate it on the held-out test split, using the model's deployed penultimate features before and after each request. Full-network methods and CLPU show large probe-accuracy decreases (e.g., PALL-Modified: $-0.2168$ on CIFAR-10, $-0.1790$ on CIFAR-100), whereas PALL-Adapter and LoRA change by ${\approx}{-}0.01$. Their backbone is frozen (though the adapter pathway can change), so substantial forgotten-task information remains linearly accessible. This structural limitation complements rather than contradicts the near-chance Au and MIA results, read through the model's own decision pathway.
 
 \subsection{Anchor Ablation: Data-Independent Protection}
 \label{subsec:anchor}
-The $\ell_2$ anchor of Eq.~\eqref{eq:repair} defaults to the pre-forget weights $w_{old}$, which is conceptually uncomfortable: $w_{old}$ itself can carry information about the task being removed. Replacing it with a data-independent reinitialization anchor $w_{reinit}$ resolves this concern and performs at least as well: on two seeds, $A_{final}$ rises from $0.9291$ to $0.9316$ (CIFAR-10) and from $0.4956$ to $0.5029$ (CIFAR-100), and the CIFAR-100 WorstDrop halves from $0.0200$ to $0.0100$. The post-forget MIA-AUC shifts are small and not uniform ($0.4961\!\to\!0.5083$ on CIFAR-10, $0.5279\!\to\!0.5198$ on CIFAR-100), so we present $w_{reinit}$ as directional evidence resolving the conceptual issue, not as a privacy guarantee.
+The $\ell_2$ anchor of Eq.~\eqref{eq:repair} defaults to the pre-forget weights $w_{old}$, which can themselves carry forgotten-task information. A data-independent reinitialization anchor $w_{reinit}$ addresses this and performs at least as well on two seeds: $A_{\mathrm{final}}$ rises to $0.9316$ (CIFAR-10) and $0.5029$ (CIFAR-100), and the CIFAR-100 WorstDrop halves to $0.0100$. The post-forget MIA-AUC shifts are small and non-uniform, so we treat $w_{reinit}$ as directional evidence, not a privacy guarantee.
 
 \subsection{Sensitivity and Importance-Criterion Ablations}
 \label{subsec:ablation}
-On pretrained CIFAR-100, an $\{\alpha_f, \alpha_p, N_{iters}\}$ sweep over eight configurations keeps $A_{final}$ in the narrow band $0.8251$--$0.8289$, while increasing the forgetting steps from $10$ to $30$ lowers WorstDrop in all four pairs (best $0.0130$); $\alpha_p=0.2$ achieves this while hard-protecting only $7.7\%$ of coordinates versus $29\%$ at $\alpha_p=0.4$. Separate sweeps of the task and shared bottleneck widths showed no monotone benefit beyond dimension $16$, which we therefore keep as the fixed compact default. We also ablated the importance criterion, replacing gradient magnitude with the gradient-conflict energy $\mathrm{relu}(-g_{forget}\cdot g_{retain})$: it helps the adapter on CIFAR-10 (WorstDrop $0.0160\!\to\!0.0063$) but degrades PALL-Modified on CIFAR-100 ($0.0060\!\to\!0.0230$), so gradient magnitude remains the default; we report this mixed result for completeness.
+On pretrained CIFAR-100, an $\{\alpha_f, \alpha_p, N_{iters}\}$ sweep over eight configurations keeps $A_{\mathrm{final}}$ in the narrow band $0.8251$--$0.8289$, while increasing the forgetting steps from $10$ to $30$ lowers WorstDrop in all four pairs (best $0.0130$); $\alpha_p=0.2$ achieves this while hard-protecting only $7.7\%$ of coordinates versus $29\%$ at $\alpha_p=0.4$. Bottleneck-width sweeps showed no monotone benefit beyond dimension $16$, our fixed default. Replacing the gradient-magnitude criterion with the gradient-conflict energy $\mathrm{relu}(-g_{forget}\cdot g_{retain})$ helps the adapter on CIFAR-10 (WorstDrop $0.0160\!\to\!0.0063$) but degrades PALL-Modified on CIFAR-100 ($0.0060\!\to\!0.0230$), so gradient magnitude remains the default.
 
 \subsection{Cross-Architecture Generalization}
 \label{subsec:vit}
-On a ViT-T/8 backbone, PALL-Modified reduces WorstDrop on Split-CIFAR-100 from $0.0190 \pm 0.0071$ (PALL-Original) to $0.0100 \pm 0.0028$ while slightly improving accuracy ($0.3990$ vs.\ $0.3921$) and keeping Au near chance ($0.2120$). On Split-CIFAR-10 the two methods are statistically indistinguishable ($0.0192 \pm 0.0159$ vs.\ $0.0193 \pm 0.0230$). The protective effect thus transfers across architectures with dataset-dependent strength.
+On a ViT-T/8 backbone, PALL-Modified reduces mean WorstDrop on Split-CIFAR-100 from $0.0190$ (PALL-Original) to $0.0100$ while slightly improving accuracy ($0.3990$ vs.\ $0.3921$) and keeping Au near chance; on Split-CIFAR-10 the two are indistinguishable across seeds. Transfer is thus dataset-dependent, with no significance claim.
 
 \section{Limitations}
-The TinyImageNet results rest on two seeds and one fixed request schedule; the task-aware setting is easier than class-incremental CL; Au and MIA are indirect privacy signals, and the rehearsal buffer itself is a privacy surface that must be scrubbed on deletion (our implementation purges the forgotten task's exemplars as part of the forget operation). The linear-probe analysis exposes residual representation-level information for frozen-backbone methods. Finally, adapter results are sensitive to $\{\alpha_f,\alpha_p,N_{iters},p\}$; our sweeps map this sensitivity but do not yet select hyperparameters automatically.
+The overlap-heavy TinyImageNet comparison uses one fixed request schedule. The current interface is request-driven: it does not automatically identify what should be removed, and the requester must supply the target task ID. The task-aware setting is easier than class-incremental CL, and Au, MIA, and the leakage audit are indirect signals rather than privacy certificates. The implementation deletes the target entry from in-process rehearsal memory, but does not remove raw data, checkpoints, or external copies. Linear probes expose residual representation-level information for frozen-backbone methods. Runtime logs are descriptive and not hardware-normalized because exact server metadata was not retained. Adapter results are also sensitive to $\{\alpha_f,\alpha_p,N_{iters},p\}$; our sweeps map this sensitivity but do not select hyperparameters automatically.
 
 \section{Conclusion}
-We addressed the vulnerability of selective machine unlearning to overlapping parameter domains with two complementary mechanisms. \emph{PALL-Modified} anchors the measured critical overlap during retention repair and delivers the best accuracy--forgetting--stability profile among forgetting-capable methods, approaching the non-forgetting CLPU upper bound while forgetting to chance level. \emph{PALL-Adapter} confines unlearning to bottleneck modules through provably contractive soft-masked optimization, cutting the update footprint by up to $87.5\%$ and, on a pretrained backbone, matching LoRA's accuracy with near-zero worst-case damage. The theoretical contraction factor $(1-p)$ is visible in the empirical bound audit, and the privacy evidence---near-chance MIA, small audited $\hat{\varepsilon}$, and an honest linear-probe caveat---delineates precisely what approximate unlearning does and does not achieve. Together, these results establish a practical, evidence-bounded pathway for privacy-compliant continual learning systems.
+We presented two mechanisms for selective forgetting when tasks share parameters. PALL-Modified protects the most retention-sensitive part of the shared subnetwork and comes within half a percentage point of the full-model isolation reference (CLPU) on both standard Split-CIFAR benchmarks; PALL-Adapter trades some capacity for a much smaller retained-repair scope and works best with a pretrained frozen backbone. CLPU remains preferable when a full network per task is affordable, whereas PALL targets the shared-model case. The MIA, leakage-audit, and linear-probe results keep the claim narrow: the methods suppress the requested task at the evaluated interface, not exact, certified, or storage-level data removal.
 
-\appendix
-
-\section{Proof of Theorem~\ref{thm:worstdrop}}
-\label{sec:proof}
-
-\begin{proof}
-Fix an active task $t$. Let $\delta\triangleq\phi^{(N)}-\phi^{(0)}\in\mathbb{R}^{d}$ be the total displacement of the shared adapter. Summing the coordinate update \eqref{eq:coord-update} over the $N$ steps and using that $m_{i}$ is constant in $k$ gives, for every coordinate $i$,
-\begin{equation}
-\label{eq:disp}
-\delta_{i}=-\eta\,m_{i}\sum_{k=0}^{N-1}g^{(k)}_{i},
-\;\;\text{hence}\;\;
-|\delta_{i}|\le \eta\,m_{i}\,\Gamma_{i}\le \eta\,m_{i}\,NG ,
-\end{equation}
-where the inequalities use the triangle inequality and Assumption~\ref{ass:bounded}.
-
-\emph{Step 1 (smoothness expansion).}
-By Assumption~\ref{ass:smooth}, $R_{t}$ admits the quadratic upper bound (descent-lemma form), evaluated at the base point $\phi^{(0)}$,
-\begin{equation}
-\label{eq:taylor}
-\Delta_{t}=R_{t}(\phi^{(0)}+\delta)-R_{t}(\phi^{(0)})
-\le
-\big\langle\nabla R_{t}(\phi^{(0)}),\,\delta\big\rangle
-+\tfrac{\beta}{2}\,\|\delta\|_{2}^{2}.
-\end{equation}
-We bound the two terms separately.
-
-\emph{Step 2 (first-order term: coordinate decomposition).}
-Using the partition \eqref{eq:partition} and the triangle inequality,
-\begin{align}
-\big\langle\nabla R_{t}(\phi^{(0)}),\delta\big\rangle
-&=\sum_{i=1}^{d}\partial_{i}R_{t}(\phi^{(0)})\,\delta_{i}
-\notag\\
-&\le\sum_{i=1}^{d}\big|\partial_{i}R_{t}(\phi^{(0)})\big|\,|\delta_{i}|
-\notag\\
-&\le
-\sum_{i\in\mathcal{F}^{\!\circ}}\!\big|\partial_{i}R_{t}\big|\,\eta\,\Gamma_{i}
-\notag\\
-&\quad+\sum_{i\in\mathcal{S}}\!\big|\partial_{i}R_{t}\big|\,(1-p)\,\eta\,\Gamma_{i} ,
-\label{eq:three-sums}
-\end{align}
-where the sum over $H\cup\mathcal{N}$ vanishes identically because $m_{i}=0$ there. For the first sum, Assumption~\ref{ass:concentration} gives $|\partial_{i}R_{t}|\le\epsilon$ on $\mathcal{F}^{\!\circ}$, so it is at most $\epsilon\,\eta\sum_{i\in\mathcal{F}^{\!\circ}}\Gamma_{i}=\epsilon\,C_{t}$. For the second sum, since $\mathcal{S}\subseteq S_{share\_crit}$ and every summand is non-negative,
-\begin{equation}
-\begin{aligned}
-&(1-p)\!\sum_{i\in\mathcal{S}}\!\big|\partial_{i}R_{t}\big|\,\eta\,\Gamma_{i}\\
-&\le
-(1-p)\!\!\sum_{i\in S_{share\_crit}}\!\!\big|\partial_{i}R_{t}\big|\,\eta\,\Gamma_{i}
-=(1-p)\,E^{\mathrm{crit}}_{t},
-\end{aligned}
-\end{equation}
-by the definition \eqref{eq:Ecrit}. Combining,
-\begin{equation}
-\label{eq:first-order-bound}
-\big\langle\nabla R_{t}(\phi^{(0)}),\delta\big\rangle
-\le(1-p)\,E^{\mathrm{crit}}_{t}+\epsilon\,C_{t}.
-\end{equation}
-
-\emph{Step 3 (second-order term).}
-From \eqref{eq:disp}, $|\delta_{i}|^{2}\le \eta^{2}m_{i}^{2}N^{2}G^{2}$, and $m_{i}^{2}=1$ on $\mathcal{F}^{\!\circ}$, $m_{i}^{2}=(1-p)^{2}$ on $\mathcal{S}$, and $m_{i}=0$ elsewhere. Hence
-\begin{equation}
-\label{eq:second-order-bound}
-\tfrac{\beta}{2}\|\delta\|_{2}^{2}
-=\tfrac{\beta}{2}\sum_{i}\delta_{i}^{2}
-\le\tfrac{\beta}{2}\,\eta^{2}N^{2}G^{2}
-\Big(|\mathcal{F}^{\!\circ}|+(1-p)^{2}|\mathcal{S}|\Big).
-\end{equation}
-Substituting \eqref{eq:first-order-bound} and \eqref{eq:second-order-bound} into \eqref{eq:taylor} yields the soft bound \eqref{eq:soft-bound}.
-
-\emph{Step 4 (unconstrained baseline).}
-For unconstrained unlearning, $m_{i}=1$ for every $i\in S_{forget}=\mathcal{F}^{\!\circ}\cup S_{share\_crit}$ and $m_{i}=0$ on $\mathcal{N}$. Repeating Steps~2--3 with these multipliers, the critical sum is no longer scaled, giving $\langle\nabla R_{t},\delta\rangle\le E^{\mathrm{crit}}_{t}+\epsilon\,C_{t}$, and the curvature term becomes $\tfrac{\beta}{2}\eta^{2}N^{2}G^{2}|S_{forget}|$, which is exactly \eqref{eq:unc-bound}.
-
-\emph{Step 5 (worst-case gap).}
-Subtracting the leading terms of \eqref{eq:soft-bound} and \eqref{eq:unc-bound} for each $t$ gives a per-task reduction of $p\,E^{\mathrm{crit}}_{t}$, plus a second-order discrepancy that is $\mathcal{O}(\eta^{2}N^{2}G^{2})$ (indeed the soft curvature term is \emph{smaller}, since $(1-p)^{2}|\mathcal{S}|\le|S_{share\_crit}|$ and $|\mathcal{F}^{\!\circ}|+|S_{share\_crit}|=|S_{forget}|$). Taking $\max_{t}$ of both sides and using $\max_t(a_t-b_t)\le\max_t a_t-\min_t b_t$ together with $\min_t\,p E^{\mathrm{crit}}_t \le p\max_t E^{\mathrm{crit}}_t$ in the direction that preserves the upper bound yields \eqref{eq:worstdrop-gap}. Finally, when $\eta NG\to 0$ the $\mathcal{O}(\eta^{2}N^{2}G^{2})$ curvature term and the $\epsilon\,C_{t}=o(E^{\mathrm{crit}}_{t})$ forget-exclusive term are asymptotically negligible relative to the first-order critical energy, so $\Delta_{t}^{\mathrm{soft}}\le(1-p)\Delta_{t}^{\mathrm{unc}}+o(\cdot)$ uniformly in $t$, and taking $\max_t$ gives the contraction \eqref{eq:contraction}. The transfer to the reported accuracy-based WorstDrop follows immediately from Assumption~\ref{ass:lipschitz-acc}, which multiplies every bound by the fixed constant $L_{a}$ and hence leaves the contraction factor $(1-p)$ unchanged.
-\end{proof}
-
-\begin{corollary}[Monotone protection and the hard-protected limit]
-\label{cor:monotone}
-The first-order WorstDrop bound $(1-p)\max_t E^{\mathrm{crit}}_t+\epsilon\max_t C_t$ is non-increasing in the protection strength $p\in[0,1]$, decreasing at rate $\max_t E^{\mathrm{crit}}_t$. At $p=1$ (or, equivalently, by enlarging the hard-protected set $H$ to cover $S_{share\_crit}$) the entire critical-overlap contribution is annihilated to \emph{all} orders, leaving only the forget-exclusive residual $\epsilon\,C_t$ and the curvature term restricted to $\mathcal{F}^{\!\circ}$.
-\end{corollary}
-
-\begin{proof}
-Differentiating the first-order bound with respect to $p$ gives $-\max_t E^{\mathrm{crit}}_t\le 0$. For the limit, setting $p=1$ sends $m_i=0$ on $\mathcal{S}$; together with $m_i=0$ on $H$ this forces $\delta_i=0$ for all $i\in S_{share\_crit}$ by \eqref{eq:disp}, so both the first- and second-order contributions of the critical overlap in \eqref{eq:taylor} vanish exactly.
-\end{proof}
-
-\section{Reproducibility Details}
-\label{sec:repro}
-
-All experiments use a ResNet-18 modified for sub-network operations; in the adapter configuration the backbone and batch-normalization statistics are frozen and adapters are placed at the residual connections with bottleneck dimension $16$. Optimization uses SGD with learning rate $0.01$, momentum $0.9$, weight decay $5\times 10^{-4}$, and batch size $32$. The overlap-heavy protocol trains $3$ epochs per task and the standard protocol $20$. The full-network protection ratio is $0.2$ with penalty coefficient $\lambda = 1.0$; the adapter uses shared forget ratio $\alpha_f=0.3$ and shared protect ratio $\alpha_p=0.2$. CIFAR experiments use three random seeds and TinyImageNet two; every method within a table faces the identical fixed request schedule, and all table numbers are extracted automatically from per-run metric files by the aggregation pipeline (which also performs an automated consistency audit of every number quoted in the text).
 
 \bibliography{references}
 

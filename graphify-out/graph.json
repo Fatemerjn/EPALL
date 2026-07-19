@@ -1265,7 +1265,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_init",
-      "community": 63,
+      "community": 22,
       "norm_label": "__init__.py"
     },
     {
@@ -1285,7 +1285,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "methods_base_seed_worker",
-      "community": 15,
+      "community": 63,
       "norm_label": "_seed_worker()"
     },
     {
@@ -1535,7 +1535,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "methods_base_rationale_14",
-      "community": 15,
+      "community": 63,
       "norm_label": "deterministically reseed numpy/python rngs inside each dataloader worker.      p"
     },
     {
@@ -1675,7 +1675,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_derpp",
-      "community": 63,
+      "community": 61,
       "norm_label": "derpp.py"
     },
     {
@@ -1885,7 +1885,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_ewc_ewc",
-      "community": 63,
+      "community": 110,
       "norm_label": "ewc"
     },
     {
@@ -1895,7 +1895,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "methods_ewc_ewc_init",
-      "community": 63,
+      "community": 110,
       "norm_label": ".__init__()"
     },
     {
@@ -1905,7 +1905,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "methods_ewc_ewc_penalty",
-      "community": 63,
+      "community": 110,
       "norm_label": ".penalty()"
     },
     {
@@ -1915,7 +1915,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "methods_ewc_ewc_learn",
-      "community": 63,
+      "community": 110,
       "norm_label": ".learn()"
     },
     {
@@ -1925,7 +1925,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "methods_ewc_ewc_forget",
-      "community": 63,
+      "community": 110,
       "norm_label": ".forget()"
     },
     {
@@ -1945,7 +1945,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "methods_lora_lora",
-      "community": 15,
+      "community": 108,
       "norm_label": "lora"
     },
     {
@@ -1955,7 +1955,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "methods_lora_lora_init",
-      "community": 15,
+      "community": 108,
       "norm_label": ".__init__()"
     },
     {
@@ -1965,7 +1965,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "methods_lora_lora_init_optimizer",
-      "community": 15,
+      "community": 108,
       "norm_label": ".init_optimizer()"
     },
     {
@@ -1975,7 +1975,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "methods_lora_lora_train_mode",
-      "community": 15,
+      "community": 108,
       "norm_label": ".train_mode()"
     },
     {
@@ -1985,7 +1985,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "methods_lora_lora_extract_logits_and_features",
-      "community": 15,
+      "community": 108,
       "norm_label": ".extract_logits_and_features()"
     },
     {
@@ -1995,7 +1995,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "methods_lora_lora_fill_buffer",
-      "community": 15,
+      "community": 108,
       "norm_label": ".fill_buffer()"
     },
     {
@@ -2005,7 +2005,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "methods_lora_lora_learn",
-      "community": 15,
+      "community": 108,
       "norm_label": ".learn()"
     },
     {
@@ -2015,7 +2015,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "methods_lora_lora_compute_retrain_steps",
-      "community": 15,
+      "community": 108,
       "norm_label": "._compute_retrain_steps()"
     },
     {
@@ -2025,7 +2025,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "methods_lora_lora_count_active_trainable_params",
-      "community": 15,
+      "community": 108,
       "norm_label": "._count_active_trainable_params()"
     },
     {
@@ -2035,7 +2035,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "methods_lora_lora_forget",
-      "community": 15,
+      "community": 108,
       "norm_label": ".forget()"
     },
     {
@@ -2045,7 +2045,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "methods_lora_lora_forget_with_diagnostics",
-      "community": 15,
+      "community": 108,
       "norm_label": ".forget_with_diagnostics()"
     },
     {
@@ -2055,7 +2055,7 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "methods_lora_lora_forget_impl",
-      "community": 15,
+      "community": 108,
       "norm_label": "._forget_impl()"
     },
     {
@@ -2065,7 +2065,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "methods_lora_rationale_9",
-      "community": 15,
+      "community": 108,
       "norm_label": "parameter-efficient lora baseline for continual learning + task unlearning."
     },
     {
@@ -2075,7 +2075,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lsf",
-      "community": 63,
+      "community": 62,
       "norm_label": "lsf.py"
     },
     {
@@ -2145,7 +2145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_lwf",
-      "community": 63,
+      "community": 62,
       "norm_label": "lwf.py"
     },
     {
@@ -2685,7 +2685,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "methods_pall_base",
-      "community": 63,
+      "community": 22,
       "norm_label": "pall_base.py"
     },
     {
@@ -2705,7 +2705,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "methods_pall_base_pallbase_init",
-      "community": 61,
+      "community": 7,
       "norm_label": ".__init__()"
     },
     {
@@ -3465,7 +3465,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_init",
-      "community": 23,
+      "community": 63,
       "norm_label": "__init__.py"
     },
     {
@@ -3485,7 +3485,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "models_adapter_resnet_taskbottleneckadapter",
-      "community": 23,
+      "community": 46,
       "norm_label": "taskbottleneckadapter"
     },
     {
@@ -3505,7 +3505,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "models_adapter_resnet_taskbottleneckadapter_reset_parameters",
-      "community": 23,
+      "community": 46,
       "norm_label": ".reset_parameters()"
     },
     {
@@ -3515,7 +3515,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "models_adapter_resnet_taskbottleneckadapter_forward",
-      "community": 23,
+      "community": 46,
       "norm_label": ".forward()"
     },
     {
@@ -3755,7 +3755,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_base",
-      "community": 23,
+      "community": 63,
       "norm_label": "base.py"
     },
     {
@@ -4005,7 +4005,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "models_lora_resnet_loraresnet_reset_task_lora",
-      "community": 25,
+      "community": 32,
       "norm_label": ".reset_task_lora()"
     },
     {
@@ -5015,7 +5015,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention",
-      "community": 0,
+      "community": 63,
       "norm_label": "scaleddotproductattention"
     },
     {
@@ -5025,7 +5025,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention_init",
-      "community": 0,
+      "community": 109,
       "norm_label": ".__init__()"
     },
     {
@@ -5035,7 +5035,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "models_vit_scaleddotproductattention_forward",
-      "community": 0,
+      "community": 63,
       "norm_label": ".forward()"
     },
     {
@@ -5045,7 +5045,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "models_vit_multiheadattention",
-      "community": 0,
+      "community": 109,
       "norm_label": "multiheadattention"
     },
     {
@@ -5055,7 +5055,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_init",
-      "community": 0,
+      "community": 109,
       "norm_label": ".__init__()"
     },
     {
@@ -5065,7 +5065,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "models_vit_multiheadattention_forward",
-      "community": 0,
+      "community": 109,
       "norm_label": ".forward()"
     },
     {
@@ -5075,7 +5075,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "models_vit_encoderblock",
-      "community": 0,
+      "community": 109,
       "norm_label": "encoderblock"
     },
     {
@@ -5085,7 +5085,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "models_vit_encoderblock_init",
-      "community": 0,
+      "community": 109,
       "norm_label": ".__init__()"
     },
     {
@@ -5095,7 +5095,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "models_vit_encoderblock_forward",
-      "community": 0,
+      "community": 109,
       "norm_label": ".forward()"
     },
     {
@@ -5105,7 +5105,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "models_vit_visiontransformer",
-      "community": 63,
+      "community": 62,
       "norm_label": "visiontransformer"
     },
     {
@@ -5115,7 +5115,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_init",
-      "community": 0,
+      "community": 109,
       "norm_label": ".__init__()"
     },
     {
@@ -5125,7 +5125,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_process_input",
-      "community": 63,
+      "community": 62,
       "norm_label": "._process_input()"
     },
     {
@@ -5135,7 +5135,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "models_vit_visiontransformer_forward",
-      "community": 63,
+      "community": 62,
       "norm_label": ".forward()"
     },
     {
@@ -5145,7 +5145,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "models_vit_vit_t_8",
-      "community": 63,
+      "community": 62,
       "norm_label": "vit_t_8()"
     },
     {
@@ -5155,7 +5155,7 @@
       "source_location": "L200",
       "_origin": "ast",
       "id": "models_vit_vit_t_16",
-      "community": 63,
+      "community": 62,
       "norm_label": "vit_t_16()"
     },
     {
@@ -5165,7 +5165,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "models_vit_rationale_16",
-      "community": 0,
+      "community": 63,
       "norm_label": "inputs:                 q: (batch_size, n_head, seq_len1, d_k)                 k"
     },
     {
@@ -5175,7 +5175,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "models_vit_rationale_48",
-      "community": 0,
+      "community": 109,
       "norm_label": "inputs:                 q: (batch_size, seq_len1, d_model)                 k: (b"
     },
     {
@@ -7672,6 +7672,166 @@
       "_origin": "ast",
       "id": "tools_generate_controlled_overlap_schedules_main",
       "community": 37,
+      "norm_label": "main()"
+    },
+    {
+      "label": "generate_main_standard_table.py",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table",
+      "community": 107,
+      "norm_label": "generate_main_standard_table.py"
+    },
+    {
+      "label": "parse_args()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_parse_args",
+      "community": 107,
+      "norm_label": "parse_args()"
+    },
+    {
+      "label": "Namespace",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_py_namespace",
+      "community": 107,
+      "norm_label": "namespace"
+    },
+    {
+      "label": "fail()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L73",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_fail",
+      "community": 107,
+      "norm_label": "fail()"
+    },
+    {
+      "label": "read_rows()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L77",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_read_rows",
+      "community": 107,
+      "norm_label": "read_rows()"
+    },
+    {
+      "label": "Path",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_py_path",
+      "community": 107,
+      "norm_label": "path"
+    },
+    {
+      "label": "expected_tag()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L103",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_expected_tag",
+      "community": 107,
+      "norm_label": "expected_tag()"
+    },
+    {
+      "label": "select_rows()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L109",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_select_rows",
+      "community": 107,
+      "norm_label": "select_rows()"
+    },
+    {
+      "label": "decimal_4()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L138",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_decimal_4",
+      "community": 107,
+      "norm_label": "decimal_4()"
+    },
+    {
+      "label": "mean_std_4()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L149",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_mean_std_4",
+      "community": 107,
+      "norm_label": "mean_std_4()"
+    },
+    {
+      "label": "displayed_metrics()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L161",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_displayed_metrics",
+      "community": 107,
+      "norm_label": "displayed_metrics()"
+    },
+    {
+      "label": "header()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L167",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_header",
+      "community": 107,
+      "norm_label": "header()"
+    },
+    {
+      "label": "panel_lines()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L172",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_panel_lines",
+      "community": 107,
+      "norm_label": "panel_lines()"
+    },
+    {
+      "label": "render_table()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L191",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_render_table",
+      "community": 107,
+      "norm_label": "render_table()"
+    },
+    {
+      "label": "provenance_lines()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L219",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_provenance_lines",
+      "community": 107,
+      "norm_label": "provenance_lines()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L236",
+      "_origin": "ast",
+      "id": "tools_generate_main_standard_table_main",
+      "community": 107,
       "norm_label": "main()"
     },
     {
@@ -14784,7 +14944,7 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify claude instructions",
-      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
+      "id": "claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_claude_graphify_claude_instructions"
     },
     {
       "label": "Graphify Skill Pipeline",
@@ -34142,6 +34302,367 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L138",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_decimal_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L161",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_displayed_metrics",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_expected_tag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_fail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_header",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L236",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L149",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_mean_std_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L172",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_panel_lines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_parse_args",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L219",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_provenance_lines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_read_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_render_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table",
+      "target": "tools_generate_main_standard_table_select_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L237",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_main",
+      "target": "tools_generate_main_standard_table_parse_args",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_parse_args",
+      "target": "tools_generate_main_standard_table_py_namespace",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_parse_args",
+      "target": "tools_generate_main_standard_table_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_decimal_4",
+      "target": "tools_generate_main_standard_table_fail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L152",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_mean_std_4",
+      "target": "tools_generate_main_standard_table_fail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_read_rows",
+      "target": "tools_generate_main_standard_table_fail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L124",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_select_rows",
+      "target": "tools_generate_main_standard_table_fail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L239",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_main",
+      "target": "tools_generate_main_standard_table_read_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_read_rows",
+      "target": "tools_generate_main_standard_table_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_render_table",
+      "target": "tools_generate_main_standard_table_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_select_rows",
+      "target": "tools_generate_main_standard_table_expected_tag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_main",
+      "target": "tools_generate_main_standard_table_select_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_displayed_metrics",
+      "target": "tools_generate_main_standard_table_decimal_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L156",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_mean_std_4",
+      "target": "tools_generate_main_standard_table_decimal_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L162",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_displayed_metrics",
+      "target": "tools_generate_main_standard_table_mean_std_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_panel_lines",
+      "target": "tools_generate_main_standard_table_displayed_metrics",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L226",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_provenance_lines",
+      "target": "tools_generate_main_standard_table_displayed_metrics",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L179",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_panel_lines",
+      "target": "tools_generate_main_standard_table_header",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L205",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_render_table",
+      "target": "tools_generate_main_standard_table_panel_lines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L241",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_main",
+      "target": "tools_generate_main_standard_table_render_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tools/generate_main_standard_table.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "source": "tools_generate_main_standard_table_main",
+      "target": "tools_generate_main_standard_table_provenance_lines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tools/make_aaai_figures.py",
       "source_location": "L118",
       "weight": 1.0,
@@ -48501,5 +49022,5 @@
       "source_file": "thesis/front/template/images/besmellah.jpg"
     }
   ],
-  "built_at_commit": "e48b62675caf48affe386532224aa15525ce9363"
+  "built_at_commit": "dfdafca74176e5fb812a1a7481721d546f5c3167"
 }

@@ -58,9 +58,9 @@ plt.rcParams.update({
     "font.size": 9,
     "axes.titlesize": 9,
     "axes.labelsize": 9,
-    "xtick.labelsize": 8.5,
-    "ytick.labelsize": 8.5,
-    "legend.fontsize": 8.5,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+    "legend.fontsize": 9,
     "axes.spines.top": False,
     "axes.spines.right": False,
     "axes.grid": True,
@@ -105,7 +105,7 @@ def fig_tradeoff(outdir: Path) -> None:
     for d in DATASETS:
         ax.annotate(d, (UPDATED_RATIO[d]["PALL-Adapter"], WORSTDROP_MEAN[d]["PALL-Adapter"]),
                     textcoords="offset points", xytext=offsets[d],
-                    fontsize=7.5, color="#444444")
+                    fontsize=9, color="#444444")
     ax.set_xscale("log")
     ax.set_xlabel("Updated parameter ratio (log scale)")
     ax.set_ylabel("WorstDrop")
