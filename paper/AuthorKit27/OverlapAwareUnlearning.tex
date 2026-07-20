@@ -39,7 +39,7 @@
 \maketitle
 
 \begin{abstract}
-Like other deployed AI systems, continual learning systems may receive privacy-driven requests to remove previously learned information. In the task-incremental setting, this motivates selective forgetting: suppressing a specified task while preserving performance on tasks that remain active. The problem is especially difficult when tasks share parameters, because changing weights associated with the requested task can also damage retained tasks. We introduce two overlap-aware variants of Privacy-Aware Lifelong Learning (PALL). \textbf{PALL-Modified} ranks shared coordinates by retained-task sensitivity and anchors them during repair. \textbf{PALL-Adapter} uses task-specific and shared bottleneck adapters, a soft-masked shared update, classifier suppression, and retained repair. For a fixed shared-adapter gradient sequence, we bound the mask's first-order contribution on the soft-protected overlap. CLPU is the strongest matched Split-CIFAR baseline but stores a full network per active task; among shared-model methods, PALL-Modified stays within $0.5$ points of its final accuracy while moving forgotten-task accuracy to or near chance. PALL-Adapter cuts nominal retained-repair scope by up to $87.5\%$, but linear probes recover substantial forgotten-task information. Thus its evidence supports decision-path suppression, while neither method provides exact, certified, representation-level, or storage-level removal.
+Like other deployed AI systems, continual learning systems may receive privacy-driven requests to remove previously learned information. In the task-incremental setting, this motivates selective forgetting: suppressing a specified task while preserving performance on tasks that remain active. The problem is especially difficult when tasks share parameters, because changing weights associated with the requested task can also damage retained tasks. We introduce two extensions of Privacy-Aware Lifelong Learning (PALL). \textbf{PALL-Modified} ranks shared coordinates by retained-task sensitivity and anchors them during repair. \textbf{PALL-Adapter} places task-specific and shared bottleneck adapters over a frozen backbone and combines target-path reset with a soft-masked shared update and retained repair. For a fixed shared-adapter gradient sequence, we bound the mask's first-order contribution on the soft-protected overlap. CLPU is the strongest matched Split-CIFAR reference but stores a full network per active task; among shared-model methods, PALL-Modified stays within $0.5$ points of its final accuracy while moving forgotten-task accuracy to or near chance. Three-seed component controls show that PALL-Adapter's endpoint behavior is reset-dominated: neither the soft mask nor cached classifier ascent improves the measured endpoint over matched controls. We therefore treat the adapter as an exploratory parameter-efficient pathway, not evidence for an independently effective overlap-aware update. Neither method provides exact, certified, representation-level, or storage-level removal.
 \end{abstract}
 
 % Uncomment to link to code once a de-anonymized/camera-ready version is prepared.
@@ -59,7 +59,7 @@ The original Privacy-Aware Lifelong Learning (PALL) framework \cite{ozdenizci202
 \begin{enumerate}
     \item \textbf{PALL-Modified:} it measures the \emph{critical overlap} between the forgotten and the active parameters and protects it with an anchored penalty during retention repair.
     \item \textbf{PALL-Adapter:} a parameter-efficient design that freezes the backbone and routes learning through task-specific bottleneck adapters and one shared adapter, so a forget request changes adapters and classifier rows rather than the backbone.
-    \item \textbf{Ordered overlap-aware suppression, with analysis:} a request-time procedure that estimates the forget and retained gradients before reset, soft-masks the shared-adapter update, suppresses the target classifier slice, deletes the target rehearsal entry, and repairs the rest. We bound the soft-masked subphase for a fixed gradient sequence and measure end-to-end stability with WorstDrop rather than claiming exact or certified removal.
+    \item \textbf{Mechanism analysis and controls:} we bound the soft-masked subphase for a fixed gradient sequence, then isolate reset, repair, masking, and classifier ascent with paired three-seed controls. The controls do not support an endpoint benefit from the mask or ascent, delimiting the adapter claim rather than attributing reset-driven suppression to overlap awareness.
 \end{enumerate}
 
 \section{Related Work}
@@ -68,7 +68,7 @@ The original Privacy-Aware Lifelong Learning (PALL) framework \cite{ozdenizci202
 Continual learning accumulates knowledge across a stream of tasks \cite{thrun1998lifelong}. Regularization methods such as Elastic Weight Consolidation (EWC) \cite{kirkpatrick2017overcoming} and Learning without Forgetting (LwF) \cite{li2017learning} anchor parameters, while Experience Replay (ER) and Dark Experience Replay (DER++) \cite{buzzega2020dark} keep an episodic memory buffer. CLPU \cite{liu2022clpu} is the strongest isolation-based reference here: in the implementation we evaluate, each active task gets its own full network and a request is served by deleting that network. Interference is then impossible by construction, but storage grows with the number of active tasks. PALL targets the complementary case, where tasks already share one model and cannot be separated by discarding a task network.
 
 \subsection{Machine Unlearning Strategies}
-Retraining-based methods such as SISA \cite{bourtoule2021machine} partition the data into isolated ensemble members. Approximate methods instead edit gradients to scrub information \cite{golatkar2020forgetting}, and Boundary Unlearning shifts output decision boundaries for speed \cite{chen2023boundary}. In a continual setting, though, an unconstrained update can damage feature space that active tasks still use. Saliency Unlearning (SalUn) \cite{fan2024salun} confines updates to influential weights; Selective Synaptic Dampening (SSD) \cite{foster2024ssd} dampens parameters by Fisher-based importance.
+Retraining-based methods such as SISA \cite{bourtoule2021machine} partition the data into isolated ensemble members. Approximate methods instead edit gradients to scrub information \cite{golatkar2020forgetting}, and Boundary Unlearning shifts output decision boundaries for speed \cite{chen2023boundary}. In a continual setting, though, an unconstrained update can damage feature space that active tasks still use. Saliency Unlearning (SalUn) \cite{fan2024salun} confines updates to influential weights; Selective Synaptic Dampening (SSD) \cite{foster2024ssd} dampens parameters by Fisher-based importance. Controlled distillation can jointly support learning and removal with a fixed memory \cite{chatterjee2024unified}. UnCLe instead generates task-specific parameters and explicitly studies post-deletion task relapse without retained data \cite{adhikari2026uncle}; CATA studies sequential removal and persistence for vision--language models through conflict-averse task-vector aggregation \cite{lin2026cata}. Our task-incremental shared-model setting keeps a bounded rehearsal memory and edits overlapping weights directly, but these works motivate a separate persistence audit rather than treating immediate post-request accuracy as sufficient.
 
 \subsection{Parameter-Efficient Fine-Tuning}
 Parameter-efficient fine-tuning (PEFT), through adapters \cite{houlsby2019parameter} and LoRA \cite{hu2021lora}, restricts training to compact modules inserted into a frozen network. The recent BID-LoRA preprint \cite{rachapudi2026bidlora} explores a related continual-learning/unlearning combination. PALL-Adapter instead measures overlap inside a shared bottleneck and controls how that bottleneck moves at request time.
@@ -194,7 +194,7 @@ We evaluate task-level continual forgetting over three public benchmarks with fi
     \item \textbf{CIFAR-100} \cite{krizhevsky2009learning}: 10 sequential tasks, 5 disjoint classes per task in the overlap-heavy protocol (chance $0.2$), and 10-class tasks in the standard protocol (chance $0.1$).
     \item \textbf{TinyImageNet} \cite{le2015tinyimagenet}: 20 tasks, 10 disjoint classes per task (chance $0.1$).
 \end{itemize}
-Apart from the ViT ablation, CIFAR-10, TinyImageNet, and pretrained-frozen runs use ResNet-18 variants; main CIFAR-100 runs use ResNet-34 variants \cite{he2016deep}. Configurations use SGD \cite{robbins1951sgd} (learning rate $0.01$, momentum $0.9$, weight decay $5\times10^{-4}$, batch size $32$) and a replay budget of $500$, partitioned a priori across tasks without post-deletion reallocation. Split-CIFAR-100 LoRA alone uses $10^{-3}$ because $10^{-2}$ diverges. Main schedules train each task at most once, contain three distinct forget requests, and never reintroduce a deleted task. Standard, overlap-heavy, and pretrained protocols respectively use 20 epochs, 3 epochs, and a frozen ImageNet backbone. PALL-Adapter uses task/shared bottlenecks $16$, $\alpha_f{=}0.3$, $\alpha_p{=}0.2$, $p=|S_{share\_crit}|/|S_{forget}|$, 10 forget steps, and 50 repair steps. PALL-Modified uses protection ratio $0.2$ and $\lambda{=}1$; LoRA rank is 8; subnet sparsity is $0.8$ on CIFAR-10/TinyImageNet and $0.9$ on CIFAR-100. Current scripts are deterministic. Legacy TinyImageNet overlap-heavy rows instead use $k{=}1$, one fixed schedule, non-deterministic execution, and---for the adapter---one-step ascent. CIFAR uses seeds $\{0,1,2\}$; reported TinyImageNet, MIA, and anchor aggregates use $\{0,1\}$. These counts support descriptive, not confirmed, rankings.
+Apart from the ViT ablation, CIFAR-10, TinyImageNet, and pretrained-frozen runs use ResNet-18 variants; main CIFAR-100 runs use ResNet-34 variants \cite{he2016deep}. Configurations use SGD \cite{robbins1951sgd} (learning rate $0.01$, momentum $0.9$, weight decay $5\times10^{-4}$, batch size $32$) and a replay budget of $500$, partitioned a priori across tasks without post-deletion reallocation. Split-CIFAR-100 LoRA alone uses $10^{-3}$ because $10^{-2}$ diverges. Main schedules train each task at most once, contain three distinct forget requests, and never reintroduce a deleted task. Standard, overlap-heavy, and pretrained protocols respectively use 20 epochs, 3 epochs, and a frozen ImageNet backbone. PALL-Adapter uses task/shared bottlenecks $16$, $\alpha_f{=}0.3$, $\alpha_p{=}0.2$, $p=|S_{share\_crit}|/|S_{forget}|$, 10 forget steps, and 50 repair steps. PALL-Modified uses protection ratio $0.2$ and $\lambda{=}1$; LoRA rank is 8; subnet sparsity is $0.8$ on CIFAR-10/TinyImageNet and $0.9$ on CIFAR-100. Current reruns used one NVIDIA RTX 3070 Ti (8 GB), dual Intel Xeon E5-2620 v4 CPUs, 31 GB RAM, Ubuntu 24.04.4, Python 3.12.3, PyTorch 2.5.1, and torchvision 0.20.1. Current scripts are deterministic. Legacy TinyImageNet overlap-heavy rows instead use $k{=}1$, one fixed schedule, non-deterministic execution, and---for the adapter---one-step ascent. The standard Split-CIFAR, corrected pretrained PEFT, overlap-heavy PALL, and component-control tables use seeds $\{0,1,2\}$. The anchor and persistence analyses use $\{0,1\}$; the excluded privacy diagnostics also remain incomplete. These counts support descriptive, not confirmed, rankings.
 
 We report retained-task $A_{\mathrm{final}}$ ($\uparrow$). For CL context, $F_{\mathrm{avg}}(r)=|\mathcal{T}_{trained}|^{-1}\sum_t[\max_{k<r}A_t(k)-A_t(r)]$ covers every task trained by request $r$, including later deletions; request-specific claims use retained-only Fu and WorstDrop plus forgotten-task Au. Fu is retained mean before minus after a request, and
 \begin{equation}
@@ -217,7 +217,7 @@ The two daggered PEFT rows are diagnostics, not capacity-matched competitors. Un
 
 \subsection{The Intended Pretrained-Frozen PEFT Regime}
 \label{subsec:pretrained}
-Table~\ref{tab:pretrained} holds the PEFT premise fixed by giving LoRA and PALL-Adapter the same frozen ImageNet-pretrained ResNet-18. PALL-Adapter reaches $0.9838$ on CIFAR-10 with a measured WorstDrop of zero, $0.8267$ on CIFAR-100, and $0.9069$ on TinyImageNet with WorstDrop $0.0120$. Its mean accuracy is higher than LoRA's on all three datasets, though the CIFAR-10 gap is small next to the across-seed spread, and its forgotten-task accuracy is not uniformly closer to chance.
+Table~\ref{tab:pretrained} holds the PEFT premise fixed by giving LoRA and PALL-Adapter the same frozen ImageNet-pretrained ResNet-18. CIFAR inputs are converted from dataset normalization to the ImageNet statistics expected by the backbone; TinyImageNet already uses those statistics. All rows now use three seeds. PALL-Adapter reaches $0.9841$ on CIFAR-10, $0.8277$ on CIFAR-100, and $0.9047$ on TinyImageNet. The corresponding LoRA values are $0.9848$, $0.8215$, and $0.8980$. Thus the CIFAR-10 difference is negligible relative to seed spread, while Adapter is modestly higher on CIFAR-100 and TinyImageNet. Au must still be read by distance to chance, and these endpoint comparisons do not attribute the difference to the soft mask.
 
 \begin{table}[t]
 \centering
@@ -226,16 +226,46 @@ Table~\ref{tab:pretrained} holds the PEFT premise fixed by giving LoRA and PALL-
 \begin{tabular}{@{}llccc@{}}
 \toprule
 \textbf{Dataset} & \textbf{Method} & \textbf{$A_{\mathrm{final}}$} & \textbf{W.Drop} & \textbf{Au} \\ \midrule
-\multirow{2}{*}{C10} & LoRA & 0.9836${\pm}$.0160 & 0.0003${\pm}$.0006 & 0.5222${\pm}$.0974 \\
- & Adapter & \textbf{0.9838${\pm}$.0163} & \textbf{0.0000${\pm}$.0000} & 0.5207${\pm}$.0991 \\ \midrule
-\multirow{2}{*}{C100} & LoRA & 0.8190${\pm}$.0125 & 0.0227${\pm}$.0201 & 0.1587${\pm}$.0635 \\
- & Adapter & \textbf{0.8267${\pm}$.0017} & \textbf{0.0187${\pm}$.0133} & 0.1887${\pm}$.1018 \\ \midrule
-\multirow{2}{*}{Tiny-IN} & LoRA & 0.8992${\pm}$.0063 & 0.0210${\pm}$.0071 & 0.0980${\pm}$.0085 \\
- & Adapter & \textbf{0.9069${\pm}$.0045} & \textbf{0.0120${\pm}$.0057} & 0.1150${\pm}$.0240 \\ \bottomrule
+\multirow{2}{*}{C10} & LoRA & \textbf{0.9848${\pm}$.0154} & 0.0000${\pm}$.0000 & 0.5203${\pm}$.0966 \\
+ & Adapter & 0.9841${\pm}$.0172 & \textbf{$-$0.0002${\pm}$.0003} & 0.5190${\pm}$.0988 \\ \midrule
+\multirow{2}{*}{C100} & LoRA & 0.8215${\pm}$.0083 & 0.0213${\pm}$.0219 & 0.1613${\pm}$.0613 \\
+ & Adapter & \textbf{0.8277${\pm}$.0061} & \textbf{0.0180${\pm}$.0020} & 0.1907${\pm}$.1066 \\ \midrule
+\multirow{2}{*}{Tiny-IN} & LoRA & 0.8980${\pm}$.0049 & 0.0153${\pm}$.0110 & 0.0940${\pm}$.0092 \\
+ & Adapter & \textbf{0.9047${\pm}$.0050} & \textbf{0.0127${\pm}$.0042} & 0.0940${\pm}$.0401 \\ \bottomrule
 \end{tabular}
-\caption{Pretrained frozen-backbone regime, the intended PEFT deployment setting (C10/C100/Tiny-IN denote CIFAR-10/CIFAR-100/TinyImageNet). CIFAR rows use three seeds and TinyImageNet two. Chance-level Au is $0.5$ / $0.2$ / $0.1$, respectively. Bold marks the better of the two methods for $A_{\mathrm{final}}$ and WorstDrop only; Au is interpreted by distance to chance rather than by a monotone ranking.}
+\caption{Corrected pretrained frozen-backbone regime (three seeds throughout). C10/C100/Tiny-IN denote CIFAR-10/CIFAR-100/TinyImageNet. CIFAR uses explicit ImageNet input normalization; TinyImageNet is already ImageNet-normalized. Chance Au is $0.5/0.2/0.1$. Bold marks the better endpoint for $A_{\mathrm{final}}$ and signed WorstDrop only; Au is interpreted by distance to chance.}
 \label{tab:pretrained}
 \end{table}
+
+\subsection{PALL-Adapter Component Attribution}
+\label{subsec:adapter-components}
+Table~\ref{tab:adapter-components} isolates the request-time components under the same corrected pretrained pipeline and schedules as the full method. Reset-only reinitializes the target adapter and classifier slice; reset+repair adds retained repair; uniform removes overlap protection from the shared update; mask/no-ascent removes cached classifier ascent; full uses every component.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{1.4pt}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Data} & \textbf{Control} & \textbf{$A_{\mathrm{final}}$} & \textbf{W.Drop} & \textbf{$|A_u-c|$} \\ \midrule
+\multirow{5}{*}{C10}
+ & Reset only & .9836${\pm}$.0168 & .0000${\pm}$.0000 & .0675${\pm}$.0573 \\
+ & Reset+repair & .9838${\pm}$.0170 & .0002${\pm}$.0003 & .0673${\pm}$.0570 \\
+ & Uniform & .9837${\pm}$.0169 & .0005${\pm}$.0009 & .0680${\pm}$.0576 \\
+ & Mask/no-ascent & .9837${\pm}$.0169 & .0005${\pm}$.0009 & .0675${\pm}$.0573 \\
+ & Full & .9837${\pm}$.0169 & .0005${\pm}$.0009 & .0682${\pm}$.0573 \\ \addlinespace[2pt]
+\multirow{5}{*}{C100}
+ & Reset only & .8324${\pm}$.0076 & .0000${\pm}$.0000 & .0787${\pm}$.0163 \\
+ & Reset+repair & .8261${\pm}$.0068 & .0200${\pm}$.0125 & .0880${\pm}$.0240 \\
+ & Uniform & .8284${\pm}$.0105 & .0180${\pm}$.0180 & .0820${\pm}$.0227 \\
+ & Mask/no-ascent & .8286${\pm}$.0105 & .0173${\pm}$.0160 & .0800${\pm}$.0216 \\
+ & Full & .8286${\pm}$.0105 & .0173${\pm}$.0160 & .0833${\pm}$.0239 \\ \bottomrule
+\end{tabular}
+\caption{Three-seed PALL-Adapter component controls with corrected ImageNet preprocessing. Values are mean$\pm$std; no cells are ranked. Uniform and mask/no-ascent match the full configuration except for the named component.}
+\label{tab:adapter-components}
+\end{table}
+
+The endpoints do not support the soft mask or cached ascent as the source of Adapter's behavior. Full and mask/no-ascent have identical $A_{\mathrm{final}}$ and WorstDrop on both datasets, while full and uniform differ by at most $0.0002$ in accuracy and $0.0007$ in WorstDrop. On CIFAR-100, reset-only instead has higher retention ($0.8324$ vs. $0.8286$), zero WorstDrop, and a smaller mean distance to chance than full. Paired bootstrap intervals over three schedules include zero for the full--reset accuracy and Au-distance differences, whereas the WorstDrop difference favors reset-only. We therefore attribute the observed task suppression primarily to target-path reset; the overlap-aware shared update remains a theoretically delimited but empirically unsupported component at the measured endpoint.
 
 \subsection{PALL Variants under the Overlap-Heavy Protocol}
 \label{subsec:pall-overlap-heavy}
@@ -257,23 +287,16 @@ PALL-Original & .5013${\pm}$.0107 & .0187${\pm}$.0095 & .2033${\pm}$.0058 \\
 \textbf{PALL-Modified} & .5093${\pm}$.0148 & .0047${\pm}$.0050 & .2033${\pm}$.0058 \\
 \textbf{PALL-Adapter} & .3284${\pm}$.0257 & .0427${\pm}$.0333 & .2147${\pm}$.0261 \\ \addlinespace[2pt]
 \multicolumn{4}{@{}l}{\textit{TinyImageNet}} \\
-PALL-Original & .3361${\pm}$.0141 & .0940${\pm}$.0028 & .0960${\pm}$.0113 \\
-\textbf{PALL-Modified} & .4566${\pm}$.0054 & .0600${\pm}$.0368 & .0960${\pm}$.0057 \\
-\textbf{PALL-Adapter}$^\ddagger$ & .3256${\pm}$.0064 & .0080${\pm}$.0000 & .0800${\pm}$.0311 \\ \bottomrule
+PALL-Original & .3365${\pm}$.0100 & .0853${\pm}$.0151 & .0973${\pm}$.0083 \\
+\textbf{PALL-Modified} & .4533${\pm}$.0069 & .0840${\pm}$.0490 & .0893${\pm}$.0122 \\
+\textbf{PALL-Adapter}$^\ddagger$ & .3332${\pm}$.0140 & .0060${\pm}$.0035 & .0993${\pm}$.0401 \\ \bottomrule
 \end{tabular}
 % Provenance: CIFAR rows use cifar10_main/cifar100_main; TinyImageNet rows use the matched tiny_e3_{original,modified,adapter}_v1 tags.
-\caption{PALL variants in the separate overlap-heavy from-scratch regime (3 epochs/task). CIFAR rows use the current configurations and three seeds. TinyImageNet uses two legacy, non-deterministic $k{=}1$ runs on one fixed schedule; $^\ddagger$ denotes the earlier one-step ascent adapter rule, which is not evidence for the current uniform-target subphase. The repair-scope ratios and remaining metrics are discussed in the text.}
+\caption{PALL variants in the separate overlap-heavy from-scratch regime (3 epochs/task; three seeds throughout). TinyImageNet uses legacy, non-deterministic $k{=}1$ runs on one fixed schedule; $^\ddagger$ denotes the earlier one-step ascent adapter rule, which is not evidence for the current uniform-target subphase.}
 \label{tab:pall_overlap_heavy}
 \end{table}
 
-As shown in Table~\ref{tab:pall_overlap_heavy}, \textbf{PALL-Modified} attains the highest retention accuracy among the three PALL variants on every benchmark ($0.9152$ vs.\ $0.9087$ on CIFAR-10; $0.5093$ vs.\ $0.5013$ on CIFAR-100; $0.4566$ vs.\ $0.3361$ on TinyImageNet) while lowering WorstDrop from $0.0040$ to $0.0008$ on CIFAR-10 and from $0.0187$ to $0.0047$ on CIFAR-100 relative to PALL-Original. \textbf{PALL-Adapter} trades in the other direction on the current CIFAR runs: a smaller repair scope and Au close to chance, paid for with retention accuracy when training starts from scratch. We do not interpret the legacy TinyImageNet adapter row as evidence for the current method. With three seeds these are descriptive trends rather than confirmed rankings; the adapter's CIFAR-10 spread ($\pm 0.0610$) precludes strong claims (Figure~\ref{fig:worstdrop_bars}).
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.95\columnwidth]{Figures/aaai_worstdrop.pdf}
-\caption{WorstDrop for the current overlap-heavy CIFAR runs (means and std over three seeds). The legacy TinyImageNet adapter result is excluded.}
-\label{fig:worstdrop_bars}
-\end{figure}
+As shown in Table~\ref{tab:pall_overlap_heavy}, \textbf{PALL-Modified} attains the highest retention accuracy among the three PALL variants on every benchmark ($0.9152$ vs.\ $0.9087$ on CIFAR-10; $0.5093$ vs.\ $0.5013$ on CIFAR-100; $0.4533$ vs.\ $0.3365$ on TinyImageNet) while lowering WorstDrop from $0.0040$ to $0.0008$ on CIFAR-10 and from $0.0187$ to $0.0047$ on CIFAR-100 relative to PALL-Original. On TinyImageNet, its mean WorstDrop is nearly unchanged ($0.0840$ vs.\ $0.0853$) with high spread. \textbf{PALL-Adapter} trades in the other direction on the current CIFAR runs: a smaller repair scope and Au close to chance, paid for with retention accuracy when training starts from scratch. We do not interpret the legacy TinyImageNet adapter row as evidence for the current method. These three-seed results are descriptive trends rather than confirmed rankings.
 
 \subsection{Nominal Retained-Repair Scope}
 \label{subsec:efficiency}
@@ -283,60 +306,31 @@ PALL-Adapter reduces the logged nominal retained-repair scope relative to the fu
 \label{subsec:overlap-analysis}
 Across the current uniform-loop adapter aggregates with overlap logs, the measured critical-overlap ratio $|S_{share\_crit}|/|S_{forget}|$ ranges from $0.35$ to $0.56$ and the hard-protected fraction from $0.07$ to $0.11$; request-level logs show forgotten-task accuracy moving toward chance while retained-task trajectories remain measurable. Pooled regressions of signed WorstDrop on measured overlap have $95\%$ heteroskedasticity-robust confidence intervals that include zero, so we make no overlap--damage dose-response claim.
 
+\paragraph{Persistence across later deletion requests.} A read-only audit follows each deleted task through the remaining request history in matched two-seed runs (six deleted-task trajectories per method and dataset). PALL-Adapter's mean maximum rebound is $0.0093$ on CIFAR-10 and $0.0027$ on CIFAR-100, with worst observed rebounds $0.0490$ and $0.0160$; PALL-Modified's corresponding worst rebounds are $0.0185$ and $0.0480$. These descriptive trajectories show that immediate suppression generally persists through later deletions but is not invariant. Because the schedules contain no subsequent training request after deletion begins, they do not test relapse under renewed learning as in UnCLe or CATA.
+
 \subsection{Privacy Evidence: MIA, Leakage Audit, and Linear Probes}
 \label{subsec:mia}
-Because the shared adapter remains a function of target-buffer gradients, we assess approximate task-level forgetting with three complementary probes; none is a formal removal guarantee.
+Because the shared adapter remains a function of target-buffer gradients, privacy diagnostics require particular care; none can be treated as a formal removal guarantee.
 
-\paragraph{Membership inference.} For each request, members are up to $512$ forgotten-task training examples and non-members up to $512$ held-out test examples; the raw score is cross-entropy divided by maximum softmax confidence and is negated so that larger stored values are more member-like. We report its ROC-AUC. Logged AUC stays near $0.5$ (the old-anchor PALL-Modified arm: $0.5045\!\to\!0.4961$ on CIFAR-10, $0.4998\!\to\!0.5279$ on CIFAR-100). Because the attack is already near chance before deletion, it has little power to certify improvement; with two seeds and no significance test this is a diagnostic null result, not positive forgetting evidence.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.95\columnwidth]{Figures/aaai_mia.pdf}
-\caption{Mean membership-inference AUC from canonical aggregates (two seeds). CLPU and the old-anchor PALL-Modified arm are from-scratch; LoRA and PALL-Adapter use pretrained frozen backbones. Each seed contains three requests; the dashed line marks chance.}
-\label{fig:mia}
-\end{figure}
-
-\paragraph{Attack-threshold leakage audit.} Inspired by confidence-bound privacy auditing \cite{steinke2023privacy}, we threshold the stored MIA scores and report $\hat{\varepsilon}_{attack}=\max_\tau\log(\mathrm{TPR}^{L}_{95}/\mathrm{FPR}^{U}_{95})$, clipped at zero (one-sided Clopper--Pearson). Because our setup uses no randomized canaries or DP mechanism, $\hat{\varepsilon}_{attack}$ is an attack-specific leakage statistic, not a bound on the model's DP parameter. Over six request events per configuration, PALL-Adapter's post-forget mean is $0.0058$ (CIFAR-10) and $0.0000$ (CIFAR-100), while PALL-Modified averages ${\approx}0.10$ with maxima $0.4555$ and $0.5544$. A zero value certifies nothing---only that this audit found no positive leakage.
-
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{@{}llrrr@{}}
-\toprule
-\textbf{Data} & \textbf{Method} & \textbf{Mean before} & \textbf{Mean after} & \textbf{Max after} \\ \midrule
-\multirow{4}{*}{CIFAR-10} & CLPU & 0.0023 & 0.0000 & 0.0000 \\
- & LoRA & 0.0002 & 0.0080 & 0.0249 \\
- & Adapter & 0.0005 & 0.0058 & 0.0169 \\
- & Modified & 0.0000 & 0.0993 & 0.4555 \\ \midrule
-\multirow{4}{*}{CIFAR-100} & CLPU & 0.0000 & 0.0000 & 0.0000 \\
- & LoRA & 0.0016 & 0.0018 & 0.0108 \\
- & Adapter & 0.0075 & 0.0000 & 0.0000 \\
- & Modified & 0.0000 & 0.0995 & 0.5544 \\ \bottomrule
-\end{tabular}
-\caption{Attack-threshold leakage statistic $\hat{\varepsilon}_{attack}$ from per-sample MIA scores ($n=6$ request events per configuration). CLPU and Modified are from-scratch; LoRA and Adapter use pretrained frozen backbones.}
-\label{tab:privacy}
-\end{table}
-
-\paragraph{Linear probes on deployed representations.} Finally, we fit a fresh linear classifier on up to $2{,}000$ forgotten-task training examples and evaluate it on up to $1{,}000$ held-out examples, using the model's deployed penultimate features before and after each request. Full-network methods and CLPU show large probe-accuracy decreases (e.g., PALL-Modified: $-0.2168$ on CIFAR-10, $-0.1790$ on CIFAR-100), whereas the absolute mean changes for PALL-Adapter and LoRA are at most $0.0140$ (CIFAR-100 LoRA increases by $0.0070$). Their backbone is frozen (though the adapter pathway can change), so substantial forgotten-task information remains linearly accessible. This structural limitation complements rather than contradicts the near-chance Au and MIA results, read through the model's own decision pathway.
+\paragraph{Audit protocol.} The original diagnostic used training-time augmentation for members but deterministic preprocessing for non-members, and its rank-based AUC did not average tied scores. We therefore omit those numerical MIA, threshold-leakage, and probe results rather than interpret a confounded audit. The corrected implementation evaluates both splits with the same augmentation-free transform and average-ranks ties; corrected reruns are required before these diagnostics are restored. Even after correction, a near-chance attack is only a diagnostic null and not a privacy or removal certificate \cite{steinke2023privacy}.
 
 \subsection{Anchor Ablation: Data-Independent Protection}
 \label{subsec:anchor}
-The $\ell_2$ anchor of Eq.~\eqref{eq:repair} defaults to the pre-forget weights $w_{old}$, which can themselves carry forgotten-task information. In the matched two-seed anchor ablation, replacing it with $w_{reinit}$ changes $A_{\mathrm{final}}$ from $0.9291$ to $0.9316$ and WorstDrop from $0.0045$ to $0.0037$ on CIFAR-10; on CIFAR-100 the corresponding changes are $0.4956$ to $0.5029$ and $0.0200$ to $0.0100$. The post-forget MIA-AUC shifts are small and non-uniform, so this is directional retention evidence, not a privacy guarantee.
+The $\ell_2$ anchor of Eq.~\eqref{eq:repair} defaults to the pre-forget weights $w_{old}$, which can themselves carry forgotten-task information. In the matched two-seed anchor ablation, replacing it with $w_{reinit}$ changes $A_{\mathrm{final}}$ from $0.9291$ to $0.9316$ and WorstDrop from $0.0045$ to $0.0037$ on CIFAR-10; on CIFAR-100 the corresponding changes are $0.4956$ to $0.5029$ and $0.0200$ to $0.0100$. This is directional retention evidence, not a privacy guarantee.
 
 \subsection{Sensitivity and Importance-Criterion Ablations}
 \label{subsec:ablation}
-On pretrained CIFAR-100, an $\{\alpha_f, \alpha_p, N_{iters}\}$ sweep over eight configurations keeps $A_{\mathrm{final}}$ in the narrow band $0.8251$--$0.8289$, while increasing the forgetting steps from $10$ to $30$ lowers WorstDrop in all four pairs (best $0.0130$). At $\alpha_f=0.5$ and $N_{iters}=30$, both $\alpha_p=0.2$ and $0.4$ reach $0.0130$, while hard-protecting $7.7\%$ and $29.3\%$ of coordinates, respectively. Bottleneck-width sweeps showed no monotone benefit beyond dimension $16$, our fixed default. Replacing the gradient-magnitude criterion with the gradient-conflict energy $\mathrm{relu}(-g_{forget}\cdot g_{retain})$ helps the adapter on CIFAR-10 (WorstDrop $0.0160\!\to\!0.0063$) but degrades PALL-Modified on CIFAR-100 ($0.0060\!\to\!0.0230$), so gradient magnitude remains the default.
+The earlier pretrained $\{\alpha_f,\alpha_p,N_{iters}\}$ sweep used the legacy CIFAR-normalization pipeline and is excluded from the corrected endpoint evidence. Bottleneck-width sweeps showed no monotone benefit beyond dimension $16$, our fixed default. Replacing the gradient-magnitude criterion with the gradient-conflict energy $\mathrm{relu}(-g_{forget}\cdot g_{retain})$ helps the adapter on CIFAR-10 (WorstDrop $0.0160\!\to\!0.0063$) but degrades PALL-Modified on CIFAR-100 ($0.0060\!\to\!0.0230$), so gradient magnitude remains the default.
 
 \subsection{Cross-Architecture Generalization}
 \label{subsec:vit}
 On a ViT-T/8 backbone, PALL-Modified reduces mean WorstDrop on Split-CIFAR-100 from $0.0190$ (PALL-Original) to $0.0100$ while slightly improving accuracy ($0.3990$ vs.\ $0.3921$) and keeping Au near chance; on Split-CIFAR-10 their mean results are nearly equal. Transfer is thus dataset-dependent, with no significance claim.
 
 \section{Limitations}
-TinyImageNet overlap-heavy results use one fixed schedule and legacy settings (Table~\ref{tab:pall_overlap_heavy}). The request-driven, task-aware interface requires a target task ID and does not cover class-incremental inference. Without reset-only and distributional retraining controls, PALL-Adapter cannot isolate the soft mask from target-path reset. Au and the weak pre-forget MIA audit are not privacy certificates. Only the in-process rehearsal entry is deleted, not raw data, checkpoints, or external copies; linear probes expose residual frozen-backbone information. Runtime is not hardware-normalized. Adapter results are sensitive to $\{\alpha_f,\alpha_p,N_{iters}\}$, and tuning is not automatic.
+TinyImageNet overlap-heavy results use one fixed schedule and legacy settings (Table~\ref{tab:pall_overlap_heavy}). The request-driven, task-aware interface requires a target task ID and does not cover class-incremental inference. Three-seed component controls find no endpoint benefit from PALL-Adapter's soft mask or classifier ascent beyond target-path reset; the adapter mechanism is therefore exploratory, not a validated second improvement over PALL. The distributional retraining reference and corrected privacy audits are pending, and Au is not a privacy certificate. Only the in-process rehearsal entry is deleted, not raw data, checkpoints, or external copies, and a frozen backbone can retain target information. Runtime is not hardware-normalized. Adapter tuning is not automatic.
 
 \section{Conclusion}
-PALL-Modified protects retention-sensitive shared weights and comes within half a point of CLPU on both standard Split-CIFAR benchmarks. PALL-Adapter reduces nominal repair scope with a pretrained frozen backbone, but linear probes show decision-path suppression rather than representation erasure. CLPU remains preferable when a full network per task is affordable; PALL targets shared models. No result establishes exact, certified, representation-level, or storage-level removal.
+PALL-Modified protects retention-sensitive shared weights and comes within half a point of CLPU on both standard Split-CIFAR benchmarks. PALL-Adapter provides a compact, task-ID-aware pathway, but component controls show that its measured endpoint is dominated by target-path reset rather than the proposed soft mask or cached ascent. We therefore make PALL-Modified the supported positive result and retain Adapter as an audited exploratory variant. CLPU remains preferable when a full network per task is affordable; PALL targets shared models. No result establishes exact, certified, representation-level, or storage-level removal.
 
 
 \bibliography{references}

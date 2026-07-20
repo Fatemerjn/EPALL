@@ -1,16 +1,16 @@
-# Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-20)
+# Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-21)
 
 ## Corpus Check
-- 165 files · ~278,286 words
+- 172 files · ~282,384 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1524 nodes · 3267 edges · 138 communities (70 shown, 68 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 219 edges (avg confidence: 0.62)
+- 1578 nodes · 3361 edges · 147 communities (79 shown, 68 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 222 edges (avg confidence: 0.62)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c0a5e31c`
+- Built from commit: `cd04e646`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -124,8 +124,10 @@
 - [[_COMMUNITY_main|main]]
 - [[_COMMUNITY_generate_main_standard_table.py|generate_main_standard_table.py]]
 - [[_COMMUNITY_LoRA|LoRA]]
+- [[_COMMUNITY_analyze_retraining_reference.py|analyze_retraining_reference.py]]
 - [[_COMMUNITY_Experiments that remain genuinely necessary|Experiments that remain genuinely necessary]]
 - [[_COMMUNITY_EWC|EWC]]
+- [[_COMMUNITY_data.py|data.py]]
 - [[_COMMUNITY_Adapter Protected|Adapter Protected]]
 - [[_COMMUNITY_Adapter Reset|Adapter Reset]]
 - [[_COMMUNITY_Adapter Shared|Adapter Shared]]
@@ -153,6 +155,13 @@
 - [[_COMMUNITY_RehearsalMemory|RehearsalMemory]]
 - [[_COMMUNITY_Controlled overlap grades|Controlled overlap grades]]
 - [[_COMMUNITY_overlap_response_slopes|overlap_response_slopes.md]]
+- [[_COMMUNITY_paired_reference_batch_sums|paired_reference_batch_sums]]
+- [[_COMMUNITY_write_run_report|write_run_report]]
+- [[_COMMUNITY_roc_auc_from_scores|roc_auc_from_scores]]
+- [[_COMMUNITY_compute_probe|compute_probe]]
+- [[_COMMUNITY_get_request_datasets|get_request_datasets]]
+- [[_COMMUNITY_audit_seed_completeness.py|audit_seed_completeness.py]]
+- [[_COMMUNITY_capture_server_environment.sh|capture_server_environment.sh]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `SubnetVisionTransformer` - 45 edges
@@ -161,10 +170,10 @@
 4. `Base` - 37 edges
 5. `VisionTransformer` - 36 edges
 6. `main()` - 34 edges
-7. `RehearsalMemory` - 26 edges
-8. `SubnetLinear` - 26 edges
-9. `SubnetConv2d` - 26 edges
-10. `run_server_experiments.sh script` - 26 edges
+7. `run_server_experiments.sh script` - 27 edges
+8. `RehearsalMemory` - 26 edges
+9. `SubnetLinear` - 26 edges
+10. `SubnetConv2d` - 26 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `main()` --indirect_call--> `CLPU`  [INFERRED]
@@ -184,23 +193,23 @@
 ## Hyperedges (group relationships)
 - **Besmellah Calligraphic Invocation** — thesis_front_template_images_besmellah_image, thesis_front_template_images_besmellah_bismillah_al_rahman_al_rahim, thesis_front_template_images_besmellah_arabic_calligraphy, thesis_front_template_images_besmellah_islamic_invocation [INFERRED 0.85]
 
-## Communities (138 total, 68 thin omitted)
+## Communities (147 total, 68 thin omitted)
 
 ### Community 0 - "Subnet Mask Layers"
 Cohesion: 0.07
 Nodes (22): MaskByScores, SubnetClassifier, SubnetConv2d, SubnetLinear, maskedSequential, subnet_conv1x1(), subnet_conv3x3(), subnet_resnet18() (+14 more)
 
 ### Community 1 - "Training Main Metrics"
-Cohesion: 0.06
-Nodes (68): acc_list_to_dict(), _agreement_argmax_preds(), avg_for_tasks(), build_mia_event(), build_probe_event(), build_requests_with_active_tasks(), _coerce_float_or_none(), _coerce_int_or_none() (+60 more)
+Cohesion: 0.12
+Nodes (30): acc_list_to_dict(), avg_for_tasks(), build_mia_event(), build_probe_event(), _coerce_float_or_none(), _coerce_int_or_none(), compute_average_forgetting(), compute_model_agreement() (+22 more)
 
 ### Community 2 - "Swift Overlap Plots"
-Cohesion: 0.16
-Nodes (34): Select an execution device with macOS MPS support., resolve_device(), RuntimeError, aggregate_rows(), allowed_tags(), analyze_run(), as_accuracy_map(), config_mismatches() (+26 more)
+Cohesion: 0.12
+Nodes (42): Select an execution device with macOS MPS support., resolve_device(), RuntimeError, accuracy_map(), analyze_run(), main(), parse_args(), plot_curves() (+34 more)
 
 ### Community 3 - "Dataset Loading"
-Cohesion: 0.07
-Nodes (29): get_cifar100_superclass_tasks(), get_dataset_metadata(), get_task_datasets(), _load_tinyimagenet_wnids(), _resolve_tinyimagenet_root(), SubDataset, TinyImageNetTrainDataset, TinyImageNetValDataset (+21 more)
+Cohesion: 0.10
+Nodes (20): apply_feature_cache(), _augfree_base_dataset(), _backbone_feature_dim(), build_or_load_cache(), CachedFeatureDataset, compute_features(), _load_tinyimagenet_wnids(), Frozen-backbone feature caching for the pretrained PEFT path.  When ``--pretrain (+12 more)
 
 ### Community 4 - "PALL Adapter Logic"
 Cohesion: 0.09
@@ -267,12 +276,12 @@ Cohesion: 0.09
 Nodes (48): audit_run(), _beta_ppf(), _betacf(), _betai(), cp_lower(), cp_upper(), eps_hat(), find_score_dirs() (+40 more)
 
 ### Community 22 - "Method Modules"
-Cohesion: 0.24
+Cohesion: 0.22
 Nodes (5): PALLModified, PALL-Modified -- the MAIN overlap-aware selective-forgetting method.  Identifies, PALLOriginal, PALL-Original -- the PALL baseline (no overlap protection).  Forgetting resets t, Backward-compatibility shim.  The PALL implementation was split into:   * ``meth
 
 ### Community 23 - "Model Factories"
-Cohesion: 0.21
-Nodes (9): adapter_resnet18(), adapter_resnet34(), adapter_resnet50(), TaskBottleneckAdapter, lora_resnet18(), lora_resnet34(), lora_resnet50(), BasicBlock (+1 more)
+Cohesion: 0.27
+Nodes (8): adapter_resnet18(), adapter_resnet34(), adapter_resnet50(), lora_resnet18(), lora_resnet34(), lora_resnet50(), BasicBlock, Bottleneck
 
 ### Community 24 - "check_thesis_numbers.py"
 Cohesion: 0.19
@@ -295,7 +304,7 @@ Cohesion: 0.40
 Nodes (12): AblationConfig, build_command(), build_commands(), DatasetPreset, main(), parse_args(), print_command(), Namespace (+4 more)
 
 ### Community 32 - "LoRA Modules"
-Cohesion: 0.23
+Cohesion: 0.21
 Nodes (4): Per-task LoRA module: x + (alpha/r) * B(A x), no nonlinearity.      Mirrors ``Ta, Optional shared LoRA applied to the feature for all tasks., SharedLoRA, TaskLoRA
 
 ### Community 33 - "ResNet Backbone"
@@ -336,7 +345,7 @@ Nodes (9): DataFrame, compute_regression_band(), main(), parse_args(), plot_publ
 
 ### Community 42 - "Server Experiment Script"
 Cohesion: 0.19
-Nodes (28): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+20 more)
+Nodes (29): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+21 more)
 
 ### Community 44 - "Baseline Runner"
 Cohesion: 0.53
@@ -348,7 +357,7 @@ Nodes (8): build_commands(), main(), parse_args(), Namespace, Path, run_commands
 
 ### Community 48 - "Pretrained Backbone"
 Cohesion: 0.29
-Nodes (4): build_frozen_backbone(), FrozenImageNetBackbone, Return a FrozenImageNetBackbone for the named option, or None for 'none'., ImageNet-pretrained ResNet-18 feature extractor: frozen, offline-safe.      Wrap
+Nodes (4): build_frozen_backbone(), FrozenImageNetBackbone, ImageNet-pretrained ResNet-18 feature extractor: frozen, offline-safe.      Wrap, Return a FrozenImageNetBackbone for the named option, or None for 'none'.
 
 ### Community 49 - "PALL Pairwise Runner"
 Cohesion: 0.61
@@ -383,16 +392,16 @@ Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 61 - "SalUn"
-Cohesion: 0.15
+Cohesion: 0.16
 Nodes (3): Derpp, ER, RehearsalMemory
 
 ### Community 62 - "LSF"
-Cohesion: 0.32
-Nodes (12): accuracy_at(), as_float(), extract_row(), fmt(), load_json(), main(), mean_present(), select_rows() (+4 more)
+Cohesion: 0.19
+Nodes (21): accuracy_at(), as_float(), bootstrap_mean_ci(), extract_row(), fmt(), load_json(), main(), mean_present() (+13 more)
 
 ### Community 63 - "SSD"
-Cohesion: 0.13
-Nodes (13): LSF, LwF, modified_kl_div(), smooth(), Sequential, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, subnet_vit_t8(), subnet_vit_t_16() (+5 more)
+Cohesion: 0.22
+Nodes (4): LSF, LwF, modified_kl_div(), smooth()
 
 ### Community 64 - "graphify reference: extra exports and benchmark"
 Cohesion: 0.22
@@ -443,43 +452,79 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 106 - "main"
-Cohesion: 0.73
+Cohesion: 0.57
 Nodes (5): fig_mia(), fig_tradeoff(), fig_worstdrop(), main(), Path
 
 ### Community 107 - "generate_main_standard_table.py"
 Cohesion: 0.28
 Nodes (15): decimal_4(), displayed_metrics(), expected_tag(), fail(), header(), main(), mean_std_4(), panel_lines() (+7 more)
 
+### Community 109 - "analyze_retraining_reference.py"
+Cohesion: 0.46
+Nodes (7): build_rows(), fmt(), load_json(), main(), select_latest(), write_csv(), write_markdown()
+
 ### Community 110 - "Experiments that remain genuinely necessary"
-Cohesion: 0.12
-Nodes (16): AAAI Review Action Matrix, Anchor ablation, Bottom line, Closed in the manuscript without new training, Existing evidence that can be reused, with limits, Experiments that remain genuinely necessary, P0 — PALL-Adapter component attribution, P0 — Retraining reference (+8 more)
+Cohesion: 0.11
+Nodes (17): AAAI Review Action Matrix, Anchor ablation, Bottom line, Closed in the manuscript without new training, Completed — PALL-Adapter component attribution, Delta from the second 4/10 review (2026-07-20), Existing evidence that can be reused, with limits, Experiments that remain genuinely necessary (+9 more)
+
+### Community 111 - "EWC"
+Cohesion: 0.15
+Nodes (10): EWC, Sequential, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, subnet_vit_t8(), subnet_vit_t_16(), subnet_vit_t_8(), SubnetVisionTransformer, VisionTransformer (+2 more)
+
+### Community 112 - "data.py"
+Cohesion: 0.14
+Nodes (13): get_cifar100_superclass_tasks(), get_dataset_metadata(), get_evaluation_transform(), get_task_datasets(), _load_tinyimagenet_wnids(), make_augmentation_free_evaluation_view(), Clone a task dataset with training augmentation disabled for audits.      Cached, Return the deterministic test-time transform for a supported dataset. (+5 more)
 
 ### Community 131 - "پرامپت‌های پیشنهادی برای بازطراحی شکل‌های مفهومی پایان‌نامه"
 Cohesion: 0.29
 Nodes (6): 1. جریان فراموشی انتخابی آگاه از هم‌پوشانی, 2. هم‌پوشانی پارامتری و ناحیه‌ی بحرانی, 3. معماری افقی PALL-Adapter, 4. تجزیه‌ی افت با ماسک نرم, 5. تصویر خلاصه برای فصل نتایج, پرامپت‌های پیشنهادی برای بازطراحی شکل‌های مفهومی پایان‌نامه
 
 ### Community 132 - "audit_seed_completeness.py"
-Cohesion: 0.13
-Nodes (31): adapter_config(), audit(), config_label(), expected_specs(), ExpectedSpec, find_partial_dirs(), load_actual_runs(), main() (+23 more)
+Cohesion: 0.17
+Nodes (12): compute_mia(), _dump_mia_scores(), evaluate(), _mia_auc(), _mia_balanced_accuracy(), _mia_loss_over_confidence_scores(), _mia_per_sample_scores(), Simple membership-inference attack for one forget target.      Members = the for (+4 more)
 
 ### Community 138 - "Controlled overlap grades"
 Cohesion: 0.50
 Nodes (3): Controlled overlap grades, Generation and validation, Legacy filenames
 
+### Community 140 - "paired_reference_batch_sums"
+Cohesion: 0.25
+Nodes (6): _compare_models_on_task(), Compare two models on identical samples using the task-local output slice., paired_reference_batch_sums(), Numerically stable paired metrics for retraining-reference audits., Return additive metric sums for one sample-aligned batch.      ``logits_a`` and, RetrainingReferenceMetricsTest
+
+### Community 141 - "write_run_report"
+Cohesion: 0.29
+Nodes (10): compute_unlearning_score(), describe_efficiency(), describe_forgetting_success(), describe_preservation(), extend_markdown_table(), format_optional_float(), format_optional_text(), summarize_overlap_csv() (+2 more)
+
+### Community 142 - "roc_auc_from_scores"
+Cohesion: 0.31
+Nodes (4): Small, dependency-free metrics used by the privacy diagnostics., Mann--Whitney ROC-AUC with average ranks for tied scores., roc_auc_from_scores(), PrivacyMetricsTest
+
+### Community 143 - "compute_probe"
+Cohesion: 0.25
+Nodes (8): compute_probe(), _probe_extract_features(), Frozen penultimate features (flattened) + labels for ``dataset`` under the     m, Fallback multinomial logistic regression: 200 epochs of full-batch SGD., Fit a fresh logistic-regression probe on frozen (standardized) train     feature, Linear-probe leakage audit for one forget target: how linearly-decodable the, _sgd_logreg_predict(), _train_linear_probe()
+
+### Community 144 - "get_request_datasets"
+Cohesion: 0.40
+Nodes (6): build_requests_with_active_tasks(), generate_user_requests(), get_request_datasets(), load_request_schedule(), parse_schedule_entries(), parse_schedule_request()
+
+### Community 145 - "audit_seed_completeness.py"
+Cohesion: 0.13
+Nodes (31): adapter_config(), audit(), config_label(), expected_specs(), ExpectedSpec, find_partial_dirs(), load_actual_runs(), main() (+23 more)
+
 ## Knowledge Gaps
-- **184 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `DatasetPreset` (+179 more)
+- **186 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `capture_server_environment.sh script` (+181 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **68 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `SubnetVisionTransformer` connect `SSD` to `Subnet Mask Layers`, `PALL Base Forgetting`, `CLPU Method`, `Regularization Methods`, `EWC`, `Base Model Params`, `SalUn`, `SalUn`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
-- **Why does `RehearsalMemory` connect `SalUn` to `PALL Adapter Logic`, `PALL Base Forgetting`, `LoRA`, `Regularization Methods`, `SSD`, `SalUn`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
-- **Why does `PALLAdapter` connect `PALL Adapter Logic` to `Training Main Metrics`, `Replay Methods`, `SalUn`, `SSD`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+- **Why does `RehearsalMemory` connect `SalUn` to `PALL Adapter Logic`, `PALL Base Forgetting`, `LoRA`, `Regularization Methods`, `EWC`, `Method Modules`, `SalUn`?**
+  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+- **Why does `SubnetVisionTransformer` connect `EWC` to `Subnet Mask Layers`, `PALL Base Forgetting`, `CLPU Method`, `Regularization Methods`, `Base Model Params`, `Method Modules`, `SalUn`, `SalUn`, `SSD`?**
+  _High betweenness centrality (0.075) - this node is a cross-community bridge._
+- **Why does `PALLAdapter` connect `PALL Adapter Logic` to `Training Main Metrics`, `SalUn`, `Method Modules`, `Replay Methods`?**
+  _High betweenness centrality (0.063) - this node is a cross-community bridge._
 - **Are the 25 inferred relationships involving `SubnetVisionTransformer` (e.g. with `CLPU` and `.learn()`) actually correct?**
   _`SubnetVisionTransformer` has 25 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `PALLAdapter` (e.g. with `main()` and `RehearsalMemory`) actually correct?**

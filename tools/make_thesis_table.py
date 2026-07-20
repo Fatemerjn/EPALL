@@ -93,6 +93,7 @@ CONFIG_GROUP_COLUMNS = [
     "adapter_component_mode",
     "adapter_mask_mode",
     "adapter_conflict_gamma",
+    "pretrained_input_norm",
 ]
 
 SEED_AGG_METRICS = [
@@ -194,10 +195,24 @@ CONFIG_MISSING_DEFAULTS = {
     "adapter_mask_mode": "discrete",
     "adapter_conflict_gamma": "1.0",
     "adapter_component_mode": "full",
+    "pretrained_input_norm": "legacy_dataset_stats",
 }
 
 
 def config_group_value(config: Dict[str, Any], key: str) -> str:
+    # The input-normalization choice only changes runs that actually use a
+    # frozen pretrained backbone.  Collapsing it to N/A elsewhere prevents a
+    # newly explicit default from splitting otherwise identical from-scratch
+    # runs into artificial legacy/new groups.
+    if key == "pretrained_input_norm":
+        backbone = str(config.get("pretrained_backbone") or "none").strip().lower()
+        if backbone in {"", "none", "false", "0"}:
+            return "N/A"
+        # TinyImageNet already uses the ImageNet mean/std in data.py.  Its
+        # legacy pass-through and the explicit conversion are numerically the
+        # same preprocessing, so do not manufacture two aggregate groups.
+        if str(config.get("dataset") or "").strip().lower() == "tinyimagenet":
+            return "imagenet_equivalent"
     value = config.get(key)
     if value is None:
         return CONFIG_MISSING_DEFAULTS.get(key, "")

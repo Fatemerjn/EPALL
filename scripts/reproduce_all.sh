@@ -67,6 +67,13 @@ echo "==> Building reviewer-grade PDF figures"
   --bootstrap-samples "$BOOTSTRAP_SAMPLES" \
   --bootstrap-seed "$BOOTSTRAP_SEED"
 
+echo "==> Building the compact AAAI figures directly from canonical aggregates"
+"$PY" tools/make_aaai_figures.py \
+  --outdir paper/AuthorKit27/Figures
+
+echo "==> Building the generated main standard-comparison LaTeX table"
+"$PY" tools/generate_main_standard_table.py
+
 echo "==> Done"
 echo "Tables:  $AGG_DIR"
 echo "Figures: $PLOTS_DIR"

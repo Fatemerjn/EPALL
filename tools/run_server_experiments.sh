@@ -22,6 +22,7 @@
 #   GROUP 22A (g22a_tiny_seed2): the five missing TinyImageNet seed-2 paper runs -- ON DEMAND, resume-safe
 #   GROUP 22B (g22b_mia_anchor_seed2): the twelve missing MIA/anchor seed-2 runs -- ON DEMAND, resume-safe
 #   GROUP 23 (g23_adapter_components): PALL-Adapter request-time component controls -- ON DEMAND, resume-safe
+#   GROUP 24 (g24_retraining_reference): same-method retraining reference for PALL-Adapter -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -46,6 +47,7 @@
 #   bash tools/run_server_experiments.sh g22a_tiny_seed2 --dry-run # inspect the exact five-run TinyImageNet seed-2 matrix
 #   bash tools/run_server_experiments.sh g22b_mia_anchor_seed2 --dry-run # inspect the exact twelve-run MIA/anchor seed-2 matrix
 #   COMPONENT_DATASETS="cifar100" COMPONENT_SEEDS="0" bash tools/run_server_experiments.sh g23_adapter_components --dry-run
+#   bash tools/run_server_experiments.sh g24_retraining_reference --dry-run
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -63,14 +65,15 @@ usage () {
         "Default GROUP is 'all' (g1 + g2 + g3)." \
         "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
         "g21_standard_unlearning, g22a_tiny_seed2, g22b_mia_anchor_seed2," \
-        "and g23_adapter_components." \
+        "g23_adapter_components, and g24_retraining_reference." \
         "" \
         "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
         "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
         "        g12_agreement g3b_bottleneck_seed1 g13_shared_bottleneck" \
         "        g13_bottleneck g14_conflict g15_seed2 g17_overlap_curve" \
         "        g18_probe g20_paper_completion g21_standard_unlearning" \
-        "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components"
+        "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components" \
+        "        g24_retraining_reference"
 }
 
 if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
@@ -91,7 +94,7 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components) ;;
+        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference) ;;
         *)
             echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
@@ -956,8 +959,19 @@ group21_standard_unlearning () {
 # of g7_tiny. The three tiny_e3_* runs are a separate, from-scratch fixed-
 # request-schedule comparison reconstructed from the canonical seed-0/1 run
 # configs under runs/tinyimagenet/T20_F3/. Do not merge the two regimes.
+# Set TINY_SEED2_SCOPE=current to launch only the two current pretrained rows;
+# legacy launches are retained only for historical table completion.
 group22a_tiny_seed2 () {
-    echo "===== GROUP 22A: TinyImageNet paper seed 2 (5 resume-safe runs) ====="
+    local scope="${TINY_SEED2_SCOPE:-all}"
+    case "$scope" in
+        current|legacy|all) ;;
+        *)
+            ((FAILED_RUNS += 1))
+            echo "    FAIL: TINY_SEED2_SCOPE must be current, legacy, or all (got '${scope}')" >&2
+            return 0
+            ;;
+    esac
+    echo "===== GROUP 22A: TinyImageNet seed 2 (scope=${scope}, resume-safe) ====="
     local s=2
     local TINY="--dataset tinyimagenet --class_per_task 10 --n_tasks 20 --n_forget 3 --arch resnet18"
     local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth --cache_features"
@@ -974,12 +988,14 @@ group22a_tiny_seed2 () {
     fi
 
     # Table 2: ImageNet-pretrained frozen ResNet-18, exact g7_tiny settings.
-    launch_resume_safe "tiny_seed2_pall_adapter_pretrained_s${s}" \
-        $TINY $COMMON $PRE --seed $s --request_schedule_file "$seeded_schedule" \
-        --method pall_adapter $ADAPTER --experiment_tag tiny_pretrained
-    launch_resume_safe "tiny_seed2_lora_pretrained_s${s}" \
-        $TINY $COMMON $PRE --seed $s --request_schedule_file "$seeded_schedule" \
-        --method lora $LORA --experiment_tag tiny_pretrained
+    if [[ "$scope" == "current" || "$scope" == "all" ]]; then
+        launch_resume_safe "tiny_seed2_pall_adapter_pretrained_s${s}" \
+            $TINY $COMMON $PRE --seed $s --request_schedule_file "$seeded_schedule" \
+            --method pall_adapter $ADAPTER --experiment_tag tiny_pretrained
+        launch_resume_safe "tiny_seed2_lora_pretrained_s${s}" \
+            $TINY $COMMON $PRE --seed $s --request_schedule_file "$seeded_schedule" \
+            --method lora $LORA --experiment_tag tiny_pretrained
+    fi
 
     # Table 3: canonical April seed-0/1 effective config. Both earlier seeds
     # used k_shot=1, non-deterministic execution, explicit macOS-equivalent
@@ -995,15 +1011,17 @@ group22a_tiny_seed2 () {
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --dump_overlap"
 
-    launch_resume_safe "tiny_e3_original_s${s}" \
-        $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
-        --method pall_original --experiment_tag tiny_e3_original_v1
-    launch_resume_safe "tiny_e3_modified_s${s}" \
-        $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
-        --method pall_modified --experiment_tag tiny_e3_modified_v1
-    launch_resume_safe "tiny_e3_adapter_s${s}" \
-        $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
-        --method pall_adapter $E3_ADAPTER --experiment_tag tiny_e3_adapter_v1
+    if [[ "$scope" == "legacy" || "$scope" == "all" ]]; then
+        launch_resume_safe "tiny_e3_original_s${s}" \
+            $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
+            --method pall_original --experiment_tag tiny_e3_original_v1
+        launch_resume_safe "tiny_e3_modified_s${s}" \
+            $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
+            --method pall_modified --experiment_tag tiny_e3_modified_v1
+        launch_resume_safe "tiny_e3_adapter_s${s}" \
+            $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
+            --method pall_adapter $E3_ADAPTER --experiment_tag tiny_e3_adapter_v1
+    fi
 }
 
 # ----------------------------------------------- GROUP 22B MIA/anchor seed 2
@@ -1075,7 +1093,7 @@ group23_adapter_components () {
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10 \
         --eval_component_stages"
-    local TAG="adapter_components_pretrained_v1"
+    local TAG="adapter_components_pretrained_imagenetnorm_v2"
     local dataset seed mode spec schedule
 
     for dataset in $datasets; do
@@ -1125,6 +1143,30 @@ group23_adapter_components () {
     done
 }
 
+# --------------------------------------- GROUP 24 retraining-reference audit
+# One focused, expensive diagnostic: compare the fully unlearned pretrained
+# CIFAR-100 PALL-Adapter to a fresh PALL-Adapter trained on the same sequence
+# with target task 0 never seen. The evaluator reports task-local agreement,
+# Jensen-Shannon divergence, raw-logit L2, and feature cosine similarity.
+group24_retraining_reference () {
+    echo "===== GROUP 24: same-method retraining-reference audit (resume-safe) ====="
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local SPEC="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 1 --arch resnet18 --sparsity 0.9"
+    local SCHEDULE="schedules/cifar100_candidate_forget_task0_seed0.json"
+    if [[ ! -f "$SCHEDULE" ]]; then
+        ((FAILED_RUNS += 1))
+        echo "    FAIL: missing ${SCHEDULE}" >&2
+        return 0
+    fi
+    launch_resume_safe "retraining_reference_cifar100_adapter_s0" \
+        $SPEC $COMMON $PRE --seed 0 --request_schedule_file "$SCHEDULE" \
+        --method pall_adapter $ADAPTER --eval_agreement \
+        --experiment_tag adapter_retraining_reference_v2
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -1152,6 +1194,7 @@ case "$WHICH" in
     g22a_tiny_seed2) group22a_tiny_seed2 ;;
     g22b_mia_anchor_seed2) group22b_mia_anchor_seed2 ;;
     g23_adapter_components) group23_adapter_components ;;
+    g24_retraining_reference) group24_retraining_reference ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -1168,7 +1211,7 @@ echo "===================================================================="
 echo "AGGREGATING TABLES ..."
 AGG_SUFFIX=""
 case "$WHICH" in
-    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components)
+    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference)
         # These completion groups must never overwrite an existing CSV. A
         # timestamped canonical-tool rebuild can be inspected and synced while
         # the paper-facing canonical paths remain unchanged until every gap is
@@ -1205,6 +1248,13 @@ if [[ "$WHICH" == "g23_adapter_components" ]]; then
         --out-prefix results/aggregates/adapter_components; then
         ((FAILED_AGGREGATIONS += 1))
         echo "[FAIL] analyze_adapter_components.py" >&2
+    fi
+fi
+if [[ "$WHICH" == "g24_retraining_reference" ]]; then
+    if ! $PY tools/analyze_retraining_reference.py --root runs \
+        --out-prefix results/aggregates/retraining_reference; then
+        ((FAILED_AGGREGATIONS += 1))
+        echo "[FAIL] analyze_retraining_reference.py" >&2
     fi
 fi
 

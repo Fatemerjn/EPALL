@@ -15,7 +15,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
-from make_thesis_table import CONFIG_GROUP_COLUMNS, extract_run_row, group_key, load_json, seed_key
+from make_thesis_table import (
+    CONFIG_GROUP_COLUMNS,
+    config_group_value,
+    extract_run_row,
+    group_key,
+    load_json,
+    seed_key,
+)
 
 
 SEEDS_01 = ("0", "1")
@@ -44,7 +51,7 @@ class ExpectedSpec:
     config: Dict[str, Any] = field(default_factory=dict)
 
     def key(self) -> Tuple[str, ...]:
-        row: Dict[str, Any] = {
+        effective_config: Dict[str, Any] = {
             "dataset": self.dataset,
             "method": self.method,
             "experiment_tag": self.experiment_tag,
@@ -62,12 +69,18 @@ class ExpectedSpec:
             "adapter_shared_protect_strength": "",
             "retrain_steps": "",
             "adapter_train_classifier": False,
+            "adapter_component_mode": "full",
             "adapter_mask_mode": "discrete",  # main.py argparse default, written into every run config
             "adapter_conflict_gamma": 1.0,  # main.py argparse default, written into every run config
+            "pretrained_backbone": (
+                "imagenet_resnet18" if self.regime == "pretrained_frozen" else "none"
+            ),
+            "pretrained_input_norm": "imagenet",
         }
-        row.update(self.config)
+        effective_config.update(self.config)
+        row: Dict[str, Any] = {"dataset": self.dataset, "method": self.method}
         for column in CONFIG_GROUP_COLUMNS:
-            row.setdefault(column, "")
+            row[column] = config_group_value(effective_config, column)
         return group_key(row, group_by_config=True)
 
 
@@ -223,8 +236,31 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             ("pall_adapter", "lora"),
             f"{prefix}_pretrained",
             "pretrained_frozen",
+            seeds=SEEDS_012,
             configs={"pall_adapter": adapter_config()},
         )
+
+        for component_mode in (
+            "reset_only",
+            "reset_repair",
+            "uniform_unprotected",
+            "mask_no_ascent",
+            "full",
+        ):
+            specs.append(
+                ExpectedSpec(
+                    result_set="adapter component attribution",
+                    dataset=dataset,
+                    method="pall_adapter",
+                    experiment_tag="adapter_components_pretrained_imagenetnorm_v2",
+                    regime="pretrained_frozen",
+                    expected_seeds=SEEDS_012,
+                    config={
+                        **adapter_config(),
+                        "adapter_component_mode": component_mode,
+                    },
+                )
+            )
 
     for forget_ratio in (0.3, 0.5):
         for protect_ratio in (0.2, 0.4):
@@ -258,16 +294,16 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             )
         )
 
-    tiny_seeds = ["0"]
+    tiny_main_seeds = ["0"]
     if (schedules_dir / "tinyimagenet_t20_f3_seed1.json").exists():
-        tiny_seeds.append("1")
+        tiny_main_seeds.append("1")
     add(
         "TinyImageNet main",
         "tinyimagenet",
         ("pall_original", "pall_modified", "clpu"),
         "tiny_main",
         "from_scratch",
-        seeds=tiny_seeds,
+        seeds=tiny_main_seeds,
         configs={"pall_original": retrain_config(), "pall_modified": protected_retrain_config()},
     )
     add(

@@ -124,11 +124,11 @@ parser.add_argument('--eval_mia', default=False, action='store_true',
                          'forget event (members=forget-task train samples, non-members=its '
                          'test split); writes AUC and balanced accuracy under metrics "mia"')
 parser.add_argument('--eval_agreement', default=False, action='store_true',
-                    help='EXPENSIVE: after a forget event, train a from-scratch reference model '
-                         '(Sequential) on the same schedule with the forgotten task never trained, '
-                         'and report the fraction of test samples whose argmax prediction matches '
-                         'the unlearned model, under metrics "agreement". Requires n_forget==1 '
-                         '(one reference retrain per run); skipped with a log message otherwise.')
+                    help='EXPENSIVE retraining-reference audit: after a forget event, train a fresh '
+                         'instance of the SAME method/architecture on the schedule with the forgotten '
+                         'task never trained. Reports task-local argmax agreement, Jensen-Shannon '
+                         'divergence, logit L2 distance, and feature cosine similarity under metrics '
+                         '"agreement". Requires n_forget==1 (one retrain per run).')
 parser.add_argument('--eval_probe', default=False, action='store_true',
                     help='linear-probe leakage audit: before and after each forget event, freeze the '
                          'model, extract the penultimate representation the deployed model exposes for '
@@ -136,11 +136,9 @@ parser.add_argument('--eval_probe', default=False, action='store_true',
                          'TRAIN-split features, and report probe_acc_before/after on its held-out TEST '
                          'split (vs the 1/class_per_task chance level) under metrics "probe".')
 parser.add_argument('--eval_bound', default=False, action='store_true',
-                    help='WorstDrop bound verification (Theorem thm:worstdrop, pall_adapter only): at each '
-                         'forget event compute the first-order predicted per-task drop from the Phase-2 '
-                         'gradients (critical interference energy + forget-exclusive residual energy) and '
-                         'store it, alongside the measured per-task accuracy drop, under metrics '
-                         '"bound_check" so predicted-vs-measured can be checked.')
+                    help='shared-subphase first-order diagnostic (pall_adapter only): record the '
+                         'fixed-gradient loss/energy quantity and, separately, measured accuracy '
+                         'change. Their units are not calibrated; no satisfaction claim is made.')
 parser.add_argument('--cache_features', default=False, action='store_true',
                     help='precompute the frozen backbone 512-d features once and train/eval the PEFT '
                          'head on the cached features (big speedup + memory). Only active for '
@@ -251,6 +249,14 @@ parser.add_argument('--pretrained_backbone', default='none', choices=['none', 'i
                          "ImageNet ResNet-18 loaded from --pretrained_weights (adapters/LoRA run on its 512-d feature)")
 parser.add_argument('--pretrained_weights', default='pretrained/resnet18_imagenet.pth', type=str,
                     help='local .pth weights for --pretrained_backbone imagenet_resnet18 (offline-safe)')
+parser.add_argument(
+    '--pretrained_input_norm',
+    default='imagenet',
+    choices=['imagenet', 'legacy_dataset_stats'],
+    help='input normalization seen by the ImageNet-pretrained backbone. "imagenet" '
+         'undoes dataset normalization and applies ImageNet statistics; '
+         '"legacy_dataset_stats" reproduces earlier CIFAR pretrained runs.',
+)
 parser.set_defaults(pin_memory=None)
 args = parser.parse_args()
 
@@ -910,16 +916,10 @@ def _mia_auc(member_scores, nonmember_scores):
     """AUC of a membership score (higher == more member-like), computed from the
     rank statistic (= probability a random member outscores a random non-member,
     the Mann-Whitney U form). Returns None if either group is empty."""
-    member = np.asarray(member_scores, dtype=np.float64)
-    nonmember = np.asarray(nonmember_scores, dtype=np.float64)
-    if member.size == 0 or nonmember.size == 0:
-        return None
-    allv = np.concatenate([member, nonmember])
-    order = allv.argsort(kind="mergesort")
-    ranks = np.empty(allv.size, dtype=np.float64)
-    ranks[order] = np.arange(1, allv.size + 1, dtype=np.float64)
-    rank_sum = ranks[: member.size].sum()
-    return float((rank_sum - member.size * (member.size + 1) / 2.0) / (member.size * nonmember.size))
+    # Keep optional audit helpers lazy: ordinary training/component runs must not
+    # fail at process startup merely because privacy-only support was not copied.
+    from privacy_metrics import roc_auc_from_scores
+    return roc_auc_from_scores(member_scores, nonmember_scores)
 
 
 def _mia_balanced_accuracy(member_scores, nonmember_scores):
@@ -1012,6 +1012,7 @@ def compute_mia(model, member_dataset, nonmember_dataset, task_id, args, max_sam
     non-member scores are also written to ``{run_dir}/mia_scores/`` for the
     empirical privacy audit (tools/audit_privacy.py); the returned aggregate dict
     is unchanged."""
+    member_dataset = make_augmentation_free_evaluation_view(member_dataset, args.dataset)
     m_loss, m_conf = _mia_per_sample_scores(model, member_dataset, task_id, args, max_samples)
     n_loss, n_conf = _mia_per_sample_scores(model, nonmember_dataset, task_id, args, max_samples)
     member_scores = _mia_loss_over_confidence_scores(m_loss, m_conf)
@@ -1114,6 +1115,7 @@ def compute_probe(model, train_dataset, test_dataset, task_id, args,
     probe is trained on the task's TRAIN-split features and scored on its held-out
     TEST split (so this measures generalizable leakage, not probe memorization).
     Chance = 1/class_per_task; successful unlearning drives probe_acc toward it."""
+    train_dataset = make_augmentation_free_evaluation_view(train_dataset, args.dataset)
     x_tr, y_tr = _probe_extract_features(model, train_dataset, task_id, args, max_train)
     x_te, y_te = _probe_extract_features(model, test_dataset, task_id, args, max_test)
     if x_tr.shape[0] == 0 or x_te.shape[0] == 0:
@@ -1151,34 +1153,76 @@ def build_probe_event(before, after):
     }
 
 
-def _agreement_argmax_preds(model, dataset, task, args):
-    """Argmax predictions of ``model`` over ``dataset`` for one task (eval order,
-    no shuffle) — used to compare two models sample-by-sample."""
-    model.eval_mode()
-    loader = model.build_dataloader(dataset, batch_size=args.batch_size, shuffle=False,
-                                    context=f"agreement_task_{task}")
-    preds = []
+def _compare_models_on_task(unlearned_model, reference, dataset, task, args):
+    """Compare two models on identical samples using the task-local output slice."""
+    # This dependency is needed only by --eval_agreement / g24, not by every
+    # training run launched through main.py.
+    from reference_metrics import paired_reference_batch_sums
+    unlearned_model.eval_mode()
+    reference.eval_mode()
+    loader = unlearned_model.build_dataloader(
+        dataset,
+        batch_size=args.batch_size,
+        shuffle=False,
+        context=f"retraining_reference_task_{task}",
+    )
+    totals = {
+        "n": 0,
+        "agreement_sum": 0.0,
+        "js_sum": 0.0,
+        "logit_l2_sum": 0.0,
+        "feature_n": 0,
+        "feature_cosine_sum": 0.0,
+    }
+    start = int(task * args.class_per_task)
+    end = int((task + 1) * args.class_per_task)
     with torch.no_grad():
         for x, _y in loader:
             x = x.to(args.device)
-            preds.append(model.evaluate(x, task).argmax(-1).detach().cpu())
-    if not preds:
-        return torch.zeros(0, dtype=torch.long)
-    return torch.cat(preds)
+            logits_unlearned = unlearned_model.evaluate(x, task)[:, start:end]
+            logits_reference = reference.evaluate(x, task)[:, start:end]
+            features_unlearned = unlearned_model.evaluate_features(x, task)
+            features_reference = reference.evaluate_features(x, task)
+            batch = paired_reference_batch_sums(
+                logits_unlearned,
+                logits_reference,
+                features_unlearned,
+                features_reference,
+            )
+            for key in totals:
+                totals[key] += batch[key]
+
+    n = int(totals["n"])
+    feature_n = int(totals["feature_n"])
+    if n == 0:
+        return None
+    return {
+        "n_samples": n,
+        "agreement": float(totals["agreement_sum"] / n),
+        "js_divergence": float(totals["js_sum"] / n),
+        "logit_l2": float(totals["logit_l2_sum"] / n),
+        "feature_cosine": (
+            float(totals["feature_cosine_sum"] / feature_n) if feature_n else None
+        ),
+        "feature_n_samples": feature_n,
+    }
 
 
 def compute_model_agreement(unlearned_model, args, requests, train_datasets, test_datasets,
                             forgotten_task_id, active_tasks, logger):
-    """Model Agreement Rate (reviewer metric): fraction of test samples whose
-    argmax prediction under the unlearned model matches a from-scratch REFERENCE
-    trained (Sequential) on the same request schedule with the forgotten task
-    never trained. Reported per forget event; the caller gates this to n_forget==1
-    because it triggers a full extra sequential training run."""
-    from methods.sequential import Sequential
+    """Compare unlearning with a same-method retrain that never sees the target task.
 
-    # Reference: same seed/arch/epochs; re-seed so its init/training match a fresh run.
+    The caller gates this expensive audit to ``n_forget==1``. Matching the method
+    and architecture avoids attributing ordinary cross-method differences to the
+    forgetting operation.
+    """
+    # Reference: same seed, method, architecture and training hyperparameters.
     set_seed(args.seed, getattr(args, "deterministic", False))
-    reference = Sequential(args).to(args.device)
+    reference = type(unlearned_model)(args).to(args.device)
+    if hasattr(unlearned_model.net, "features_are_precomputed"):
+        reference.net.features_are_precomputed = bool(
+            getattr(unlearned_model.net, "features_are_precomputed", False)
+        )
 
     # Train on every "T"-request task in schedule order, except the forgotten one.
     train_task_ids = []
@@ -1187,33 +1231,54 @@ def compute_model_agreement(unlearned_model, args, requests, train_datasets, tes
             train_task_ids.append(task_id)
     log_event(
         logger,
-        f"[INFO] agreement: training reference (sequential) on tasks={train_task_ids} "
+        f"[INFO] retraining-reference audit: training fresh "
+        f"{type(unlearned_model).__name__} on tasks={train_task_ids} "
         f"(forgotten task {forgotten_task_id} never trained)",
     )
     for task_id in train_task_ids:
         reference.learn(task_id, train_datasets[task_id])
 
-    def _agree(task):
-        pred_unlearned = _agreement_argmax_preds(unlearned_model, test_datasets[task], task, args)
-        pred_reference = _agreement_argmax_preds(reference, test_datasets[task], task, args)
-        n = min(pred_unlearned.numel(), pred_reference.numel())
-        if n == 0:
-            return None
-        return float((pred_unlearned[:n] == pred_reference[:n]).float().mean().item())
+    task_ids = [forgotten_task_id] + [t for t in active_tasks if t != forgotten_task_id]
+    per_task = {
+        str(task): _compare_models_on_task(
+            unlearned_model, reference, test_datasets[task], task, args
+        )
+        for task in task_ids
+    }
+    forget_metrics = per_task.get(str(forgotten_task_id))
+    retained_metrics = [
+        per_task[str(task)] for task in active_tasks
+        if per_task.get(str(task)) is not None
+    ]
 
-    agreement_forget = _agree(forgotten_task_id)
-    retained_vals = [value for value in (_agree(t) for t in active_tasks) if value is not None]
-    agreement_retained_mean = float(np.mean(retained_vals)) if retained_vals else None
+    def _retained_mean(key):
+        values = [metrics[key] for metrics in retained_metrics if metrics.get(key) is not None]
+        return float(np.mean(values)) if values else None
 
     unlearned_model.train_mode()
     del reference
     return {
-        "agreement_forget": agreement_forget,
-        "agreement_retained_mean": agreement_retained_mean,
-        "reference": "sequential_retrain_without_forget",
+        # Keep the original agreement keys for backward-compatible aggregation.
+        "agreement_forget": forget_metrics.get("agreement") if forget_metrics else None,
+        "agreement_retained_mean": _retained_mean("agreement"),
+        "js_forget": forget_metrics.get("js_divergence") if forget_metrics else None,
+        "js_retained_mean": _retained_mean("js_divergence"),
+        "logit_l2_forget": forget_metrics.get("logit_l2") if forget_metrics else None,
+        "logit_l2_retained_mean": _retained_mean("logit_l2"),
+        "feature_cosine_forget": forget_metrics.get("feature_cosine") if forget_metrics else None,
+        "feature_cosine_retained_mean": _retained_mean("feature_cosine"),
+        "reference": "same_method_retrain_without_forget",
+        "reference_method_class": type(unlearned_model).__name__,
         "reference_trained_tasks": train_task_ids,
         "forgotten_task_id": int(forgotten_task_id),
-        "n_retained": len(retained_vals),
+        "n_retained": len(retained_metrics),
+        "per_task": per_task,
+        "metric_notes": {
+            "task_local_logits": True,
+            "js_divergence": "symmetric Jensen-Shannon divergence; lower is closer",
+            "logit_l2": "mean per-sample raw-logit L2; scale-sensitive; lower is closer",
+            "feature_cosine": "mean per-sample penultimate-feature cosine; higher is closer",
+        },
     }
 
 
@@ -1340,26 +1405,23 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
             au = post_acc[task_id] if task_id < len(post_acc) else 0.0
             finetune_diag = json_safe(info.get("finetune_diag", None))
 
-            # WorstDrop bound verification: merge the MEASURED per-task accuracy drop
-            # (pre-forget minus post-forget) into the predicted-bound block emitted by
-            # the method's _forget_impl, and flag whether measured <= predicted.
+            # Store measured accuracy changes only as a separate diagnostic. The
+            # fixed-gradient quantity uses loss/energy units, so comparing the two
+            # magnitudes cannot verify a bound.
             bound_check = info.get("bound_check")
             if isinstance(bound_check, dict):
                 bound_check = json_safe(bound_check)
                 per_task = bound_check.get("per_task", {}) or {}
-                all_satisfied = True
                 for t in remaining_tasks:
                     measured = float(pre_acc[t] - post_acc[t])
                     entry = per_task.setdefault(str(int(t)), {})
-                    entry["measured_drop"] = measured
-                    predicted = entry.get("predicted_bound")
-                    if predicted is not None:
-                        entry["satisfied"] = bool(measured <= predicted)
-                        if measured > predicted:
-                            all_satisfied = False
+                    entry["measured_accuracy_drop_diagnostic"] = measured
                 bound_check["per_task"] = per_task
-                bound_check["measured_worstdrop"] = float(worst_drop)
-                bound_check["bound_satisfied"] = all_satisfied
+                bound_check["measured_worstdrop_diagnostic"] = float(worst_drop)
+                bound_check["comparison_note"] = (
+                    "predicted_bound is in fixed-gradient loss/energy units; measured values "
+                    "are accuracy changes and are not used for a satisfaction test"
+                )
 
             event = {
                 "unlearning_step": unlearning_step,

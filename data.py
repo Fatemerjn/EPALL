@@ -1,4 +1,5 @@
 import os
+import copy
 from pathlib import Path
 
 import numpy as np
@@ -76,6 +77,19 @@ _DATASET_METADATA = {
 def get_dataset_metadata(dataset_name):
     try:
         return dict(_DATASET_METADATA[dataset_name])
+    except KeyError as exc:
+        raise ValueError(f"Unsupported dataset: {dataset_name}") from exc
+
+
+def get_evaluation_transform(dataset_name):
+    """Return the deterministic test-time transform for a supported dataset."""
+    transform_lists = {
+        "cifar10": _CIFAR10_TEST_TRANSFORMS,
+        "cifar100": _CIFAR100_TEST_TRANSFORMS,
+        "tinyimagenet": _TINYIMAGENET_TEST_TRANSFORMS,
+    }
+    try:
+        return transforms.Compose(transform_lists[dataset_name])
     except KeyError as exc:
         raise ValueError(f"Unsupported dataset: {dataset_name}") from exc
 
@@ -192,6 +206,22 @@ class SubDataset(Dataset):
     def __getitem__(self, index):
         sample = self.dataset[self.sub_indices[index]]
         return sample[0], self.permutation.index(sample[1])
+
+
+def make_augmentation_free_evaluation_view(dataset, dataset_name):
+    """Clone a task dataset with training augmentation disabled for audits.
+
+    Cached feature datasets are already deterministic and are returned unchanged.
+    """
+    if not isinstance(dataset, SubDataset):
+        return dataset
+    base = copy.copy(dataset.dataset)
+    if not hasattr(base, "transform"):
+        return dataset
+    view = copy.copy(dataset)
+    base.transform = get_evaluation_transform(dataset_name)
+    view.dataset = base
+    return view
 
 
 def get_task_datasets(args):

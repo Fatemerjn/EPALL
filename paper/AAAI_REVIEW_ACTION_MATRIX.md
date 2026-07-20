@@ -4,7 +4,7 @@ This document maps the attached 4/10-style review to the current repository. It 
 
 ## Bottom line
 
-The review's central objection is valid: current PALL-Adapter results do not separate the effect of resetting the target adapter/classifier slice from the value of the overlap-aware shared update. Prose alone cannot close this issue. The minimum credible empirical response is a component ablation headed by `reset only`, plus a retraining reference.
+The review's central objection was valid: the earlier PALL-Adapter results did not separate the effect of resetting the target adapter/classifier slice from the value of the overlap-aware shared update. The corrected three-seed component matrix now closes that attribution question, with a negative result: the measured endpoint is reset-dominated and does not support an independent benefit from the soft mask or cached ascent. A distributional retraining reference remains open.
 
 The review is partly stale on implementation details. The repository already logs three request events, pre/post retained accuracies, intermediate pre-repair evaluation, model agreement with a retrained reference, gradient ratios, probes, and MIA. These artifacts do not yet constitute the requested controls:
 
@@ -47,9 +47,9 @@ The matched `anchor_ablation_v1` rows already provide old versus reinitialized a
 
 ## Experiments that remain genuinely necessary
 
-### P0 — PALL-Adapter component attribution
+### Completed — PALL-Adapter component attribution
 
-Run on the intended pretrained-frozen regime, CIFAR-10 and CIFAR-100, with the same schedules and at least seeds 0/1/2:
+Completed on the corrected pretrained-frozen regime for CIFAR-10 and CIFAR-100 with matched schedules and seeds 0/1/2:
 
 | Arm | Reset target path | Shared uniform update | Soft mask | Cached ascent | Retained repair |
 |---|---:|---:|---:|---:|---:|
@@ -59,7 +59,7 @@ Run on the intended pretrained-frozen regime, CIFAR-10 and CIFAR-100, with the s
 | Mask, no ascent | yes | yes | yes | no | yes |
 | Full PALL-Adapter | yes | yes | yes | yes | yes |
 
-Primary outputs: retained accuracy, WorstDrop, `|Au-chance|`, MIA/probe where affordable, and per-stage values. This is the single most important addition.
+The endpoint and per-stage outputs are in `results/aggregates/adapter_components_*`. Full and mask/no-ascent have identical final accuracy and WorstDrop on both datasets; full and unprotected-uniform differ negligibly. On CIFAR-100, reset-only has higher mean final accuracy, zero WorstDrop, and a smaller mean distance to chance. The paper therefore treats PALL-Adapter as exploratory and makes PALL-Modified the supported positive result.
 
 ### P0 — Retraining reference
 
@@ -96,3 +96,19 @@ Report total/trainable parameters, task-growing stored parameters, rehearsal/log
 ## Recommended submission decision
 
 Do not try to answer this review by adding more prose or more unrelated baselines. The paper becomes materially stronger if the next results table contains the five component arms and a retraining-reference distance. If those experiments show the full method is not better than reset + repair, the honest conclusion is that the current PALL-Adapter contribution is architectural task suppression; PALL-Modified should then be the primary method. If the full method improves retained stability or distance to the retrained reference at matched Au, the overlap-aware contribution becomes directly defensible.
+
+## Delta from the second 4/10 review (2026-07-20)
+
+| Newly identified issue | Status and action |
+|---|---|
+| ROC-AUC gave arbitrary ranks to ties | Fixed with average ranks in `privacy_metrics.py`; all-tie AUC is tested as 0.5. Existing MIA numbers are withdrawn pending reruns. |
+| Members used train augmentation while non-members used test transforms | Fixed by an augmentation-free cloned view for MIA and linear-probe member splits. The raw-score leakage audit inherits the corrected MIA samples. |
+| CIFAR inputs to the ImageNet backbone retained CIFAR normalization | Fixed through a versioned dataset-to-ImageNet conversion. Corrected `pretrained_input_norm=imagenet` LoRA and Adapter runs now have seeds 0/1/2 on CIFAR-10, CIFAR-100, and TinyImageNet. Legacy-normalized rows remain separated and are excluded from the corrected endpoint table and tuning claims. |
+| Checklist denied a theoretical contribution despite a theorem | The checklist now answers yes and records the formal assumptions, theorem, and proof sketch, with partial answers where only a sketch or incomplete tool citation exists. |
+| Logger compared loss/gradient-energy units with accuracy and called it bound satisfaction | Removed. New logs label measured accuracy separately and explicitly forbid a satisfaction test; the plotting utility is a cross-unit diagnostic without a y=x verification claim. |
+| Missing close continual-unlearning work | Added the unified distillation framework, UnCLe/task relapse, and CATA/persistence with differences in assumptions and setting. |
+| Main figure metrics were hard-coded | `make_aaai_figures.py` now selects strict canonical rows at runtime; `scripts/reproduce_all.sh` regenerates the compact AAAI figures and generated main LaTeX table. |
+| README recommended conflict importance despite mixed evidence | Corrected: retained-gradient magnitude is the default and conflict is explicitly dataset-dependent. |
+| Hardware/software environment was not recorded | Closed. `SERVER_ENVIRONMENT.txt` was captured on the training server; the manuscript now reports the GPU, CPU, RAM, OS, Python, PyTorch, and torchvision versions. |
+
+The corrected component matrix is complete under `adapter_components_pretrained_imagenetnorm_v2`: five arms, two CIFAR datasets, and three seeds per arm. No legacy seed is mixed into this matrix. Its negative attribution result is reported directly rather than hidden or reframed as an improvement.

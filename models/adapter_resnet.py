@@ -54,6 +54,8 @@ class AdapterResNet(BaseModel):
         norm_params=False,
         pretrained_backbone="none",
         pretrained_weights=None,
+        input_dataset=None,
+        pretrained_input_norm="imagenet",
     ):
         super(AdapterResNet, self).__init__()
         if adapter_location != "residual":
@@ -74,7 +76,12 @@ class AdapterResNet(BaseModel):
         # ImageNet-pretrained backbone. Both yield a 512-d pooled feature, so the
         # adapters/classifier below are identical either way.
         from .pretrained_backbone import build_frozen_backbone
-        self.frozen_backbone = build_frozen_backbone(pretrained_backbone, pretrained_weights)
+        self.frozen_backbone = build_frozen_backbone(
+            pretrained_backbone,
+            pretrained_weights,
+            input_dataset=input_dataset,
+            input_norm=pretrained_input_norm,
+        )
         if self.frozen_backbone is not None:
             self.feature_dim = self.frozen_backbone.feature_dim
         else:
@@ -204,6 +211,8 @@ def adapter_resnet18(
     adapter_location="residual",
     pretrained_backbone="none",
     pretrained_weights=None,
+    input_dataset=None,
+    pretrained_input_norm="imagenet",
 ):
     del sparsity
     return AdapterResNet(
@@ -218,6 +227,8 @@ def adapter_resnet18(
         norm_params=norm_params,
         pretrained_backbone=pretrained_backbone,
         pretrained_weights=pretrained_weights,
+        input_dataset=input_dataset,
+        pretrained_input_norm=pretrained_input_norm,
     )
 
 
@@ -232,6 +243,8 @@ def adapter_resnet34(
     adapter_location="residual",
     pretrained_backbone="none",
     pretrained_weights=None,
+    input_dataset=None,
+    pretrained_input_norm="imagenet",
 ):
     del sparsity
     return AdapterResNet(
@@ -246,6 +259,8 @@ def adapter_resnet34(
         norm_params=norm_params,
         pretrained_backbone=pretrained_backbone,
         pretrained_weights=pretrained_weights,
+        input_dataset=input_dataset,
+        pretrained_input_norm=pretrained_input_norm,
     )
 
 
@@ -260,6 +275,8 @@ def adapter_resnet50(
     adapter_location="residual",
     pretrained_backbone="none",
     pretrained_weights=None,
+    input_dataset=None,
+    pretrained_input_norm="imagenet",
 ):
     del sparsity
     return AdapterResNet(
@@ -274,4 +291,6 @@ def adapter_resnet50(
         norm_params=norm_params,
         pretrained_backbone=pretrained_backbone,
         pretrained_weights=pretrained_weights,
+        input_dataset=input_dataset,
+        pretrained_input_norm=pretrained_input_norm,
     )

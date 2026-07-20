@@ -45,6 +45,13 @@ rsync "${RSYNC_FLAGS[@]}" \
     "${SERVER_USER}@${SERVER_HOST}:${SERVER_PATH}logs/" \
     "logs/" 2>/dev/null || echo "[WARN] logs/ not found on server (ok if the group hasn't started yet)."
 
+echo "[INFO] Pulling server environment manifest when available"
+mkdir -p results/aggregates
+rsync "${RSYNC_FLAGS[@]}" \
+    "${SERVER_USER}@${SERVER_HOST}:${SERVER_PATH}results/aggregates/SERVER_ENVIRONMENT.txt" \
+    "results/aggregates/" 2>/dev/null \
+    || echo "[WARN] SERVER_ENVIRONMENT.txt not found on server."
+
 echo "[DONE] Results synced."
 echo "[NEXT] Regenerate tables/figures locally:"
 echo "    bash scripts/reproduce_all.sh"

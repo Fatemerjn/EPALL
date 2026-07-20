@@ -189,7 +189,8 @@ def build_or_load_cache(dataset_name, split, data_dir, backbone, device, cache_d
     on-disk cache if present, otherwise computing and saving it."""
     cache_dir = Path(cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
-    path = cache_dir / f"{dataset_name}_{split}_imagenet_resnet18.pt"
+    preprocessing_id = getattr(backbone, "preprocessing_id", "unknown_preprocessing")
+    path = cache_dir / f"{dataset_name}_{split}_imagenet_resnet18_{preprocessing_id}.pt"
     base = _augfree_base_dataset(dataset_name, data_dir, split)
     n = len(base)
     feature_dim = _backbone_feature_dim(backbone)

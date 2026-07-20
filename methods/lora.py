@@ -30,6 +30,8 @@ class LoRA(Base):
             lora_alpha=self.args.lora_alpha,
             pretrained_backbone=getattr(self.args, "pretrained_backbone", "none"),
             pretrained_weights=getattr(self.args, "pretrained_weights", None),
+            input_dataset=self.args.dataset,
+            pretrained_input_norm=self.args.pretrained_input_norm,
         ).to(self.device)
 
         self.memory = RehearsalMemory(

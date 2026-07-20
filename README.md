@@ -36,7 +36,7 @@ tables can separate them unambiguously.
 |---|---|---|---|
 | `pall_original` | `pall_original` | PALL-Original | Baseline (no overlap protection) |
 | `pall_modified` (default) | `pall_modified_grad` | **PALL-Modified** | **MAIN METHOD** — protect critical overlap, ranked by retained-task **gradient** importance `\|∇L_retain\|` on the rehearsal buffer |
-| `pall_modified --protect_importance conflict` | `pall_modified_conflict` | PALL-Modified-C | **For HIGH overlap** — rank critical overlap by gradient-**conflict** energy `relu(-∇L_forget·∇L_retain)`: protects exactly the params where forgetting and retention fight |
+| `pall_modified --protect_importance conflict` | `pall_modified_conflict` | PALL-Modified-C | Dataset-dependent ablation using gradient-conflict energy `relu(-∇L_forget·∇L_retain)`; not the default |
 | `pall_modified ... --adaptive_protect` | `..._adapt` | — | Optional: scale the protection penalty by the measured critical-overlap ratio (stronger protection as overlap grows) |
 | `pall_modified --protect_importance weight` | `pall_modified_weight` | PALL-Modified-W | Ablation — same protection, ranked by **weight** magnitude (legacy) |
 | `pall_modified` w/o `--lambda_protect`/`--protect_ratio` | `pall_modified_noprotect` | — | Sanity (protection disabled) |
@@ -46,7 +46,7 @@ tables can separate them unambiguously.
 
 Notes:
 
-- **Main publishable method: `pall_modified`.** Use `--protect_importance conflict` for high-overlap regimes (the core contribution); `gradient` is the default general criterion; `weight` is a legacy ablation.
+- **Main publishable method: `pall_modified`.** Retained-gradient magnitude is the default. Conflict importance is a dataset-dependent ablation (helpful for the adapter on CIFAR-10 but harmful for PALL-Modified on CIFAR-100); `weight` is a legacy ablation.
 - `pall_modified`/`pall_original` are thin subclasses of `PALLBase`; the implementation files map 1:1 to the paper: `methods/pall_base.py` (machinery), `methods/pall_modified.py` (main), `methods/pall_original.py` (baseline). `methods/pall.py` is a backward-compatible shim (`PALL = PALLBase`).
 - `--method pall` is a **deprecated alias** for `pall_modified` (prints a warning). Use the explicit name.
 - PALL-Adapter is a parameter-efficient variant (frozen backbone + task/shared adapters). Its shared-adapter forgetting is the **iterative uniform-target Phase-3 loop** of Algorithm 1 (`--adapter_forget_steps`, default 10), and supports `--protect_importance conflict` to protect the high-conflict overlap. Set `--adapter_forget_steps 1` for the legacy single-step behaviour.
@@ -137,6 +137,13 @@ python3 tools/make_ablation_table.py \
 
 The publication tables and figures are regenerated from existing `runs/`
 artifacts; this does not rerun training:
+
+Capture the actual training server once (read-only) so the paper can report its
+GPU/CPU, memory, operating system, driver, Python, and package versions:
+
+```bash
+PYTHON=python3 bash tools/capture_server_environment.sh
+```
 
 ```bash
 PYTHON=./.venv/bin/python \

@@ -60,6 +60,8 @@ class PALLAdapter(Base):
                 adapter_location=args.adapter_location,
                 pretrained_backbone=args.pretrained_backbone,
                 pretrained_weights=args.pretrained_weights,
+                input_dataset=args.dataset,
+                pretrained_input_norm=args.pretrained_input_norm,
             ).to(self.device)
         self.memory = RehearsalMemory(
             buffer_size=self.args.mem_budget,

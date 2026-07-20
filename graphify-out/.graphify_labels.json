@@ -108,8 +108,10 @@
   "106": "main",
   "107": "generate_main_standard_table.py",
   "108": "LoRA",
+  "109": "analyze_retraining_reference.py",
   "110": "Experiments that remain genuinely necessary",
   "111": "EWC",
+  "112": "data.py",
   "113": "Adapter Protected",
   "114": "Adapter Reset",
   "115": "Adapter Shared",
@@ -136,5 +138,12 @@
   "136": "sync_to_server.sh",
   "137": "RehearsalMemory",
   "138": "Controlled overlap grades",
-  "139": "overlap_response_slopes.md"
+  "139": "overlap_response_slopes.md",
+  "140": "paired_reference_batch_sums",
+  "141": "write_run_report",
+  "142": "roc_auc_from_scores",
+  "143": "compute_probe",
+  "144": "get_request_datasets",
+  "145": "audit_seed_completeness.py",
+  "146": "capture_server_environment.sh"
 }

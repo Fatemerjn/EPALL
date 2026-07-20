@@ -73,6 +73,8 @@ class LoRAResNet(BaseModel):
         norm_params=False,
         pretrained_backbone="none",
         pretrained_weights=None,
+        input_dataset=None,
+        pretrained_input_norm="imagenet",
     ):
         super(LoRAResNet, self).__init__()
 
@@ -91,7 +93,12 @@ class LoRAResNet(BaseModel):
         # backbone. Both yield a 512-d pooled feature; the LoRA/classifier below
         # are identical either way.
         from .pretrained_backbone import build_frozen_backbone
-        self.frozen_backbone = build_frozen_backbone(pretrained_backbone, pretrained_weights)
+        self.frozen_backbone = build_frozen_backbone(
+            pretrained_backbone,
+            pretrained_weights,
+            input_dataset=input_dataset,
+            input_norm=pretrained_input_norm,
+        )
         if self.frozen_backbone is not None:
             self.feature_dim = self.frozen_backbone.feature_dim
         else:
@@ -210,29 +217,35 @@ class LoRAResNet(BaseModel):
 
 def lora_resnet18(num_classes, nf=64, norm_params=False, n_tasks=1, sparsity=None,
                   lora_rank=8, lora_alpha=16, lora_shared_rank=0,
-                  pretrained_backbone="none", pretrained_weights=None):
+                  pretrained_backbone="none", pretrained_weights=None,
+                  input_dataset=None, pretrained_input_norm="imagenet"):
     del sparsity
     return LoRAResNet(BasicBlock, [2, 2, 2, 2], num_classes, nf, n_tasks=n_tasks,
                       lora_rank=lora_rank, lora_alpha=lora_alpha,
                       lora_shared_rank=lora_shared_rank, norm_params=norm_params,
-                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights)
+                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights,
+                      input_dataset=input_dataset, pretrained_input_norm=pretrained_input_norm)
 
 
 def lora_resnet34(num_classes, nf=64, norm_params=False, n_tasks=1, sparsity=None,
                   lora_rank=8, lora_alpha=16, lora_shared_rank=0,
-                  pretrained_backbone="none", pretrained_weights=None):
+                  pretrained_backbone="none", pretrained_weights=None,
+                  input_dataset=None, pretrained_input_norm="imagenet"):
     del sparsity
     return LoRAResNet(BasicBlock, [3, 4, 6, 3], num_classes, nf, n_tasks=n_tasks,
                       lora_rank=lora_rank, lora_alpha=lora_alpha,
                       lora_shared_rank=lora_shared_rank, norm_params=norm_params,
-                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights)
+                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights,
+                      input_dataset=input_dataset, pretrained_input_norm=pretrained_input_norm)
 
 
 def lora_resnet50(num_classes, nf=64, norm_params=False, n_tasks=1, sparsity=None,
                   lora_rank=8, lora_alpha=16, lora_shared_rank=0,
-                  pretrained_backbone="none", pretrained_weights=None):
+                  pretrained_backbone="none", pretrained_weights=None,
+                  input_dataset=None, pretrained_input_norm="imagenet"):
     del sparsity
     return LoRAResNet(Bottleneck, [3, 4, 6, 3], num_classes, nf, n_tasks=n_tasks,
                       lora_rank=lora_rank, lora_alpha=lora_alpha,
                       lora_shared_rank=lora_shared_rank, norm_params=norm_params,
-                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights)
+                      pretrained_backbone=pretrained_backbone, pretrained_weights=pretrained_weights,
+                      input_dataset=input_dataset, pretrained_input_norm=pretrained_input_norm)

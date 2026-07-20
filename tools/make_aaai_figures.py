@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate compact, single-column AAAI paper figures from real experiment data.
+"""Generate compact, single-column AAAI paper figures from canonical aggregates.
 
 Outputs (vector PDF, 3.4in wide, >=9pt fonts, colorblind-safe Okabe-Ito palette,
 hatch patterns as a color-independent secondary encoding so the figures survive
@@ -12,10 +12,9 @@ grayscale conversion, as required by the AAAI author kit):
     aaai_mia.pdf       : MIA-AUC before/after forgetting, read from the
                          canonical server_thesis_table.csv aggregates.
 
-The WorstDrop / updated-ratio numbers are the audited values of
-thesis/chapters/results.tex tab:main-pall-results (source:
-results/aggregates/server_thesis_table.csv; verified by
-tools/check_thesis_numbers.py). Keep them in sync with that table.
+WorstDrop and updated-ratio values are selected at runtime from
+``results/aggregates/server_thesis_table.csv`` using strict dataset/tag/method
+keys; no paper metric is hard-coded here.
 """
 
 import argparse
@@ -34,25 +33,37 @@ COLORS = {"PALL-Original": "#0072B2", "PALL-Modified": "#E69F00", "PALL-Adapter"
 HATCH = {"PALL-Original": "", "PALL-Modified": "//", "PALL-Adapter": "xx"}
 MARKER = {"PALL-Original": "o", "PALL-Modified": "s", "PALL-Adapter": "^"}
 METHODS = ["PALL-Original", "PALL-Modified", "PALL-Adapter"]
-DATASETS = ["CIFAR-10", "CIFAR-100", "TinyImageNet"]
+DATASETS = ["CIFAR-10", "CIFAR-100"]
 CURRENT_WORSTDROP_DATASETS = ["CIFAR-10", "CIFAR-100"]
 
-# tab:main-pall-results (scratch regime; CIFAR: 3 seeds, Tiny: 2 seeds).
-WORSTDROP_MEAN = {
-    "CIFAR-10": {"PALL-Original": 0.0040, "PALL-Modified": 0.0008, "PALL-Adapter": 0.0107},
-    "CIFAR-100": {"PALL-Original": 0.0187, "PALL-Modified": 0.0047, "PALL-Adapter": 0.0427},
-    "TinyImageNet": {"PALL-Original": 0.0940, "PALL-Modified": 0.0600, "PALL-Adapter": 0.0080},
-}
-WORSTDROP_STD = {
-    "CIFAR-10": {"PALL-Original": 0.0069, "PALL-Modified": 0.0033, "PALL-Adapter": 0.0101},
-    "CIFAR-100": {"PALL-Original": 0.0095, "PALL-Modified": 0.0050, "PALL-Adapter": 0.0333},
-    "TinyImageNet": {"PALL-Original": 0.0028, "PALL-Modified": 0.0368, "PALL-Adapter": 0.0000},
-}
-UPDATED_RATIO = {
-    "CIFAR-10": {"PALL-Original": 0.0240, "PALL-Modified": 0.0240, "PALL-Adapter": 0.0030},
-    "CIFAR-100": {"PALL-Original": 0.0210, "PALL-Modified": 0.0210, "PALL-Adapter": 0.0055},
-    "TinyImageNet": {"PALL-Original": 0.0960, "PALL-Modified": 0.0960, "PALL-Adapter": 0.0292},
-}
+_DATASET_KEYS = {"CIFAR-10": ("cifar10", "cifar10_main"), "CIFAR-100": ("cifar100", "cifar100_main")}
+_METHOD_KEYS = {"PALL-Original": "pall_original", "PALL-Modified": "pall_modified", "PALL-Adapter": "pall_adapter"}
+
+
+def load_main_pall_metrics():
+    df = pd.read_csv(ROOT / "results/aggregates/server_thesis_table.csv")
+    means, stds, ratios = {}, {}, {}
+    for dataset_label, (dataset, tag) in _DATASET_KEYS.items():
+        means[dataset_label], stds[dataset_label], ratios[dataset_label] = {}, {}, {}
+        for method_label, method in _METHOD_KEYS.items():
+            rows = df[
+                (df["dataset"] == dataset)
+                & (df["experiment_tag"] == tag)
+                & (df["method"] == method)
+                & (df["protect_importance"].fillna("gradient") == "gradient")
+            ]
+            if len(rows) != 1:
+                raise ValueError(
+                    f"expected one canonical row for {(dataset, tag, method)}, found {len(rows)}"
+                )
+            row = rows.iloc[0]
+            means[dataset_label][method_label] = float(row["WorstDrop_mean"])
+            stds[dataset_label][method_label] = float(row["WorstDrop_std"])
+            ratios[dataset_label][method_label] = float(row["updated_param_ratio_mean"])
+    return means, stds, ratios
+
+
+WORSTDROP_MEAN, WORSTDROP_STD, UPDATED_RATIO = load_main_pall_metrics()
 
 plt.rcParams.update({
     "font.size": 9,
@@ -101,7 +112,7 @@ def fig_tradeoff(outdir: Path) -> None:
                    edgecolor="white", linewidth=0.6, zorder=3,
                    label=m.replace("PALL-", "") + (" (ours)" if m != "PALL-Original" else ""))
     # Direct dataset labels on the adapter points (the interesting frontier).
-    offsets = {"CIFAR-10": (2, 3), "CIFAR-100": (2, 3), "TinyImageNet": (2, -8)}
+    offsets = {"CIFAR-10": (2, 3), "CIFAR-100": (2, 3)}
     for d in DATASETS:
         ax.annotate(d, (UPDATED_RATIO[d]["PALL-Adapter"], WORSTDROP_MEAN[d]["PALL-Adapter"]),
                     textcoords="offset points", xytext=offsets[d],

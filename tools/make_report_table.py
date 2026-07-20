@@ -55,6 +55,7 @@ CONFIG_COLUMNS = [
     "retrain_steps",
     "adapter_train_classifier",
     "adapter_component_mode",
+    "pretrained_input_norm",
 ]
 
 

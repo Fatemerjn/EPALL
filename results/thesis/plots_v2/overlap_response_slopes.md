@@ -11,7 +11,7 @@ magnitudes across those representations therefore need cautious comparison.
 |---|---|---|---|---:|---:|---:|---:|---:|---|---:|---:|
 | cifar100 | primary | pall_original | mean subnet-mask IoU | 11 | 3 | 0.0526--0.1110 | 0.517337 | [-1124.372381, 1125.407056] | True | 0.3574 | 0 |
 | cifar100 | primary | pall_modified | mean subnet-mask IoU | 12 | 4 | 0.0526--0.1110 | 0.065167 | [-0.267707, 0.398040] | True | 0.0564 | 0 |
-| cifar100 | primary | pall_adapter | shared-critical ratio | 46 | 40 | 0.3743--0.9567 | 0.005965 | [-0.053837, 0.065767] | True | 0.0008 | 0 |
+| cifar100 | primary | pall_adapter | shared-critical ratio | 69 | 51 | 0.0000--0.9567 | 0.039776 | [0.018967, 0.060585] | False | 0.1077 | 0 |
 | cifar10 | secondary | pall_original | mean subnet-mask IoU | 12 | 4 | 0.1110--0.1112 | -35.945082 | [-209.282454, 137.392289] | True | 0.0316 | 0 |
 | cifar10 | secondary | pall_modified | mean subnet-mask IoU | 14 | 5 | 0.1110--0.1112 | 3.863961 | [-107.690736, 115.418658] | True | 0.0005 | 0 |
-| cifar10 | secondary | pall_adapter | shared-critical ratio | 56 | 23 | 0.2085--0.7882 | -0.000323 | [-0.026594, 0.025948] | True | 0.0000 | 16 |
+| cifar10 | secondary | pall_adapter | shared-critical ratio | 75 | 33 | 0.0000--0.7882 | 0.007147 | [-0.002852, 0.017146] | True | 0.0141 | 18 |

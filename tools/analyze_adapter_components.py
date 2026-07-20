@@ -9,11 +9,12 @@ across-seed summary.  It never mixes experiment tags or dataset protocols.
 import argparse
 import csv
 import json
+import random
 import statistics
 from pathlib import Path
 
 
-TAG = "adapter_components_pretrained_v1"
+TAG = "adapter_components_pretrained_imagenetnorm_v2"
 MODES = (
     "reset_only",
     "reset_repair",
@@ -27,6 +28,17 @@ STAGES = (
     "after_classifier_ascent",
     "after_retained_repair",
 )
+STAGE_METRICS = {
+    "retained_avg": "full_minus_control",
+    "worst_drop": "control_minus_full",
+    "au_distance_to_chance": "control_minus_full",
+}
+CONTROLS = tuple(mode for mode in MODES if mode != "full")
+PAIR_METRICS = {
+    "A_final": "full_minus_control",
+    "WorstDrop": "control_minus_full",
+    "Au_distance_to_chance": "control_minus_full",
+}
 
 
 def load_json(path):
@@ -107,6 +119,10 @@ def extract_row(config_path, config, metrics):
         per_event = [entry for entry in per_event if entry is not None]
         for metric in ("au", "retained_avg", "worst_drop"):
             row[f"{stage}_{metric}"] = mean_present([entry[metric] for entry in per_event])
+        stage_au = row[f"{stage}_au"]
+        row[f"{stage}_au_distance_to_chance"] = (
+            abs(stage_au - chance) if stage_au is not None else None
+        )
     return row
 
 
@@ -162,6 +178,161 @@ def summarize(rows):
     return summary
 
 
+def paired_rows(rows):
+    by_key = {(row["dataset"], int(row["seed"]), row["mode"]): row for row in rows}
+    output = []
+    for dataset in sorted({row["dataset"] for row in rows}):
+        seeds = sorted({int(row["seed"]) for row in rows if row["dataset"] == dataset})
+        for control in CONTROLS:
+            for seed in seeds:
+                full = by_key.get((dataset, seed, "full"))
+                baseline = by_key.get((dataset, seed, control))
+                if full is None or baseline is None:
+                    continue
+                entry = {
+                    "dataset": dataset,
+                    "control": control,
+                    "seed": seed,
+                    "full_source_run": full["source_run"],
+                    "control_source_run": baseline["source_run"],
+                }
+                for metric, orientation in PAIR_METRICS.items():
+                    full_value = full.get(metric)
+                    control_value = baseline.get(metric)
+                    if full_value is None or control_value is None:
+                        entry[f"delta_{metric}_favor_full"] = None
+                    elif orientation == "full_minus_control":
+                        entry[f"delta_{metric}_favor_full"] = full_value - control_value
+                    else:
+                        entry[f"delta_{metric}_favor_full"] = control_value - full_value
+                output.append(entry)
+    return output
+
+
+def bootstrap_mean_ci(values, samples=10000, seed=2027):
+    if not values:
+        return None, None
+    if len(values) == 1:
+        return values[0], values[0]
+    rng = random.Random(seed)
+    means = sorted(
+        statistics.fmean(rng.choice(values) for _ in values)
+        for _ in range(samples)
+    )
+    lower = means[int(0.025 * (samples - 1))]
+    upper = means[int(0.975 * (samples - 1))]
+    return lower, upper
+
+
+def summarize_pairs(rows):
+    output = []
+    keys = sorted({(row["dataset"], row["control"]) for row in rows})
+    for dataset, control in keys:
+        group = [row for row in rows if row["dataset"] == dataset and row["control"] == control]
+        entry = {"dataset": dataset, "control": control, "n_pairs": len(group)}
+        for metric in PAIR_METRICS:
+            column = f"delta_{metric}_favor_full"
+            values = [row[column] for row in group if row.get(column) is not None]
+            entry[f"{column}_mean"] = statistics.fmean(values) if values else None
+            entry[f"{column}_std"] = statistics.stdev(values) if len(values) > 1 else 0.0 if values else None
+            lower, upper = bootstrap_mean_ci(values)
+            entry[f"{column}_ci_low"] = lower
+            entry[f"{column}_ci_high"] = upper
+        output.append(entry)
+    return output
+
+
+def stage_summary_rows(rows):
+    output = []
+    grouped = {}
+    for row in rows:
+        grouped.setdefault((row["dataset"], row["mode"]), []).append(row)
+    for (dataset, mode), group in sorted(grouped.items(), key=lambda item: (
+        item[0][0], MODES.index(item[0][1])
+    )):
+        for stage in STAGES:
+            entry = {
+                "dataset": dataset,
+                "mode": mode,
+                "stage": stage,
+                "n_seeds": len(group),
+            }
+            for metric in ("au", *STAGE_METRICS):
+                values = [
+                    row.get(f"{stage}_{metric}")
+                    for row in group
+                    if row.get(f"{stage}_{metric}") is not None
+                ]
+                entry[f"{metric}_mean"] = statistics.fmean(values) if values else None
+                entry[f"{metric}_std"] = (
+                    statistics.stdev(values) if len(values) > 1
+                    else 0.0 if values else None
+                )
+            output.append(entry)
+    return output
+
+
+def paired_stage_rows(rows):
+    by_key = {(row["dataset"], int(row["seed"]), row["mode"]): row for row in rows}
+    output = []
+    for dataset in sorted({row["dataset"] for row in rows}):
+        seeds = sorted({int(row["seed"]) for row in rows if row["dataset"] == dataset})
+        for control in CONTROLS:
+            for seed in seeds:
+                full = by_key.get((dataset, seed, "full"))
+                baseline = by_key.get((dataset, seed, control))
+                if full is None or baseline is None:
+                    continue
+                for stage in STAGES:
+                    entry = {
+                        "dataset": dataset,
+                        "control": control,
+                        "seed": seed,
+                        "stage": stage,
+                        "full_source_run": full["source_run"],
+                        "control_source_run": baseline["source_run"],
+                    }
+                    for metric, orientation in STAGE_METRICS.items():
+                        full_value = full.get(f"{stage}_{metric}")
+                        control_value = baseline.get(f"{stage}_{metric}")
+                        column = f"delta_{metric}_favor_full"
+                        if full_value is None or control_value is None:
+                            entry[column] = None
+                        elif orientation == "full_minus_control":
+                            entry[column] = full_value - control_value
+                        else:
+                            entry[column] = control_value - full_value
+                    output.append(entry)
+    return output
+
+
+def summarize_stage_pairs(rows):
+    output = []
+    keys = sorted({(row["dataset"], row["control"], row["stage"]) for row in rows})
+    for dataset, control, stage in keys:
+        group = [
+            row for row in rows
+            if row["dataset"] == dataset
+            and row["control"] == control
+            and row["stage"] == stage
+        ]
+        entry = {
+            "dataset": dataset,
+            "control": control,
+            "stage": stage,
+            "n_pairs": len(group),
+        }
+        for metric in STAGE_METRICS:
+            column = f"delta_{metric}_favor_full"
+            values = [row[column] for row in group if row.get(column) is not None]
+            entry[f"{column}_mean"] = statistics.fmean(values) if values else None
+            lower, upper = bootstrap_mean_ci(values)
+            entry[f"{column}_ci_low"] = lower
+            entry[f"{column}_ci_high"] = upper
+        output.append(entry)
+    return output
+
+
 def write_csv(path, rows):
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = list(rows[0]) if rows else ["dataset", "seed", "mode", "source_run"]
@@ -192,6 +363,72 @@ def write_markdown(path, summary, tag):
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def write_paired_markdown(path, summary, tag):
+    lines = [
+        "# Paired PALL-Adapter Component Differences",
+        "",
+        f"Strict experiment tag: `{tag}`. Pairs share dataset, schedule seed, and training configuration.",
+        "Positive deltas favor the full method. Intervals are paired bootstrap intervals; with three or fewer seeds they are descriptive, not significance tests.",
+        "",
+        "| Dataset | Control | Pairs | ΔA_final | ΔWorstDrop | Δ|Au-chance| |",
+        "|---|---|---:|---:|---:|---:|",
+    ]
+    for row in summary:
+        cells = []
+        for metric in PAIR_METRICS:
+            column = f"delta_{metric}_favor_full"
+            mean = row.get(f"{column}_mean")
+            low = row.get(f"{column}_ci_low")
+            high = row.get(f"{column}_ci_high")
+            cells.append("NA" if mean is None else f"{mean:.4f} [{low:.4f}, {high:.4f}]")
+        lines.append(
+            f"| {row['dataset']} | {row['control']} | {row['n_pairs']} | " + " | ".join(cells) + " |"
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def write_stage_markdown(path, summary, tag):
+    lines = [
+        "# PALL-Adapter Stage Diagnostics",
+        "",
+        f"Strict experiment tag: `{tag}`. Values average the request-level stage diagnostics within each seed, then summarize across seeds.",
+        "",
+        "| Dataset | Mode | Stage | Seeds | Retained avg | WorstDrop | Au | |Au-chance| |",
+        "|---|---|---|---:|---:|---:|---:|---:|",
+    ]
+    for row in summary:
+        lines.append(
+            f"| {row['dataset']} | {row['mode']} | {row['stage']} | {row['n_seeds']} | "
+            f"{fmt(row['retained_avg_mean'])} | {fmt(row['worst_drop_mean'])} | "
+            f"{fmt(row['au_mean'])} | {fmt(row['au_distance_to_chance_mean'])} |"
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def write_paired_stage_markdown(path, summary, tag):
+    lines = [
+        "# Paired PALL-Adapter Stage Differences",
+        "",
+        f"Strict experiment tag: `{tag}`. Positive deltas favor the full method. With three or fewer seeds, intervals are descriptive rather than significance tests.",
+        "",
+        "| Dataset | Control | Stage | Pairs | Δretained avg | ΔWorstDrop | Δ|Au-chance| |",
+        "|---|---|---|---:|---:|---:|---:|",
+    ]
+    for row in summary:
+        cells = []
+        for metric in STAGE_METRICS:
+            column = f"delta_{metric}_favor_full"
+            mean = row.get(f"{column}_mean")
+            low = row.get(f"{column}_ci_low")
+            high = row.get(f"{column}_ci_high")
+            cells.append("NA" if mean is None else f"{mean:.4f} [{low:.4f}, {high:.4f}]")
+        lines.append(
+            f"| {row['dataset']} | {row['control']} | {row['stage']} | "
+            f"{row['n_pairs']} | " + " | ".join(cells) + " |"
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("runs"))
@@ -203,9 +440,37 @@ def main():
     if not rows:
         raise SystemExit(f"No completed component runs found for tag={args.tag!r} under {args.root}")
     summary = summarize(rows)
+    pairs = paired_rows(rows)
+    paired_summary = summarize_pairs(pairs)
+    stage_summary = stage_summary_rows(rows)
+    stage_pairs = paired_stage_rows(rows)
+    paired_stage_summary = summarize_stage_pairs(stage_pairs)
     write_csv(args.out_prefix.with_name(args.out_prefix.name + "_runs.csv"), rows)
     write_csv(args.out_prefix.with_name(args.out_prefix.name + "_summary.csv"), summary)
     write_markdown(args.out_prefix.with_name(args.out_prefix.name + "_summary.md"), summary, args.tag)
+    write_csv(args.out_prefix.with_name(args.out_prefix.name + "_paired_runs.csv"), pairs)
+    write_csv(args.out_prefix.with_name(args.out_prefix.name + "_paired_summary.csv"), paired_summary)
+    write_paired_markdown(
+        args.out_prefix.with_name(args.out_prefix.name + "_paired_summary.md"),
+        paired_summary,
+        args.tag,
+    )
+    write_csv(args.out_prefix.with_name(args.out_prefix.name + "_stage_summary.csv"), stage_summary)
+    write_stage_markdown(
+        args.out_prefix.with_name(args.out_prefix.name + "_stage_summary.md"),
+        stage_summary,
+        args.tag,
+    )
+    write_csv(args.out_prefix.with_name(args.out_prefix.name + "_paired_stage_runs.csv"), stage_pairs)
+    write_csv(
+        args.out_prefix.with_name(args.out_prefix.name + "_paired_stage_summary.csv"),
+        paired_stage_summary,
+    )
+    write_paired_stage_markdown(
+        args.out_prefix.with_name(args.out_prefix.name + "_paired_stage_summary.md"),
+        paired_stage_summary,
+        args.tag,
+    )
     print(f"Selected {len(rows)} latest run(s); wrote component summaries under {args.out_prefix.parent}")
 
 

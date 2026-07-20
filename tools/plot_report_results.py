@@ -1248,8 +1248,7 @@ def _iter_unlearning_events(metrics: Dict[str, Any]):
 
 
 def collect_bound_points(runs_root: Path) -> List[Dict[str, Any]]:
-    """Gather (predicted_bound, measured_drop, method, dataset) points from every
-    per-task bound_check entry (all forget events) written under --eval_bound."""
+    """Gather cross-unit diagnostic pairs; they are not a calibrated bound test."""
     points: List[Dict[str, Any]] = []
     for config_path in runs_root.rglob("config.json"):
         config = load_json(config_path) or {}
@@ -1262,7 +1261,9 @@ def collect_bound_points(runs_root: Path) -> List[Dict[str, Any]]:
                 continue
             for task_id, entry in (bound.get("per_task") or {}).items():
                 predicted = to_float(entry.get("predicted_bound"))
-                measured = to_float(entry.get("measured_drop"))
+                measured = to_float(entry.get("measured_accuracy_drop_diagnostic"))
+                if measured is None:  # backward-compatible read of legacy logs
+                    measured = to_float(entry.get("measured_drop"))
                 if predicted is None or measured is None:
                     continue
                 points.append({
@@ -1276,9 +1277,7 @@ def collect_bound_points(runs_root: Path) -> List[Dict[str, Any]]:
 
 
 def plot_bound_verification(runs_root: Path, out_path: Path, dpi: int) -> Optional[Path]:
-    """Scatter predicted first-order WorstDrop bound (x) vs measured per-task drop
-    (y), on log-log axes with the y=x reference line. Points on/under y=x satisfy
-    the bound. Colored by method, marker by dataset."""
+    """Plot an explicitly uncalibrated cross-unit diagnostic, not verification."""
     points = collect_bound_points(runs_root)
     if not points:
         return None
@@ -1293,8 +1292,6 @@ def plot_bound_verification(runs_root: Path, out_path: Path, dpi: int) -> Option
     ys = [max(floor, p["measured"]) for p in points]
     lo = min(min(xs), min(ys)) * 0.5
     hi = max(max(xs), max(ys)) * 2.0
-    ax.plot([lo, hi], [lo, hi], color="0.4", linestyle="--", linewidth=1.0, zorder=1,
-            label="y = x (bound tight)")
     for p in points:
         ax.scatter(max(floor, p["predicted"]), max(floor, p["measured"]),
                    color=method_color(p["method"]), marker=dmarker[p["dataset"]],
@@ -1305,11 +1302,9 @@ def plot_bound_verification(runs_root: Path, out_path: Path, dpi: int) -> Option
     ax.set_ylim(lo, hi)
     ax.set_xlabel("Predicted first-order bound  " r"$(1-p)E^{\mathrm{crit}}_t + \epsilon C_t$")
     ax.set_ylabel("Measured per-task drop  " r"$A_t^{\mathrm{before}}-A_t^{\mathrm{after}}$")
-    n_ok = sum(1 for p in points if p["measured"] <= p["predicted"])
-    ax.set_title(f"WorstDrop bound verification | {n_ok}/{len(points)} points satisfy measured $\\leq$ predicted")
+    ax.set_title("Cross-unit diagnostic (not a bound test)")
     ax.grid(True, which="both", linewidth=0.3, alpha=0.5)
-    handles = [plt.Line2D([0], [0], color="0.4", linestyle="--", label="y = x")]
-    handles += [plt.Line2D([0], [0], marker="o", linestyle="", color=method_color(m),
+    handles = [plt.Line2D([0], [0], marker="o", linestyle="", color=method_color(m),
                            markeredgecolor="black", label=str(m)) for m in methods]
     handles += [plt.Line2D([0], [0], marker=dmarker[d], linestyle="", color="0.5",
                            markeredgecolor="black", label=str(d)) for d in datasets]
