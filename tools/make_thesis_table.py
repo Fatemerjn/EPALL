@@ -90,6 +90,7 @@ CONFIG_GROUP_COLUMNS = [
     "adapter_shared_protect_strength",
     "retrain_steps",
     "adapter_train_classifier",
+    "adapter_component_mode",
     "adapter_mask_mode",
     "adapter_conflict_gamma",
 ]
@@ -183,8 +184,16 @@ def find_metrics_files(root: Path) -> Iterable[Path]:
 # adapter_mask_mode IS discrete), so missing values normalize to the default rather
 # than to "" -- otherwise old and new-default runs would split into separate groups.
 CONFIG_MISSING_DEFAULTS = {
+    # Before adapter_forget_steps existed, PALL-Adapter performed one shared
+    # masked ascent update. Treat those legacy artifacts as the effective
+    # one-step configuration when grouping them with explicit replays.
+    "adapter_forget_steps": "1",
+    "protect_importance": "gradient",
+    "protect_anchor": "old",
+    "adaptive_protect": "False",
     "adapter_mask_mode": "discrete",
     "adapter_conflict_gamma": "1.0",
+    "adapter_component_mode": "full",
 }
 
 

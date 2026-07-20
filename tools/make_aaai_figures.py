@@ -5,13 +5,12 @@ Outputs (vector PDF, 3.4in wide, >=9pt fonts, colorblind-safe Okabe-Ito palette,
 hatch patterns as a color-independent secondary encoding so the figures survive
 grayscale conversion, as required by the AAAI author kit):
 
-    aaai_worstdrop.pdf : grouped WorstDrop bars (scratch regime, 3 datasets x
-                         3 PALL methods) with std error bars.
+    aaai_worstdrop.pdf : grouped WorstDrop bars for the current scratch-regime
+                         CIFAR runs (2 datasets x 3 PALL methods) with std bars.
     aaai_tradeoff.pdf  : updated-parameter ratio vs. WorstDrop scatter for the
                          same nine runs (log-x).
-    aaai_mia.pdf       : MIA-AUC before/after forgetting, read from
-                         results/aggregates/results_summary.csv (tags
-                         cifar10_mia / cifar100_mia / *_pretrained_mia).
+    aaai_mia.pdf       : MIA-AUC before/after forgetting, read from the
+                         canonical server_thesis_table.csv aggregates.
 
 The WorstDrop / updated-ratio numbers are the audited values of
 thesis/chapters/results.tex tab:main-pall-results (source:
@@ -36,6 +35,7 @@ HATCH = {"PALL-Original": "", "PALL-Modified": "//", "PALL-Adapter": "xx"}
 MARKER = {"PALL-Original": "o", "PALL-Modified": "s", "PALL-Adapter": "^"}
 METHODS = ["PALL-Original", "PALL-Modified", "PALL-Adapter"]
 DATASETS = ["CIFAR-10", "CIFAR-100", "TinyImageNet"]
+CURRENT_WORSTDROP_DATASETS = ["CIFAR-10", "CIFAR-100"]
 
 # tab:main-pall-results (scratch regime; CIFAR: 3 seeds, Tiny: 2 seeds).
 WORSTDROP_MEAN = {
@@ -73,17 +73,17 @@ plt.rcParams.update({
 
 def fig_worstdrop(outdir: Path) -> None:
     fig, ax = plt.subplots(figsize=(3.4, 2.3))
-    x = np.arange(len(DATASETS))
+    x = np.arange(len(CURRENT_WORSTDROP_DATASETS))
     width = 0.26
     for i, m in enumerate(METHODS):
-        means = [WORSTDROP_MEAN[d][m] for d in DATASETS]
-        stds = [WORSTDROP_STD[d][m] for d in DATASETS]
+        means = [WORSTDROP_MEAN[d][m] for d in CURRENT_WORSTDROP_DATASETS]
+        stds = [WORSTDROP_STD[d][m] for d in CURRENT_WORSTDROP_DATASETS]
         ax.bar(x + (i - 1) * width, means, width * 0.92, yerr=stds, capsize=2,
                color=COLORS[m], hatch=HATCH[m], edgecolor="white", linewidth=0.5,
                error_kw={"linewidth": 0.8, "ecolor": "#444444"},
                label=m.replace("PALL-", "") + (" (ours)" if m != "PALL-Original" else ""))
     ax.set_xticks(x)
-    ax.set_xticklabels(DATASETS)
+    ax.set_xticklabels(CURRENT_WORSTDROP_DATASETS)
     ax.set_ylabel("WorstDrop")
     ax.grid(axis="x", visible=False)
     ax.legend(frameon=False, ncol=1, loc="upper left")
@@ -116,11 +116,12 @@ def fig_tradeoff(outdir: Path) -> None:
 
 
 def fig_mia(outdir: Path) -> None:
-    df = pd.read_csv(ROOT / "results/aggregates/results_summary.csv")
+    df = pd.read_csv(ROOT / "results/aggregates/server_thesis_table.csv")
+    dataset_keys = {"CIFAR-10": "cifar10", "CIFAR-100": "cifar100"}
     tags = {
-        "CIFAR-10": {"clpu": "cifar10_mia", "pall_modified": "cifar10_mia",
+        "CIFAR-10": {"clpu": "cifar10_mia", "pall_modified": "anchor_ablation_v1",
                      "lora": "cifar10_pretrained_mia", "pall_adapter": "cifar10_pretrained_mia"},
-        "CIFAR-100": {"clpu": "cifar100_mia", "pall_modified": "cifar100_mia",
+        "CIFAR-100": {"clpu": "cifar100_mia", "pall_modified": "anchor_ablation_v1",
                       "lora": "cifar100_pretrained_mia", "pall_adapter": "cifar100_pretrained_mia"},
     }
     labels = {"clpu": "CLPU", "pall_modified": "Modified", "lora": "LoRA", "pall_adapter": "Adapter"}
@@ -130,9 +131,19 @@ def fig_mia(outdir: Path) -> None:
     for ax, ds in zip(axes, ["CIFAR-10", "CIFAR-100"]):
         before, after = [], []
         for meth in order:
-            sub = df[(df["experiment_tag"] == tags[ds][meth]) & (df["method"] == meth)]
-            before.append(sub["mia_auc_before"].mean())
-            after.append(sub["mia_auc_after"].mean())
+            sub = df[
+                (df["dataset"] == dataset_keys[ds])
+                & (df["experiment_tag"] == tags[ds][meth])
+                & (df["method"] == meth)
+            ]
+            if meth == "pall_modified":
+                sub = sub[sub["protect_anchor"] == "old"]
+            if len(sub) != 1:
+                raise ValueError(
+                    f"expected one canonical MIA aggregate for {ds}/{meth}; found {len(sub)}"
+                )
+            before.append(float(sub.iloc[0]["mia_auc_before_mean"]))
+            after.append(float(sub.iloc[0]["mia_auc_after_mean"]))
         x = np.arange(len(order))
         w = 0.38
         ax.bar(x - w / 2, before, w, color="#bbbbbb", edgecolor="white", linewidth=0.5, label="Before")

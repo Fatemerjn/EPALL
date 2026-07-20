@@ -195,6 +195,24 @@ parser.add_argument(
          "S_share_crit, frozen elsewhere).",
 )
 parser.add_argument(
+    '--adapter_component_mode',
+    default='full',
+    choices=['full', 'reset_only', 'reset_repair', 'uniform_unprotected', 'mask_no_ascent'],
+    help="request-time PALL-Adapter component ablation. 'full' preserves the current "
+         "ordered method; 'reset_only' resets only the target adapter and classifier "
+         "slice; 'reset_repair' adds retained-task repair; 'uniform_unprotected' uses "
+         "the same S_forget support with multiplier one instead of overlap protection; "
+         "'mask_no_ascent' keeps the soft-masked shared update and repair but omits "
+         "cached-gradient classifier ascent.",
+)
+parser.add_argument(
+    '--eval_component_stages',
+    default=False,
+    action='store_true',
+    help='evaluate and serialize PALL-Adapter accuracy after target reset, shared update, '
+         'classifier ascent, and retained-task repair (intended for component ablations)',
+)
+parser.add_argument(
     '--adapter_mask_mode',
     default='discrete',
     choices=['discrete', 'continuous'],
@@ -1347,6 +1365,9 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "unlearning_step": unlearning_step,
                 "request_id": request_id,
                 "task_id": task_id,
+                "adapter_component_mode": info.get("adapter_component_mode"),
+                "component_stages": json_safe(info.get("component_stages", {})),
+                "stage_evals": json_safe(info.get("stage_evals", {})),
                 "remaining_tasks": remaining_tasks,
                 "per_task_acc_before": acc_list_to_dict(pre_acc),
                 "per_task_acc_after_reset": acc_list_to_dict(after_reset_acc),
@@ -1365,6 +1386,12 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 "conflict_mask": json_safe(info.get("conflict_mask_stats")) if isinstance(info.get("conflict_mask_stats"), dict) else None,
                 "t_reset": info.get("t_reset", 0.0) if info.get("t_reset") is not None else 0.0,
                 "t_retrain": info.get("t_retrain", 0.0) if info.get("t_retrain") is not None else 0.0,
+                "t_target_reset": info.get("t_target_reset"),
+                "t_shared_update": info.get("t_shared_update"),
+                "t_classifier_ascent": info.get("t_classifier_ascent"),
+                "t_retained_repair": info.get("t_retained_repair"),
+                "t_component_eval": info.get("t_component_eval"),
+                "t_forget_total_raw": info.get("t_forget_total_raw"),
                 "t_forget_total": info.get("t_forget_total"),
                 "num_updated_params": (
                     info.get("num_updated_params")

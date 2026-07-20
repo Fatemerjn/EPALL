@@ -778,6 +778,11 @@ class PALLAdapter(Base):
         self.log_progress(f"forget phase start: task={task_id}")
 
         active_tasks = list(remaining_tasks) if remaining_tasks is not None else [t for t in self.prev_tasks if t != task_id]
+        component_mode = getattr(self.args, "adapter_component_mode", "full")
+        run_shared_update = component_mode in {"full", "uniform_unprotected", "mask_no_ascent"}
+        run_classifier_ascent = component_mode in {"full", "uniform_unprotected"}
+        run_retained_repair = component_mode != "reset_only"
+        eval_component_stages = bool(getattr(self.args, "eval_component_stages", False))
         reset_param_count = self.net.count_adapter_params(task_id)
         shared_param_count, total_shared_params = self.net.count_shared_adapter_params()
         shared_forget_mask = self._zeros_like_shared_adapter()
@@ -803,22 +808,23 @@ class PALLAdapter(Base):
         # here. S_forget, classifier forget gradients, and the default iterative
         # uniform-target Phase 3 sample from that buffer only; after those
         # forget-data-dependent steps, the buffer is deleted before retained repair.
-        if total_shared_params > 0 and self.args.adapter_shared_forget_ratio > 0.0:
+        if run_shared_update and total_shared_params > 0 and self.args.adapter_shared_forget_ratio > 0.0:
             deleted_importance, deleted_grads, classifier_deleted_grads, _ = self._compute_shared_importance(
                 [task_id],
-                include_classifier=True,
+                include_classifier=run_classifier_ascent,
             )
             shared_forget_mask, _, _ = self._topk_shared_masks(
                 deleted_importance,
                 self.args.adapter_shared_forget_ratio,
             )
-        elif classifier_param_count > 0:
+        elif run_classifier_ascent and classifier_param_count > 0:
             _, _, classifier_deleted_grads, _ = self._compute_shared_importance(
                 [task_id],
                 include_classifier=True,
             )
         if (
-            total_shared_params > 0
+            run_shared_update
+            and total_shared_params > 0
             and self.args.adapter_shared_forget_ratio > 0.0
             and self.args.adapter_shared_protect_ratio > 0.0
         ):
@@ -887,7 +893,12 @@ class PALLAdapter(Base):
         # gradient + one-batch per-task retained gradients. Gated by --eval_bound
         # because it costs one extra retained backward pass per active task.
         bound_check = None
-        if getattr(self.args, "eval_bound", False) and shared_forget_count > 0 and active_tasks:
+        if (
+            component_mode == "full"
+            and getattr(self.args, "eval_bound", False)
+            and shared_forget_count > 0
+            and active_tasks
+        ):
             bound_check = self._compute_bound_check(
                 task_id, active_tasks, deleted_grads,
                 shared_forget_mask, shared_critical_mask,
@@ -895,6 +906,14 @@ class PALLAdapter(Base):
             )
 
         info = {
+            "adapter_component_mode": component_mode,
+            "component_stages": {
+                "target_reset": True,
+                "shared_update": bool(run_shared_update),
+                "classifier_ascent": bool(run_classifier_ascent),
+                "retained_repair": bool(run_retained_repair),
+            },
+            "stage_evals": {},
             "grad_norm_ratio": grad_norm_ratio,
             "bound_check": bound_check,
             "s_t": int(total_overlap_scope),
@@ -946,11 +965,48 @@ class PALLAdapter(Base):
                 "buffer_sizes": {},
             },
         }
-        t_reset_start = time.perf_counter()
+        component_eval_time = 0.0
+
+        def record_component_stage(stage):
+            nonlocal component_eval_time
+            if not eval_component_stages or eval_fn is None:
+                return
+            eval_start = time.perf_counter()
+            info["stage_evals"][stage] = eval_fn(stage)
+            component_eval_time += time.perf_counter() - eval_start
+
+        t_target_reset_start = time.perf_counter()
         self.net.reset_task_adapter(task_id)
         self.net.reset_classifier_slice(task_id, self.cpt)
+        info["t_target_reset"] = time.perf_counter() - t_target_reset_start
+        record_component_stage("after_target_reset")
+
+        t_shared_update_start = time.perf_counter()
         if shared_forget_count > 0:
-            if getattr(self.args, "adapter_mask_mode", "discrete") == "continuous":
+            if component_mode == "uniform_unprotected":
+                zero_critical = {
+                    name: torch.zeros_like(mask, dtype=torch.bool)
+                    for name, mask in shared_forget_mask.items()
+                }
+                (
+                    updated_adapter_params,
+                    shared_full_update_params,
+                    shared_soft_update_params,
+                ) = self._run_phase3_shared_forgetting(
+                    task_id,
+                    shared_forget_mask,
+                    zero_critical,
+                    zero_critical,
+                    self.args.adapter_shared_forget_lr,
+                    0.0,
+                    self.args.adapter_forget_steps,
+                )
+                hard_protected_adapter_params = 0
+                self.log_progress(
+                    "adapter component ablation: uniform_unprotected uses the "
+                    "same S_forget support with multiplier one"
+                )
+            elif getattr(self.args, "adapter_mask_mode", "discrete") == "continuous":
                 # CONTINUOUS conflict-weighted soft mask: replaces the discrete
                 # full/soft/frozen partition with a per-coordinate multiplier over
                 # S_forget. The frozen (m==0) subset plays the "hard-protected" role
@@ -1007,6 +1063,8 @@ class PALLAdapter(Base):
                     self.args.adapter_forget_steps,
                 )
             protected_adapter_params = int(hard_protected_adapter_params)
+        info["t_shared_update"] = time.perf_counter() - t_shared_update_start
+        record_component_stage("after_shared_update")
         protected_adapter_params = int(protected_adapter_params)
         updated_adapter_params = int(updated_adapter_params)
         hard_protected_adapter_params = int(hard_protected_adapter_params)
@@ -1050,12 +1108,20 @@ class PALLAdapter(Base):
         info["protection"]["hard_protected_adapter_params"] = int(hard_protected_adapter_params)
         info["protection"]["updated_adapter_params"] = int(updated_adapter_params)
         info["protection"]["overlap_analysis"] = overlap_analysis
-        if classifier_param_count > 0:
+        info["protection"]["active"] = bool(
+            run_shared_update
+            and component_mode != "uniform_unprotected"
+            and shared_critical_count > 0
+        )
+        t_classifier_ascent_start = time.perf_counter()
+        if run_classifier_ascent and classifier_param_count > 0:
             classifier_forget_param_count = self._apply_classifier_forgetting_update(
                 classifier_deleted_grads,
                 self.args.adapter_shared_forget_lr,
             )
             info["classifier_forget_param_count"] = int(classifier_forget_param_count)
+        info["t_classifier_ascent"] = time.perf_counter() - t_classifier_ascent_start
+        record_component_stage("after_classifier_ascent")
         if total_shared_params > 0:
             print(
                 "[PALLAdapter] critical mask stats: shared_forget={forget_count} shared_active={active_count} "
@@ -1075,11 +1141,22 @@ class PALLAdapter(Base):
             ),
             flush=True,
         )
-        info["t_reset"] = time.perf_counter() - t_reset_start
+        info["t_reset"] = (
+            info["t_target_reset"]
+            + info["t_shared_update"]
+            + info["t_classifier_ascent"]
+        )
         self.archived_task_ids.add(task_id)
 
         if eval_fn is not None:
+            # Backward-compatible field: historically this means the complete
+            # pre-repair intervention (target reset + shared update + classifier
+            # ascent), not target reset alone. New component experiments use the
+            # precise names under stage_evals.
+            backward_eval_start = time.perf_counter()
             info["after_reset_eval"] = eval_fn("after_reset")
+            if eval_component_stages:
+                component_eval_time += time.perf_counter() - backward_eval_start
 
         if task_id in self.memory.buffer:
             self.memory.remove(task_id)
@@ -1090,7 +1167,8 @@ class PALLAdapter(Base):
         if task_id in self.prev_tasks:
             self.prev_tasks.remove(task_id)
 
-        retrain_steps = self._compute_retrain_steps()
+        requested_retrain_steps = self._compute_retrain_steps()
+        retrain_steps = requested_retrain_steps if run_retained_repair else 0
         buffer_sizes = {}
         for active_task in active_tasks:
             entry = self.memory.buffer.get(active_task) if self.memory.buffer else None
@@ -1100,6 +1178,7 @@ class PALLAdapter(Base):
             buffer_sizes[str(active_task)] = min(int(entry.get("num_seen", 0)), int(entry["X"].shape[0]))
         info["finetune_diag"]["buffer_sizes"] = buffer_sizes
         info["finetune_diag"]["retrain_steps"] = retrain_steps
+        info["finetune_diag"]["requested_retrain_steps"] = requested_retrain_steps
 
         can_finetune = bool(active_tasks) and retrain_steps > 0 and any(size > 0 for size in buffer_sizes.values())
         if can_finetune:
@@ -1127,7 +1206,11 @@ class PALLAdapter(Base):
             info["t_retrain"] = 0.0
             self.log_progress(f"retrain phase skipped: task={task_id} active_tasks={active_tasks}")
 
-        info["t_forget_total"] = time.perf_counter() - forget_start
+        info["t_retained_repair"] = info["t_retrain"]
+        record_component_stage("after_retained_repair")
+        info["t_component_eval"] = component_eval_time
+        info["t_forget_total_raw"] = time.perf_counter() - forget_start
+        info["t_forget_total"] = max(0.0, info["t_forget_total_raw"] - component_eval_time)
         self.log_progress(
             f"forget phase end: task={task_id} elapsed={self._format_elapsed(info['t_forget_total'])}"
         )

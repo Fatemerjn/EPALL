@@ -54,6 +54,7 @@ CONFIG_COLUMNS = [
     "adapter_shared_protect_strength",
     "retrain_steps",
     "adapter_train_classifier",
+    "adapter_component_mode",
 ]
 
 

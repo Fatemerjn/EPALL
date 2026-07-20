@@ -19,6 +19,9 @@
 #   GROUP 18 (g18_probe): linear-probe audit on MAIN configs, five methods -- ON DEMAND, not in `all`
 #   GROUP 20 (g20_paper_completion): only missing paper-completion reruns -- ON DEMAND, not in `all`
 #   GROUP 21 (g21_standard_unlearning): standard SSD + SalUn, both CIFAR datasets, seeds 0/1/2 -- ON DEMAND, resume-safe
+#   GROUP 22A (g22a_tiny_seed2): the five missing TinyImageNet seed-2 paper runs -- ON DEMAND, resume-safe
+#   GROUP 22B (g22b_mia_anchor_seed2): the twelve missing MIA/anchor seed-2 runs -- ON DEMAND, resume-safe
+#   GROUP 23 (g23_adapter_components): PALL-Adapter request-time component controls -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -40,6 +43,9 @@
 #   bash tools/run_server_experiments.sh g18_probe # linear-probe audit on MAIN configs, both CIFAR datasets/seeds
 #   bash tools/run_server_experiments.sh g20_paper_completion # 15 missing paper-completion runs only
 #   bash tools/run_server_experiments.sh g21_standard_unlearning --dry-run # inspect the exact 12-run standard SSD/SalUn matrix
+#   bash tools/run_server_experiments.sh g22a_tiny_seed2 --dry-run # inspect the exact five-run TinyImageNet seed-2 matrix
+#   bash tools/run_server_experiments.sh g22b_mia_anchor_seed2 --dry-run # inspect the exact twelve-run MIA/anchor seed-2 matrix
+#   COMPONENT_DATASETS="cifar100" COMPONENT_SEEDS="0" bash tools/run_server_experiments.sh g23_adapter_components --dry-run
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -56,13 +62,15 @@ usage () {
         "" \
         "Default GROUP is 'all' (g1 + g2 + g3)." \
         "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
-        "and g21_standard_unlearning." \
+        "g21_standard_unlearning, g22a_tiny_seed2, g22b_mia_anchor_seed2," \
+        "and g23_adapter_components." \
         "" \
         "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
         "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
         "        g12_agreement g3b_bottleneck_seed1 g13_shared_bottleneck" \
         "        g13_bottleneck g14_conflict g15_seed2 g17_overlap_curve" \
-        "        g18_probe g20_paper_completion g21_standard_unlearning"
+        "        g18_probe g20_paper_completion g21_standard_unlearning" \
+        "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components"
 }
 
 if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
@@ -83,9 +91,9 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g20_paper_completion|g21_standard_unlearning) ;;
+        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components) ;;
         *)
-            echo "--dry-run is supported only for g15_seed2, g20_paper_completion, and g21_standard_unlearning" >&2
+            echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
             ;;
     esac
@@ -148,6 +156,12 @@ launch_resume_safe () {  # launch_resume_safe <logname> <main.py args...>
         printf '    COMMAND %q -u main.py' "$PY"
         printf ' %q' "$@"
         printf '\n'
+        echo "    FULL EFFECTIVE CONFIG:"
+        if ! $PY tools/find_exact_completed_run.py --print-effective-config --root runs -- "$@" \
+            | sed 's/^/      /'; then
+            ((FAILED_RUNS += 1))
+            echo "    FAIL ${name}: could not resolve full effective config" >&2
+        fi
         return 0
     fi
     launch "$name" "$@"
@@ -937,6 +951,180 @@ group21_standard_unlearning () {
     done
 }
 
+# ---------------------------------------------------- GROUP 22A Tiny seed 2
+# Five paper seed gaps only. The pretrained pair is an exact seed-2 extension
+# of g7_tiny. The three tiny_e3_* runs are a separate, from-scratch fixed-
+# request-schedule comparison reconstructed from the canonical seed-0/1 run
+# configs under runs/tinyimagenet/T20_F3/. Do not merge the two regimes.
+group22a_tiny_seed2 () {
+    echo "===== GROUP 22A: TinyImageNet paper seed 2 (5 resume-safe runs) ====="
+    local s=2
+    local TINY="--dataset tinyimagenet --class_per_task 10 --n_tasks 20 --n_forget 3 --arch resnet18"
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth --cache_features"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    local seeded_schedule="schedules/tinyimagenet_t20_f3_seed2.json"
+
+    if [[ ! -f "$seeded_schedule" ]]; then
+        ((FAILED_RUNS += 1))
+        echo "    FAIL: missing ${seeded_schedule}" >&2
+        return 0
+    fi
+
+    # Table 2: ImageNet-pretrained frozen ResNet-18, exact g7_tiny settings.
+    launch_resume_safe "tiny_seed2_pall_adapter_pretrained_s${s}" \
+        $TINY $COMMON $PRE --seed $s --request_schedule_file "$seeded_schedule" \
+        --method pall_adapter $ADAPTER --experiment_tag tiny_pretrained
+    launch_resume_safe "tiny_seed2_lora_pretrained_s${s}" \
+        $TINY $COMMON $PRE --seed $s --request_schedule_file "$seeded_schedule" \
+        --method lora $LORA --experiment_tag tiny_pretrained
+
+    # Table 3: canonical April seed-0/1 effective config. Both earlier seeds
+    # used k_shot=1, non-deterministic execution, explicit macOS-equivalent
+    # loader settings, and the fixed seed-0 request schedule. The legacy
+    # adapter implementation performed one masked gradient-ascent step; make
+    # that behavior explicit under the current CLI.
+    local E3_COMMON="--data_dir ${DATA_DIR} --k_shot 1 --alpha 0.5 --beta 1.0 \
+        --mem_budget 500 --optim sgd --momentum 0.9 --lr 1e-2 \
+        --weight_decay 5e-4 --batch_size 32 --n_epochs 3 --num_workers 0 --no-pin-memory \
+        --adapter_forget_mode ascent_step --adapter_forget_steps 1"
+    local fixed_schedule="schedules/tinyimagenet_t20_f3_seed0.json"
+    local E3_ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --dump_overlap"
+
+    launch_resume_safe "tiny_e3_original_s${s}" \
+        $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
+        --method pall_original --experiment_tag tiny_e3_original_v1
+    launch_resume_safe "tiny_e3_modified_s${s}" \
+        $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
+        --method pall_modified --experiment_tag tiny_e3_modified_v1
+    launch_resume_safe "tiny_e3_adapter_s${s}" \
+        $TINY $E3_COMMON --seed $s --request_schedule_file "$fixed_schedule" \
+        --method pall_adapter $E3_ADAPTER --experiment_tag tiny_e3_adapter_v1
+}
+
+# ----------------------------------------------- GROUP 22B MIA/anchor seed 2
+# Exact seed-2 extensions of g8_mia and g10_anchor. All launches use the
+# matching seed-2 CIFAR schedule and retain the original experiment tags.
+group22b_mia_anchor_seed2 () {
+    echo "===== GROUP 22B: MIA + anchor paper seed 2 (12 resume-safe runs) ====="
+    local s=2
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    local C100_R18="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9"
+    local c10="schedules/cifar10_t5_f3_fixed_seed2.json"
+    local c100="schedules/cifar100_t10_f3_seed2.json"
+
+    # MIA: exact g8_mia settings.
+    launch_resume_safe "mia_seed2_c10_pall_modified_s${s}" $C10 $COMMON --seed $s \
+        --request_schedule_file "$c10" --method pall_modified $PALL_MOD \
+        --eval_mia --experiment_tag cifar10_mia
+    launch_resume_safe "mia_seed2_c10_clpu_s${s}" $C10 $COMMON --seed $s \
+        --request_schedule_file "$c10" --method clpu \
+        --eval_mia --experiment_tag cifar10_mia
+    launch_resume_safe "mia_seed2_c10_pall_adapter_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+        --request_schedule_file "$c10" --method pall_adapter $ADAPTER \
+        --eval_mia --experiment_tag cifar10_pretrained_mia
+    launch_resume_safe "mia_seed2_c10_lora_pretrained_s${s}" $C10 $COMMON $PRE --seed $s \
+        --request_schedule_file "$c10" --method lora $LORA \
+        --eval_mia --experiment_tag cifar10_pretrained_mia
+    launch_resume_safe "mia_seed2_c100_pall_modified_s${s}" $C100 $COMMON --seed $s \
+        --request_schedule_file "$c100" --method pall_modified $PALL_MOD \
+        --eval_mia --experiment_tag cifar100_mia
+    launch_resume_safe "mia_seed2_c100_clpu_s${s}" $C100 $COMMON --seed $s \
+        --request_schedule_file "$c100" --method clpu \
+        --eval_mia --experiment_tag cifar100_mia
+    launch_resume_safe "mia_seed2_c100_pall_adapter_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+        --request_schedule_file "$c100" --method pall_adapter $ADAPTER \
+        --eval_mia --experiment_tag cifar100_pretrained_mia
+    launch_resume_safe "mia_seed2_c100_lora_pretrained_s${s}" $C100_R18 $COMMON $PRE --seed $s \
+        --request_schedule_file "$c100" --method lora $LORA \
+        --eval_mia --experiment_tag cifar100_pretrained_mia
+
+    # Anchor ablation: exact g10_anchor settings, MIA enabled.
+    for anchor in old reinit; do
+        launch_resume_safe "anchor_seed2_c10_pall_modified_${anchor}_s${s}" $C10 $COMMON --seed $s \
+            --request_schedule_file "$c10" --method pall_modified $PALL_MOD \
+            --protect_anchor "$anchor" --eval_mia --experiment_tag anchor_ablation_v1
+        launch_resume_safe "anchor_seed2_c100_pall_modified_${anchor}_s${s}" $C100 $COMMON --seed $s \
+            --request_schedule_file "$c100" --method pall_modified $PALL_MOD \
+            --protect_anchor "$anchor" --eval_mia --experiment_tag anchor_ablation_v1
+    done
+}
+
+# ----------------------------------------- GROUP 23 Adapter component controls
+# Matched pretrained/frozen-backbone PALL-Adapter runs that isolate the target
+# reset, retained repair, overlap-aware shared update, and classifier ascent.
+# Environment filters make the five-run CIFAR-100/seed-0 pilot cheap to launch:
+#   COMPONENT_DATASETS="cifar100" COMPONENT_SEEDS="0"
+#   COMPONENT_MODES="reset_only reset_repair uniform_unprotected mask_no_ascent full"
+group23_adapter_components () {
+    echo "===== GROUP 23: PALL-Adapter component controls (resume-safe) ====="
+    local datasets="${COMPONENT_DATASETS:-cifar10 cifar100}"
+    local seeds="${COMPONENT_SEEDS:-0 1 2}"
+    local modes="${COMPONENT_MODES:-reset_only reset_repair uniform_unprotected mask_no_ascent full}"
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10 \
+        --eval_component_stages"
+    local TAG="adapter_components_pretrained_v1"
+    local dataset seed mode spec schedule
+
+    for dataset in $datasets; do
+        case "$dataset" in
+            cifar10) spec="$C10" ;;
+            cifar100) spec="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9" ;;
+            *)
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: unsupported COMPONENT_DATASETS entry '${dataset}'" >&2
+                continue
+                ;;
+        esac
+        for seed in $seeds; do
+            case "$seed" in
+                0|1|2) ;;
+                *)
+                    ((FAILED_RUNS += 1))
+                    echo "    FAIL: unsupported COMPONENT_SEEDS entry '${seed}'" >&2
+                    continue
+                    ;;
+            esac
+            if [[ "$dataset" == "cifar10" ]]; then
+                schedule="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+            else
+                schedule="schedules/cifar100_t10_f3_seed${seed}.json"
+            fi
+            if [[ ! -f "$schedule" ]]; then
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: missing ${schedule}" >&2
+                continue
+            fi
+            for mode in $modes; do
+                case "$mode" in
+                    reset_only|reset_repair|uniform_unprotected|mask_no_ascent|full) ;;
+                    *)
+                        ((FAILED_RUNS += 1))
+                        echo "    FAIL: unsupported COMPONENT_MODES entry '${mode}'" >&2
+                        continue
+                        ;;
+                esac
+                launch_resume_safe "components_${dataset}_${mode}_s${seed}" \
+                    $spec $COMMON $PRE --seed "$seed" --request_schedule_file "$schedule" \
+                    --method pall_adapter $ADAPTER --adapter_component_mode "$mode" \
+                    --experiment_tag "$TAG"
+            done
+        done
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -961,6 +1149,9 @@ case "$WHICH" in
     g18_probe) group18_probe ;;
     g20_paper_completion) group20_paper_completion ;;
     g21_standard_unlearning) group21_standard_unlearning ;;
+    g22a_tiny_seed2) group22a_tiny_seed2 ;;
+    g22b_mia_anchor_seed2) group22b_mia_anchor_seed2 ;;
+    g23_adapter_components) group23_adapter_components ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -975,24 +1166,46 @@ fi
 
 echo "===================================================================="
 echo "AGGREGATING TABLES ..."
+AGG_SUFFIX=""
+case "$WHICH" in
+    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components)
+        # These completion groups must never overwrite an existing CSV. A
+        # timestamped canonical-tool rebuild can be inspected and synced while
+        # the paper-facing canonical paths remain unchanged until every gap is
+        # closed and an explicit promotion is approved.
+        AGG_SUFFIX="_${WHICH}_$(date +%Y%m%d_%H%M%S)"
+        ;;
+esac
+SERVER_RESULTS_OUT="results/aggregates/server_results${AGG_SUFFIX}.csv"
+SERVER_THESIS_CSV_OUT="results/aggregates/server_thesis_table${AGG_SUFFIX}.csv"
+SERVER_THESIS_MD_OUT="results/aggregates/server_thesis_table${AGG_SUFFIX}.md"
+SERVER_REPORT_CSV_OUT="results/aggregates/server_report_table${AGG_SUFFIX}.csv"
+SERVER_REPORT_MD_OUT="results/aggregates/server_report_table${AGG_SUFFIX}.md"
 if ! $PY tools/aggregate_results.py --root runs --require-metrics --seed-policy latest \
-    --out results/aggregates/server_results.csv; then
+    --out "$SERVER_RESULTS_OUT"; then
     ((FAILED_AGGREGATIONS += 1))
     echo "[FAIL] aggregate_results.py" >&2
 fi
 if ! $PY tools/make_thesis_table.py --root runs --group-by-config \
     --seed-policy latest \
-    --out-csv results/aggregates/server_thesis_table.csv \
-    --out-md  results/aggregates/server_thesis_table.md; then
+    --out-csv "$SERVER_THESIS_CSV_OUT" \
+    --out-md  "$SERVER_THESIS_MD_OUT"; then
     ((FAILED_AGGREGATIONS += 1))
     echo "[FAIL] make_thesis_table.py" >&2
 fi
 if ! $PY tools/make_report_table.py \
-    --input results/aggregates/server_thesis_table.csv \
-    --out-csv results/aggregates/server_report_table.csv \
-    --out-md  results/aggregates/server_report_table.md; then
+    --input "$SERVER_THESIS_CSV_OUT" \
+    --out-csv "$SERVER_REPORT_CSV_OUT" \
+    --out-md  "$SERVER_REPORT_MD_OUT"; then
     ((FAILED_AGGREGATIONS += 1))
     echo "[FAIL] make_report_table.py" >&2
+fi
+if [[ "$WHICH" == "g23_adapter_components" ]]; then
+    if ! $PY tools/analyze_adapter_components.py --root runs \
+        --out-prefix results/aggregates/adapter_components; then
+        ((FAILED_AGGREGATIONS += 1))
+        echo "[FAIL] analyze_adapter_components.py" >&2
+    fi
 fi
 
 if (( FAILED_RUNS > 0 || FAILED_AGGREGATIONS > 0 )); then
@@ -1002,7 +1215,10 @@ if (( FAILED_RUNS > 0 || FAILED_AGGREGATIONS > 0 )); then
 fi
 
 echo "DONE. All runs and aggregation steps passed."
-echo "Tables written under results/aggregates/ :"
-echo "  server_thesis_table.md   (full)"
-echo "  server_report_table.md   (compact)"
+echo "Aggregate outputs:"
+echo "  ${SERVER_RESULTS_OUT}"
+echo "  ${SERVER_THESIS_CSV_OUT}"
+echo "  ${SERVER_THESIS_MD_OUT}"
+echo "  ${SERVER_REPORT_CSV_OUT}"
+echo "  ${SERVER_REPORT_MD_OUT}"
 echo "Per-run logs are under logs/."

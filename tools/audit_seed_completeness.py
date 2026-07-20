@@ -205,6 +205,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             ("pall_modified", "clpu"),
             f"{prefix}_mia",
             "from_scratch",
+            seeds=SEEDS_012,
             configs={"pall_modified": protected_retrain_config()},
         )
         add(
@@ -213,6 +214,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             ("pall_adapter", "lora"),
             f"{prefix}_pretrained_mia",
             "pretrained_frozen",
+            seeds=SEEDS_012,
             configs={"pall_adapter": adapter_config()},
         )
         add(
@@ -274,9 +276,58 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
         ("pall_adapter", "lora"),
         "tiny_pretrained",
         "pretrained_frozen",
-        seeds=tiny_seeds,
+        seeds=SEEDS_012,
         configs={"pall_adapter": adapter_config()},
     )
+
+    specs.extend(
+        [
+            ExpectedSpec(
+                result_set="TinyImageNet fixed-schedule from-scratch",
+                dataset="tinyimagenet",
+                method="pall_original",
+                experiment_tag="tiny_e3_original_v1",
+                regime="from_scratch_fixed_schedule",
+                expected_seeds=SEEDS_012,
+                config={"adapter_forget_steps": 1},
+            ),
+            ExpectedSpec(
+                result_set="TinyImageNet fixed-schedule from-scratch",
+                dataset="tinyimagenet",
+                method="pall_modified",
+                experiment_tag="tiny_e3_modified_v1",
+                regime="from_scratch_fixed_schedule",
+                expected_seeds=SEEDS_012,
+                config={"adapter_forget_steps": 1},
+            ),
+            ExpectedSpec(
+                result_set="TinyImageNet fixed-schedule from-scratch",
+                dataset="tinyimagenet",
+                method="pall_adapter",
+                experiment_tag="tiny_e3_adapter_v1",
+                regime="from_scratch_fixed_schedule",
+                expected_seeds=SEEDS_012,
+                config={
+                    **adapter_config(forget_steps=1),
+                    "retrain_steps": "",
+                },
+            ),
+        ]
+    )
+
+    for dataset in ("cifar10", "cifar100"):
+        for anchor in ("old", "reinit"):
+            specs.append(
+                ExpectedSpec(
+                    result_set="anchor ablation",
+                    dataset=dataset,
+                    method="pall_modified",
+                    experiment_tag="anchor_ablation_v1",
+                    regime="ablation_mia",
+                    expected_seeds=SEEDS_012,
+                    config={**protected_retrain_config(), "protect_anchor": anchor},
+                )
+            )
     return specs
 
 

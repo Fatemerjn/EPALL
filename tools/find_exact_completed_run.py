@@ -38,6 +38,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--root", type=Path, default=Path("runs"), help="Run artifact root.")
     parser.add_argument(
+        "--print-effective-config",
+        action="store_true",
+        help="Print the fully resolved main.py configuration as JSON and exit.",
+    )
+    parser.add_argument(
         "main_args",
         nargs=argparse.REMAINDER,
         help="Arguments intended for main.py (place after --).",
@@ -280,6 +285,9 @@ def main() -> int:
     args = parse_args()
     try:
         expected = load_expected_config(args.main_args)
+        if args.print_effective_config:
+            print(json.dumps(expected, indent=2, sort_keys=True))
+            return 0
         matches = sorted(matching_runs(args.root, expected), key=lambda path: (path.name, str(path)))
     except Exception as exc:
         print(f"[ERROR] exact-resume check failed: {exc}", file=sys.stderr)
