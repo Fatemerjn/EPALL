@@ -45,6 +45,7 @@ CONFIG_COLUMNS = [
     "lambda_protect",
     "protect_anchor",
     "adaptive_protect",
+    "modified_component_mode",
     "adapter_bottleneck",
     "adapter_shared_bottleneck",
     "adapter_shared_forget_ratio",

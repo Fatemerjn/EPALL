@@ -14,7 +14,7 @@ import statistics
 from pathlib import Path
 
 
-TAG = "adapter_components_pretrained_imagenetnorm_v2"
+TAG = "adapter_components_pretrained_imagenetnorm_rngneutral_v3"
 MODES = (
     "reset_only",
     "reset_repair",
@@ -437,8 +437,20 @@ def main():
     args = parser.parse_args()
 
     rows = select_rows(args.root, args.tag)
-    if not rows:
-        raise SystemExit(f"No completed component runs found for tag={args.tag!r} under {args.root}")
+    expected_keys = {
+        (dataset, seed, mode)
+        for dataset in ("cifar10", "cifar100")
+        for seed in (0, 1, 2)
+        for mode in MODES
+    }
+    actual_keys = {(row["dataset"], int(row["seed"]), row["mode"]) for row in rows}
+    if actual_keys != expected_keys:
+        missing = sorted(expected_keys.difference(actual_keys))
+        extra = sorted(actual_keys.difference(expected_keys))
+        raise SystemExit(
+            f"Expected exact 30-run component matrix for tag={args.tag!r}; "
+            f"found {len(actual_keys)} keys, missing={missing}, extra={extra}"
+        )
     summary = summarize(rows)
     pairs = paired_rows(rows)
     paired_summary = summarize_pairs(pairs)

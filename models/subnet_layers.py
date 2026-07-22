@@ -5,6 +5,55 @@ import math
 from copy import deepcopy
 
 
+def _empty_sparse_backup():
+    return {
+        "weight_indices": None,
+        "weight_values": None,
+        "bias_indices": None,
+        "bias_values": None,
+    }
+
+
+def _merge_sparse_backup(entry, kind, tensor, mask):
+    """Store only selected flat indices and values; newer values win on overlap."""
+    mask = mask.to(dtype=torch.bool, device=tensor.device)
+    new_indices = torch.nonzero(mask.reshape(-1), as_tuple=False).reshape(-1)
+    if new_indices.numel() == 0:
+        return
+    new_values = tensor.detach().reshape(-1)[new_indices].clone()
+    index_key, value_key = f"{kind}_indices", f"{kind}_values"
+    old_indices, old_values = entry.get(index_key), entry.get(value_key)
+    if old_indices is not None and old_values is not None:
+        old_indices = old_indices.to(new_indices.device)
+        old_values = old_values.to(new_values.device)
+        retain_old = ~torch.isin(old_indices, new_indices)
+        new_indices = torch.cat((old_indices[retain_old], new_indices))
+        new_values = torch.cat((old_values[retain_old], new_values))
+    order = torch.argsort(new_indices)
+    entry[index_key] = new_indices[order]
+    entry[value_key] = new_values[order]
+
+
+def _apply_sparse_backup(tensor, entry, kind):
+    index_key, value_key = f"{kind}_indices", f"{kind}_values"
+    indices, values = entry.get(index_key), entry.get(value_key)
+    if indices is not None and values is not None:
+        output = tensor.clone()
+        output.reshape(-1)[indices.to(output.device)] = values.to(output.device, dtype=output.dtype)
+        return output
+
+    # Backward compatibility for any in-memory/checkpoint entry created before
+    # sparse backups were introduced.
+    legacy_mask, legacy_values = entry.get(f"{kind}_mask"), entry.get(kind)
+    if legacy_mask is not None and legacy_values is not None:
+        return torch.where(
+            legacy_mask.to(dtype=torch.bool, device=tensor.device),
+            legacy_values.to(tensor.device, dtype=tensor.dtype),
+            tensor,
+        )
+    return tensor
+
+
 class MaskByScores(torch.autograd.Function):
     @staticmethod
     def forward(ctx, scores, zeros, ones, sparsity):
@@ -60,32 +109,11 @@ class SubnetLinear(nn.Linear):
     def store_backup(self, task_id, weight_mask=None, bias_mask=None):
         if task_id is None:
             return
-        entry = self.backup_weights.setdefault(
-            task_id,
-            {"weight": None, "weight_mask": None, "bias": None, "bias_mask": None},
-        )
+        entry = self.backup_weights.setdefault(task_id, _empty_sparse_backup())
         if weight_mask is not None:
-            weight_mask = weight_mask.to(dtype=torch.bool, device=self.weight.device)
-            if entry["weight_mask"] is None:
-                entry["weight_mask"] = weight_mask
-                entry["weight"] = self.weight.detach().clone()
-            else:
-                merged_mask = torch.logical_or(entry["weight_mask"], weight_mask)
-                merged_weight = entry["weight"].clone()
-                merged_weight[weight_mask] = self.weight.detach()[weight_mask]
-                entry["weight_mask"] = merged_mask
-                entry["weight"] = merged_weight
+            _merge_sparse_backup(entry, "weight", self.weight, weight_mask)
         if bias_mask is not None and self.bias is not None:
-            bias_mask = bias_mask.to(dtype=torch.bool, device=self.bias.device)
-            if entry["bias_mask"] is None:
-                entry["bias_mask"] = bias_mask
-                entry["bias"] = self.bias.detach().clone()
-            else:
-                merged_mask = torch.logical_or(entry["bias_mask"], bias_mask)
-                merged_bias = entry["bias"].clone()
-                merged_bias[bias_mask] = self.bias.detach()[bias_mask]
-                entry["bias_mask"] = merged_mask
-                entry["bias"] = merged_bias
+            _merge_sparse_backup(entry, "bias", self.bias, bias_mask)
 
     def _apply_backup(self, weight, bias, task_id):
         if task_id is None:
@@ -93,14 +121,9 @@ class SubnetLinear(nn.Linear):
         entry = self.backup_weights.get(task_id)
         if not entry:
             return weight, bias
-        weight_mask = entry.get("weight_mask")
-        if weight_mask is not None and entry.get("weight") is not None:
-            weight_mask = weight_mask.to(dtype=torch.bool, device=weight.device)
-            weight = torch.where(weight_mask, entry["weight"], weight)
-        bias_mask = entry.get("bias_mask")
-        if bias is not None and bias_mask is not None and entry.get("bias") is not None:
-            bias_mask = bias_mask.to(dtype=torch.bool, device=bias.device)
-            bias = torch.where(bias_mask, entry["bias"], bias)
+        weight = _apply_sparse_backup(weight, entry, "weight")
+        if bias is not None:
+            bias = _apply_sparse_backup(bias, entry, "bias")
         return weight, bias
 
     def forward(self, x, weight_mask=None, bias_mask=None, mode="train", task_id=None):
@@ -163,32 +186,11 @@ class SubnetConv2d(nn.Conv2d):
     def store_backup(self, task_id, weight_mask=None, bias_mask=None):
         if task_id is None:
             return
-        entry = self.backup_weights.setdefault(
-            task_id,
-            {"weight": None, "weight_mask": None, "bias": None, "bias_mask": None},
-        )
+        entry = self.backup_weights.setdefault(task_id, _empty_sparse_backup())
         if weight_mask is not None:
-            weight_mask = weight_mask.to(dtype=torch.bool, device=self.weight.device)
-            if entry["weight_mask"] is None:
-                entry["weight_mask"] = weight_mask
-                entry["weight"] = self.weight.detach().clone()
-            else:
-                merged_mask = torch.logical_or(entry["weight_mask"], weight_mask)
-                merged_weight = entry["weight"].clone()
-                merged_weight[weight_mask] = self.weight.detach()[weight_mask]
-                entry["weight_mask"] = merged_mask
-                entry["weight"] = merged_weight
+            _merge_sparse_backup(entry, "weight", self.weight, weight_mask)
         if bias_mask is not None and self.bias is not None:
-            bias_mask = bias_mask.to(dtype=torch.bool, device=self.bias.device)
-            if entry["bias_mask"] is None:
-                entry["bias_mask"] = bias_mask
-                entry["bias"] = self.bias.detach().clone()
-            else:
-                merged_mask = torch.logical_or(entry["bias_mask"], bias_mask)
-                merged_bias = entry["bias"].clone()
-                merged_bias[bias_mask] = self.bias.detach()[bias_mask]
-                entry["bias_mask"] = merged_mask
-                entry["bias"] = merged_bias
+            _merge_sparse_backup(entry, "bias", self.bias, bias_mask)
 
     def _apply_backup(self, weight, bias, task_id):
         if task_id is None:
@@ -196,14 +198,9 @@ class SubnetConv2d(nn.Conv2d):
         entry = self.backup_weights.get(task_id)
         if not entry:
             return weight, bias
-        weight_mask = entry.get("weight_mask")
-        if weight_mask is not None and entry.get("weight") is not None:
-            weight_mask = weight_mask.to(dtype=torch.bool, device=weight.device)
-            weight = torch.where(weight_mask, entry["weight"], weight)
-        bias_mask = entry.get("bias_mask")
-        if bias is not None and bias_mask is not None and entry.get("bias") is not None:
-            bias_mask = bias_mask.to(dtype=torch.bool, device=bias.device)
-            bias = torch.where(bias_mask, entry["bias"], bias)
+        weight = _apply_sparse_backup(weight, entry, "weight")
+        if bias is not None:
+            bias = _apply_sparse_backup(bias, entry, "bias")
         return weight, bias
 
     def forward(self, x, weight_mask=None, bias_mask=None, mode="train", epoch=1, task_id=None):

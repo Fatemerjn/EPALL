@@ -22,7 +22,10 @@
 #   GROUP 22A (g22a_tiny_seed2): the five missing TinyImageNet seed-2 paper runs -- ON DEMAND, resume-safe
 #   GROUP 22B (g22b_mia_anchor_seed2): the twelve missing MIA/anchor seed-2 runs -- ON DEMAND, resume-safe
 #   GROUP 23 (g23_adapter_components): PALL-Adapter request-time component controls -- ON DEMAND, resume-safe
-#   GROUP 24 (g24_retraining_reference): same-method retraining reference for PALL-Adapter -- ON DEMAND, resume-safe
+#   GROUP 24 (g24_retraining_reference): same-method retraining reference for PALL-Modified -- ON DEMAND, resume-safe
+#   GROUP 25 (g25_modified_components): direct PALL-Modified mechanism controls -- ON DEMAND, resume-safe
+#   GROUP 26 (g26_corrected_mia): corrected PALL-Modified MIA, both CIFAR datasets, 3 seeds -- ON DEMAND, resume-safe
+#   GROUP 27 (g27_storage_accounting): matched PALL-Modified/CLPU resident-state accounting, seed 0 -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -48,6 +51,8 @@
 #   bash tools/run_server_experiments.sh g22b_mia_anchor_seed2 --dry-run # inspect the exact twelve-run MIA/anchor seed-2 matrix
 #   COMPONENT_DATASETS="cifar100" COMPONENT_SEEDS="0" bash tools/run_server_experiments.sh g23_adapter_components --dry-run
 #   bash tools/run_server_experiments.sh g24_retraining_reference --dry-run
+#   bash tools/run_server_experiments.sh g25_modified_components --dry-run
+#   bash tools/run_server_experiments.sh g26_corrected_mia --dry-run
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -65,7 +70,7 @@ usage () {
         "Default GROUP is 'all' (g1 + g2 + g3)." \
         "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
         "g21_standard_unlearning, g22a_tiny_seed2, g22b_mia_anchor_seed2," \
-        "g23_adapter_components, and g24_retraining_reference." \
+        "g23_adapter_components, g24_retraining_reference, g25_modified_components, g26_corrected_mia, and g27_storage_accounting." \
         "" \
         "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
         "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
@@ -73,7 +78,8 @@ usage () {
         "        g13_bottleneck g14_conflict g15_seed2 g17_overlap_curve" \
         "        g18_probe g20_paper_completion g21_standard_unlearning" \
         "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components" \
-        "        g24_retraining_reference"
+        "        g24_retraining_reference g25_modified_components g26_corrected_mia" \
+        "        g27_storage_accounting"
 }
 
 if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
@@ -94,7 +100,7 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference) ;;
+        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting) ;;
         *)
             echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
@@ -1093,7 +1099,10 @@ group23_adapter_components () {
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10 \
         --eval_component_stages"
-    local TAG="adapter_components_pretrained_imagenetnorm_v2"
+    # v3 reruns the controls after making stage diagnostics RNG-neutral.  Keep
+    # this tag distinct so resume-safe lookup cannot silently reuse v2 runs,
+    # whose evaluation callbacks could perturb later repair sampling.
+    local TAG="adapter_components_pretrained_imagenetnorm_rngneutral_v3"
     local dataset seed mode spec schedule
 
     for dataset in $datasets; do
@@ -1144,27 +1153,158 @@ group23_adapter_components () {
 }
 
 # --------------------------------------- GROUP 24 retraining-reference audit
-# One focused, expensive diagnostic: compare the fully unlearned pretrained
-# CIFAR-100 PALL-Adapter to a fresh PALL-Adapter trained on the same sequence
-# with target task 0 never seen. The evaluator reports task-local agreement,
-# Jensen-Shannon divergence, raw-logit L2, and feature cosine similarity.
+# Compare PALL-Modified after one high-overlap removal with a fresh instance of
+# the same method trained on the matched sequence with that task never seen.
+# Both CIFAR datasets and two schedule seeds are included. The evaluator reports
+# task-local agreement, Jensen-Shannon divergence, raw-logit L2, and feature
+# cosine similarity; it is a diagnostic oracle, not exact-unlearning proof.
 group24_retraining_reference () {
     echo "===== GROUP 24: same-method retraining-reference audit (resume-safe) ====="
-    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
-    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
-        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
-        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
-    local SPEC="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 1 --arch resnet18 --sparsity 0.9"
-    local SCHEDULE="schedules/cifar100_candidate_forget_task0_seed0.json"
-    if [[ ! -f "$SCHEDULE" ]]; then
-        ((FAILED_RUNS += 1))
-        echo "    FAIL: missing ${SCHEDULE}" >&2
-        return 0
-    fi
-    launch_resume_safe "retraining_reference_cifar100_adapter_s0" \
-        $SPEC $COMMON $PRE --seed 0 --request_schedule_file "$SCHEDULE" \
-        --method pall_adapter $ADAPTER --eval_agreement \
-        --experiment_tag adapter_retraining_reference_v2
+    local datasets="${REFERENCE_DATASETS:-cifar10 cifar100}"
+    local seeds="${REFERENCE_SEEDS:-0 1}"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local TAG="pall_modified_retraining_reference_v1"
+    local dataset seed spec schedule
+    for dataset in $datasets; do
+        for seed in $seeds; do
+            case "${dataset}:${seed}" in
+                cifar10:0|cifar10:1)
+                    spec="$C10 --n_forget 1"
+                    schedule="schedules/cifar10_controlled_high_later3_seed${seed}.json"
+                    ;;
+                cifar100:0|cifar100:1)
+                    spec="$C100 --n_forget 1"
+                    schedule="schedules/cifar100_controlled_high_later7_seed${seed}.json"
+                    ;;
+                *)
+                    ((FAILED_RUNS += 1))
+                    echo "    FAIL: unsupported retraining-reference dataset/seed '${dataset}:${seed}'" >&2
+                    continue
+                    ;;
+            esac
+            if [[ ! -f "$schedule" ]]; then
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: missing ${schedule}" >&2
+                continue
+            fi
+            launch_resume_safe "retraining_reference_${dataset}_modified_s${seed}" \
+                $spec $COMMON --seed "$seed" --request_schedule_file "$schedule" \
+                --method pall_modified $PALL_MOD --eval_agreement --experiment_tag "$TAG"
+        done
+    done
+}
+
+# ------------------------------- GROUP 25 PALL-Modified direct component test
+# Five matched arms answer whether gains come from the L2 anchor, structural
+# overlap, retained-gradient ranking, or merely a random selection with the
+# same coordinate count inside the eligible structural-overlap support.
+# The overlap-heavy protocols are used because this is the setting in which the
+# proposed overlap mechanism is intended to matter.
+group25_modified_components () {
+    echo "===== GROUP 25: direct PALL-Modified mechanism controls (resume-safe) ====="
+    local datasets="${MODIFIED_COMPONENT_DATASETS:-cifar10 cifar100}"
+    local seeds="${MODIFIED_COMPONENT_SEEDS:-0 1 2}"
+    local modes="${MODIFIED_COMPONENT_MODES:-no_anchor overlap_only random_budget ranking_no_overlap full}"
+    # v2 samples the equal-budget random control strictly inside S_share.
+    # Keep it separate from v1, whose target-subnet sampling could reduce the
+    # effective repair budget after the shared-coordinate gradient mask.
+    local TAG="pall_modified_components_overlapmatched_v2"
+    local dataset seed mode spec schedule lambda
+
+    for dataset in $datasets; do
+        case "$dataset" in
+            cifar10) spec="$C10" ;;
+            cifar100) spec="$C100" ;;
+            *)
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: unsupported MODIFIED_COMPONENT_DATASETS entry '${dataset}'" >&2
+                continue
+                ;;
+        esac
+        for seed in $seeds; do
+            case "$seed" in
+                0|1|2) ;;
+                *)
+                    ((FAILED_RUNS += 1))
+                    echo "    FAIL: unsupported MODIFIED_COMPONENT_SEEDS entry '${seed}'" >&2
+                    continue
+                    ;;
+            esac
+            if [[ "$dataset" == "cifar10" ]]; then
+                schedule="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+            else
+                schedule="schedules/cifar100_t10_f3_seed${seed}.json"
+            fi
+            if [[ ! -f "$schedule" ]]; then
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: missing ${schedule}" >&2
+                continue
+            fi
+            for mode in $modes; do
+                case "$mode" in
+                    no_anchor) lambda="0.0" ;;
+                    overlap_only|random_budget|ranking_no_overlap|full) lambda="1.0" ;;
+                    *)
+                        ((FAILED_RUNS += 1))
+                        echo "    FAIL: unsupported MODIFIED_COMPONENT_MODES entry '${mode}'" >&2
+                        continue
+                        ;;
+                esac
+                launch_resume_safe "modified_components_${dataset}_${mode}_s${seed}" \
+                    $spec $COMMON --seed "$seed" --request_schedule_file "$schedule" \
+                    --method pall_modified --protect_importance gradient --protect_ratio 0.2 \
+                    --lambda_protect "$lambda" --retrain_steps 50 \
+                    --modified_component_mode "$mode" --experiment_tag "$TAG"
+            done
+        done
+    done
+}
+
+# ------------------------------------- GROUP 26 corrected privacy diagnostic
+# The old cifar{10,100}_mia tags mix runs from before the tie-ranking and
+# preprocessing fixes. Never append to them: this versioned tag contains only
+# augmentation-matched, average-rank AUC diagnostics for the primary method.
+group26_corrected_mia () {
+    echo "===== GROUP 26: corrected PALL-Modified MIA (resume-safe) ====="
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local TAG="pall_modified_mia_corrected_v2"
+    local seed c10 c100
+    for seed in 0 1 2; do
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        launch_resume_safe "corrected_mia_cifar10_modified_s${seed}" \
+            $C10 $COMMON --seed "$seed" --request_schedule_file "$c10" \
+            --method pall_modified $PALL_MOD --eval_mia --experiment_tag "$TAG"
+        launch_resume_safe "corrected_mia_cifar100_modified_s${seed}" \
+            $C100 $COMMON --seed "$seed" --request_schedule_file "$c100" \
+            --method pall_modified $PALL_MOD --eval_mia --experiment_tag "$TAG"
+    done
+}
+
+# -------------------------------------------- GROUP 27 storage accounting
+# One matched schedule seed is sufficient for exact resident-state accounting;
+# this group is not used to rank predictive performance. It logs every request
+# so task-growing full networks, subnet masks/backups, and rehearsal tensors can
+# be compared in MB under the same architecture and stream.
+group27_storage_accounting () {
+    echo "===== GROUP 27: matched resident-state accounting (resume-safe) ====="
+    local TAG="storage_accounting_v1"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local c10="schedules/cifar10_t5_f3_fixed_seed0.json"
+    local c100="schedules/cifar100_t10_f3_seed0.json"
+
+    launch_resume_safe "storage_cifar10_modified_s0" \
+        $C10 $COMMON --seed 0 --request_schedule_file "$c10" \
+        --method pall_modified $PALL_MOD --experiment_tag "$TAG"
+    launch_resume_safe "storage_cifar10_clpu_s0" \
+        $C10 $COMMON --seed 0 --request_schedule_file "$c10" \
+        --method clpu --experiment_tag "$TAG"
+    launch_resume_safe "storage_cifar100_modified_s0" \
+        $C100 $COMMON --seed 0 --request_schedule_file "$c100" \
+        --method pall_modified $PALL_MOD --experiment_tag "$TAG"
+    launch_resume_safe "storage_cifar100_clpu_s0" \
+        $C100 $COMMON --seed 0 --request_schedule_file "$c100" \
+        --method clpu --experiment_tag "$TAG"
 }
 
 case "$WHICH" in
@@ -1195,6 +1335,9 @@ case "$WHICH" in
     g22b_mia_anchor_seed2) group22b_mia_anchor_seed2 ;;
     g23_adapter_components) group23_adapter_components ;;
     g24_retraining_reference) group24_retraining_reference ;;
+    g25_modified_components) group25_modified_components ;;
+    g26_corrected_mia) group26_corrected_mia ;;
+    g27_storage_accounting) group27_storage_accounting ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -1211,7 +1354,7 @@ echo "===================================================================="
 echo "AGGREGATING TABLES ..."
 AGG_SUFFIX=""
 case "$WHICH" in
-    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference)
+    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting)
         # These completion groups must never overwrite an existing CSV. A
         # timestamped canonical-tool rebuild can be inspected and synced while
         # the paper-facing canonical paths remain unchanged until every gap is
@@ -1245,6 +1388,7 @@ if ! $PY tools/make_report_table.py \
 fi
 if [[ "$WHICH" == "g23_adapter_components" ]]; then
     if ! $PY tools/analyze_adapter_components.py --root runs \
+        --tag adapter_components_pretrained_imagenetnorm_rngneutral_v3 \
         --out-prefix results/aggregates/adapter_components; then
         ((FAILED_AGGREGATIONS += 1))
         echo "[FAIL] analyze_adapter_components.py" >&2
@@ -1252,9 +1396,34 @@ if [[ "$WHICH" == "g23_adapter_components" ]]; then
 fi
 if [[ "$WHICH" == "g24_retraining_reference" ]]; then
     if ! $PY tools/analyze_retraining_reference.py --root runs \
+        --tag pall_modified_retraining_reference_v1 \
         --out-prefix results/aggregates/retraining_reference; then
         ((FAILED_AGGREGATIONS += 1))
         echo "[FAIL] analyze_retraining_reference.py" >&2
+    fi
+fi
+if [[ "$WHICH" == "g25_modified_components" ]]; then
+    if ! $PY tools/analyze_modified_components.py --root runs \
+        --tag pall_modified_components_overlapmatched_v2 \
+        --out-prefix results/aggregates/modified_components; then
+        ((FAILED_AGGREGATIONS += 1))
+        echo "[FAIL] analyze_modified_components.py" >&2
+    fi
+fi
+if [[ "$WHICH" == "g26_corrected_mia" ]]; then
+    if ! $PY tools/analyze_corrected_mia.py --root runs \
+        --tag pall_modified_mia_corrected_v2 \
+        --out-prefix results/aggregates/corrected_mia; then
+        ((FAILED_AGGREGATIONS += 1))
+        echo "[FAIL] analyze_corrected_mia.py" >&2
+    fi
+fi
+if [[ "$WHICH" == "g27_storage_accounting" ]]; then
+    if ! $PY tools/analyze_storage_accounting.py --root runs \
+        --tag storage_accounting_v1 \
+        --out-prefix results/aggregates/storage_accounting; then
+        ((FAILED_AGGREGATIONS += 1))
+        echo "[FAIL] analyze_storage_accounting.py" >&2
     fi
 fi
 

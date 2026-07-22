@@ -101,6 +101,16 @@ parser.add_argument(
          "(gradient-conflict energy relu(-g_forget*g_retain) on the rehearsal buffer; "
          "best under HIGH overlap), 'gradient' (|grad L_retain|; default main method), "
          "or 'weight' (legacy absolute weight magnitude, ablation)")
+parser.add_argument(
+    '--modified_component_mode',
+    default='full',
+    choices=['full', 'no_anchor', 'overlap_only', 'random_budget', 'ranking_no_overlap'],
+    help="direct PALL-Modified mechanism control: full; no_anchor (run with "
+         "lambda_protect=0); overlap_only (protect all structural overlap without "
+         "ranking); random_budget (random structural-overlap coordinates with the same "
+         "count as full); or ranking_no_overlap (retained-gradient ranking over the "
+         "target subnet without structural-overlap restriction)",
+)
 parser.add_argument('--lambda_protect', default=0.0, type=float, help='regularization weight for protected params')
 parser.add_argument(
     '--protect_anchor', default='old', choices=['old', 'reinit'],
@@ -307,6 +317,9 @@ def derive_variant(arg_namespace):
     """
     method = arg_namespace.method
     if method == "pall_modified":
+        component_mode = getattr(arg_namespace, "modified_component_mode", "full")
+        if component_mode == "no_anchor":
+            return "pall_modified_no_anchor"
         has_target = (
             arg_namespace.protect_ratio is not None
             or arg_namespace.protect_threshold is not None
@@ -322,6 +335,8 @@ def derive_variant(arg_namespace):
         }.get(importance, "pall_modified_grad")
         if getattr(arg_namespace, "adaptive_protect", False):
             label += "_adapt"
+        if component_mode != "full":
+            label += f"_{component_mode}"
         return label
     if method == "pall_adapter":
         if (arg_namespace.adapter_shared_bottleneck or 0) <= 0 or (
@@ -350,6 +365,11 @@ def derive_variant(arg_namespace):
 
 
 def validate_experiment_args(arg_namespace):
+    modified_component_mode = getattr(arg_namespace, "modified_component_mode", "full")
+    if modified_component_mode != "full" and arg_namespace.method != "pall_modified":
+        parser.error("--modified_component_mode controls are only valid for pall_modified.")
+    if modified_component_mode == "no_anchor" and (arg_namespace.lambda_protect or 0.0) != 0.0:
+        parser.error("--modified_component_mode no_anchor requires --lambda_protect 0.")
     if arg_namespace.dataset == "cifar100":
         if getattr(arg_namespace, "cifar100_split", "superclass") == "superclass":
             if arg_namespace.class_per_task != 5:
@@ -1404,6 +1424,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 worst_drop = max(pre_acc[t] - post_acc[t] for t in remaining_tasks)
             au = post_acc[task_id] if task_id < len(post_acc) else 0.0
             finetune_diag = json_safe(info.get("finetune_diag", None))
+            storage = model.storage_accounting() if hasattr(model, "storage_accounting") else None
 
             # Store measured accuracy changes only as a separate diagnostic. The
             # fixed-gradient quantity uses loss/energy units, so comparing the two
@@ -1473,6 +1494,7 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
                 },
                 "protection": info.get("protection", {}),
                 "finetune_diag": finetune_diag,
+                "storage": json_safe(storage),
                 "adapter_shared_forget_ratio": info.get("adapter_shared_forget_ratio"),
                 "adapter_shared_protect_ratio": info.get("adapter_shared_protect_ratio"),
                 "shared_protect_strength": info.get("shared_protect_strength"),
@@ -1598,6 +1620,19 @@ def process_requests(args, model, train_datasets, test_datasets, requests, run_c
         if stat["logits"] is not None:
             for t in range(args.n_tasks):
                 logits[t][request_id] = stat["logits"][t]
+
+        # Resident tensor-state accounting after every request makes task-growth
+        # comparisons possible without using peak CUDA allocator statistics.
+        # It is read-only and excludes transient optimizer/activation memory.
+        if metrics_state is not None and hasattr(model, "storage_accounting"):
+            metrics_state.setdefault("storage_history", []).append({
+                "request_id": int(request_id),
+                "task_id": int(task_id),
+                "request_type": learn_type,
+                "active_tasks": [int(task) for task in active_tasks],
+                "storage": json_safe(model.storage_accounting()),
+            })
+            write_json(metrics_path, metrics_state)
 
     return {
         "loss": loss,

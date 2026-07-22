@@ -1,12 +1,14 @@
 import unittest
+import random
 from types import SimpleNamespace
 
+import numpy as np
 import torch
 
 from methods.pall_adapter import PALLAdapter
 
 
-def make_args(mode):
+def make_args(mode, eval_component_stages=True):
     return SimpleNamespace(
         arch="adapter_resnet18",
         n_tasks=2,
@@ -45,13 +47,13 @@ def make_args(mode):
         protect_importance="gradient",
         eval_bound=False,
         adapter_component_mode=mode,
-        eval_component_stages=True,
+        eval_component_stages=eval_component_stages,
     )
 
 
-def build_model(mode):
+def build_model(mode, eval_component_stages=True):
     torch.manual_seed(7)
-    model = PALLAdapter(make_args(mode))
+    model = PALLAdapter(make_args(mode, eval_component_stages=eval_component_stages))
     model.net.features_are_precomputed = True
     model.prev_tasks = [0, 1]
     model.task_status = {0: "T", 1: "T"}
@@ -131,6 +133,34 @@ class PALLAdapterComponentModesTest(unittest.TestCase):
         self.assertGreater(info["shared_effective_forget_params"], 0)
         self.assertEqual(info["classifier_forget_param_count"], 0)
         self.assertEqual(info["finetune_diag"]["retrain_steps"], 1)
+
+    def test_stage_diagnostics_do_not_change_full_endpoint(self):
+        without_diagnostics = build_model("full", eval_component_stages=False)
+        random.seed(31)
+        np.random.seed(31)
+        torch.manual_seed(31)
+        without_diagnostics.forget_with_diagnostics(1, eval_fn=None, remaining_tasks=[0])
+
+        with_diagnostics = build_model("full", eval_component_stages=True)
+
+        def rng_consuming_eval(_stage):
+            random.random()
+            np.random.random(8)
+            torch.rand(8)
+            torch.rand(8, generator=with_diagnostics._loader_generator())
+            return {"accuracy": [0.75, 0.50]}
+
+        random.seed(31)
+        np.random.seed(31)
+        torch.manual_seed(31)
+        with_diagnostics.forget_with_diagnostics(1, eval_fn=rng_consuming_eval, remaining_tasks=[0])
+
+        self.assertEqual(without_diagnostics.net.state_dict().keys(), with_diagnostics.net.state_dict().keys())
+        for name, expected in without_diagnostics.net.state_dict().items():
+            self.assertTrue(
+                torch.equal(expected, with_diagnostics.net.state_dict()[name]),
+                msg=f"diagnostic evaluation changed parameter/buffer {name}",
+            )
 
 
 if __name__ == "__main__":

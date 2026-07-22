@@ -184,7 +184,7 @@ class LoRA(Base):
         }
 
         if eval_fn is not None:
-            info["after_reset_eval"] = eval_fn("after_reset")
+            info["after_reset_eval"] = self.run_rng_neutral_diagnostic(eval_fn, "after_reset")
 
         if task_id in self.memory.buffer:
             self.memory.remove(task_id)

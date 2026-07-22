@@ -974,7 +974,7 @@ class PALLAdapter(Base):
             if not eval_component_stages or eval_fn is None:
                 return
             eval_start = time.perf_counter()
-            info["stage_evals"][stage] = eval_fn(stage)
+            info["stage_evals"][stage] = self.run_rng_neutral_diagnostic(eval_fn, stage)
             component_eval_time += time.perf_counter() - eval_start
 
         t_target_reset_start = time.perf_counter()
@@ -1156,7 +1156,7 @@ class PALLAdapter(Base):
             # ascent), not target reset alone. New component experiments use the
             # precise names under stage_evals.
             backward_eval_start = time.perf_counter()
-            info["after_reset_eval"] = eval_fn("after_reset")
+            info["after_reset_eval"] = self.run_rng_neutral_diagnostic(eval_fn, "after_reset")
             if eval_component_stages:
                 component_eval_time += time.perf_counter() - backward_eval_start
 

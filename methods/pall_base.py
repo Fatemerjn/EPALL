@@ -378,6 +378,73 @@ class PALLBase(Base):
                 crit_masks[key] = torch.logical_and(mask, _score(key, param) >= threshold)
         return crit_masks
 
+    def _select_exact_budget_masks(self, candidate_masks, budget, score_map=None, random_seed=None):
+        """Select exactly ``budget`` coordinates from a candidate support.
+
+        This helper is used only by the direct PALL-Modified mechanism controls.
+        ``score_map`` gives a global ranking across tensors; ``random_seed``
+        instead gives a reproducible uniform subset without consuming any of the
+        training RNG streams.  The exact-count contract prevents the
+        random-coordinate control from receiving a larger parameter budget due
+        to tied scores.
+        """
+        outputs = {
+            key: (torch.zeros_like(mask, dtype=torch.bool) if mask is not None else None)
+            for key, mask in candidate_masks.items()
+        }
+        if budget <= 0:
+            return outputs
+
+        param_map = dict(self.net.named_parameters())
+        entries = []
+        scores = []
+        total = 0
+        for key, mask in candidate_masks.items():
+            if mask is None:
+                continue
+            param = param_map.get(key)
+            if param is None:
+                continue
+            candidate = mask.to(dtype=torch.bool, device=param.device)
+            flat_indices = torch.nonzero(candidate.reshape(-1), as_tuple=False).reshape(-1)
+            if flat_indices.numel() == 0:
+                continue
+            entries.append((key, flat_indices.detach().cpu(), total, total + flat_indices.numel()))
+            if random_seed is None:
+                score = score_map.get(key) if score_map is not None else param.detach().abs()
+                if score is None:
+                    score = torch.zeros_like(param)
+                scores.append(score.detach().reshape(-1)[flat_indices.to(score.device)].float().cpu())
+            total += flat_indices.numel()
+
+        if total == 0:
+            return outputs
+        keep = min(int(budget), int(total))
+        if random_seed is not None:
+            generator = torch.Generator(device="cpu")
+            generator.manual_seed(int(random_seed))
+            selected_global = torch.randperm(total, generator=generator)[:keep]
+        else:
+            selected_global = torch.topk(torch.cat(scores), keep, largest=True, sorted=False).indices
+
+        for key, flat_indices, start, end in entries:
+            local = selected_global[(selected_global >= start) & (selected_global < end)] - start
+            if local.numel() == 0:
+                continue
+            output_flat = outputs[key].reshape(-1)
+            chosen = flat_indices[local].to(output_flat.device)
+            output_flat[chosen] = True
+        return outputs
+
+    @staticmethod
+    def _modified_control_candidates(component_mode, target_masks, shared_masks):
+        """Return the eligible support for equal-budget mechanism controls."""
+        if component_mode == "random_budget":
+            return shared_masks
+        if component_mode == "ranking_no_overlap":
+            return target_masks
+        raise ValueError(f"unsupported equal-budget component mode: {component_mode}")
+
     def _reinit_anchor_values(self, masks, param_map):
         """Fresh, data-independent reinit sample for the masked positions.
 
@@ -561,7 +628,11 @@ class PALLBase(Base):
 
         # (1) Backup the masks of the task to be forgotten from the list
         deleted_masks = deepcopy(self.per_task_masks[task_id])
-        self.archived_task_masks[task_id] = deepcopy(deleted_masks)
+        # Forgotten masks are retained only for explicit offline/debug overlap
+        # audits. Keeping them in ordinary runs would add unnecessary per-task
+        # storage after the deletion request.
+        if getattr(self.args, "dump_overlap", False) or getattr(self.args, "debug_unlearning", False):
+            self.archived_task_masks[task_id] = deepcopy(deleted_masks)
         self._clear_task_backups(task_id)
 
         s_t_masks = {
@@ -678,6 +749,47 @@ class PALLBase(Base):
                 s_share_masks, score_map=crit_score_map
             )
 
+            component_mode = getattr(self.args, "modified_component_mode", "full")
+            full_budget = self._count_mask_entries(s_share_crit_masks)
+            if self.method_variant == "modified" and component_mode == "overlap_only":
+                # Structural overlap alone: every shared coordinate is protected,
+                # with no importance ranking.
+                s_share_crit_masks = {
+                    key: (mask.clone() if mask is not None else None)
+                    for key, mask in s_share_masks.items()
+                }
+            elif self.method_variant == "modified" and component_mode == "random_budget":
+                # Same eligible structural-overlap support and exact count as
+                # Full, but uniform random coordinates instead of the retained-
+                # gradient ranking. Sampling from S_t would include target-only
+                # coordinates whose gradients are later masked out during repair,
+                # making the *effective* control budget smaller than Full.
+                random_seed = (
+                    int(getattr(self.args, "seed", 0)) * 1_000_003
+                    + int(task_id) * 9_176
+                    + 31
+                )
+                candidates = self._modified_control_candidates(
+                    component_mode, s_t_masks, s_share_masks
+                )
+                s_share_crit_masks = self._select_exact_budget_masks(
+                    candidates,
+                    full_budget,
+                    random_seed=random_seed,
+                )
+            elif self.method_variant == "modified" and component_mode == "ranking_no_overlap":
+                # Rank over the full target subnetwork without explicitly using
+                # M_r as a candidate filter. Retained-task gradients determine
+                # whether the selected coordinates are active for repair.
+                candidates = self._modified_control_candidates(
+                    component_mode, s_t_masks, s_share_masks
+                )
+                s_share_crit_masks = self._select_exact_budget_masks(
+                    candidates,
+                    full_budget,
+                    score_map=crit_score_map,
+                )
+
             s_t_count = self._count_mask_entries(s_t_masks)
             s_share_count = self._count_mask_entries(s_share_masks)
             s_share_crit_count = self._count_mask_entries(s_share_crit_masks)
@@ -691,6 +803,7 @@ class PALLBase(Base):
                     "s_share_crit": s_share_crit_count,
                     "s_share_ratio": s_share_ratio,
                     "s_share_crit_ratio": s_share_crit_ratio,
+                    "modified_component_mode": component_mode,
                 }
             )
 
@@ -787,7 +900,7 @@ class PALLBase(Base):
             )
 
             if eval_fn is not None:
-                info["after_reset_eval"] = eval_fn("after_reset")
+                info["after_reset_eval"] = self.run_rng_neutral_diagnostic(eval_fn, "after_reset")
 
             if debug_context is not None:
                 after_reset_norms = {
@@ -885,6 +998,7 @@ class PALLBase(Base):
                     "lambda_protect": self.args.lambda_protect,
                     "retrain_steps": retrain_steps,
                     "adaptive_retrain": self.args.adaptive_retrain,
+                    "modified_component_mode": component_mode,
                 }
 
                 t_retrain_start = time.perf_counter()
@@ -960,6 +1074,7 @@ class PALLBase(Base):
                     "lambda_protect": self.args.lambda_protect,
                     "retrain_steps": 0,
                     "adaptive_retrain": self.args.adaptive_retrain,
+                    "modified_component_mode": component_mode,
                 }
                 self.log_progress(f"retrain phase skipped: task={task_id} updated_params=0")
 
@@ -1024,7 +1139,7 @@ class PALLBase(Base):
                 f"reset phase end: task={task_id} elapsed={self._format_elapsed(info['t_reset'])}"
             )
             if eval_fn is not None:
-                info["after_reset_eval"] = eval_fn("after_reset")
+                info["after_reset_eval"] = self.run_rng_neutral_diagnostic(eval_fn, "after_reset")
             if debug_context is not None:
                 after_reset_norms = {
                     "S_t": self._masked_l2_norm(param_map, s_t_masks),

@@ -86,6 +86,106 @@ class Base(nn.Module):
     def _format_elapsed(self, seconds):
         return f"{float(seconds):.2f}s"
 
+    def run_rng_neutral_diagnostic(self, callback, *args, **kwargs):
+        """Run a read-only diagnostic without perturbing subsequent training RNG.
+
+        Even a ``shuffle=False`` DataLoader can draw a worker base seed from the
+        global Torch generator when its iterator is created.  Component-stage
+        evaluation therefore used to change the replay batches sampled by the
+        later repair phase.  Preserve Python, NumPy, CPU/CUDA Torch, and the
+        model's explicit DataLoader generator so enabling diagnostics cannot
+        change the learned endpoint.
+        """
+        python_state = random.getstate()
+        numpy_state = np.random.get_state()
+        torch_state = torch.random.get_rng_state()
+        cuda_states = None
+        if torch.cuda.is_available():
+            cuda_states = torch.cuda.get_rng_state_all()
+        loader_generator = getattr(self, "_dataloader_generator", None)
+        loader_state = loader_generator.get_state() if loader_generator is not None else None
+        try:
+            return callback(*args, **kwargs)
+        finally:
+            random.setstate(python_state)
+            np.random.set_state(numpy_state)
+            torch.random.set_rng_state(torch_state)
+            if cuda_states is not None:
+                torch.cuda.set_rng_state_all(cuda_states)
+            if loader_generator is not None and loader_state is not None:
+                loader_generator.set_state(loader_state)
+
+    @staticmethod
+    def _tensor_bytes(tensor):
+        return int(tensor.numel() * tensor.element_size()) if torch.is_tensor(tensor) else 0
+
+    def storage_accounting(self):
+        """Return explicit resident-state categories used in paper accounting.
+
+        This intentionally excludes Python/container overhead and transient
+        optimizer/activation memory. It counts model parameters, CLPU side
+        networks, stored subnet masks, sparse retained-task backups, and replay
+        images/labels/logits as they actually reside after a request.
+        """
+        model_parameter_bytes = sum(self._tensor_bytes(param) for param in self.net.parameters())
+        side_network_parameter_bytes = 0
+        side_nets = getattr(self, "side_nets", {})
+        for network in side_nets.values():
+            side_network_parameter_bytes += sum(
+                self._tensor_bytes(param) for param in network.parameters()
+            )
+
+        mask_bytes = 0
+        for mask_map_name in ("per_task_masks", "archived_task_masks"):
+            for mask_map in getattr(self, mask_map_name, {}).values():
+                mask_bytes += sum(self._tensor_bytes(mask) for mask in mask_map.values())
+
+        backup_index_bytes = 0
+        backup_value_bytes = 0
+        for module in self.net.modules():
+            for entry in getattr(module, "backup_weights", {}).values():
+                for key, tensor in entry.items():
+                    if not torch.is_tensor(tensor):
+                        continue
+                    if key.endswith("_indices"):
+                        backup_index_bytes += self._tensor_bytes(tensor)
+                    elif key.endswith("_values"):
+                        backup_value_bytes += self._tensor_bytes(tensor)
+                    elif key.endswith("_mask"):
+                        backup_index_bytes += self._tensor_bytes(tensor)
+                    elif key in {"weight", "bias"}:
+                        backup_value_bytes += self._tensor_bytes(tensor)
+
+        replay_image_bytes = replay_label_bytes = replay_logit_bytes = 0
+        memory = getattr(self, "memory", None)
+        for entry in getattr(memory, "buffer", {}).values():
+            replay_image_bytes += self._tensor_bytes(entry.get("X"))
+            replay_label_bytes += self._tensor_bytes(entry.get("Y"))
+            replay_logit_bytes += self._tensor_bytes(entry.get("H"))
+
+        accounted_total_bytes = sum((
+            model_parameter_bytes,
+            side_network_parameter_bytes,
+            mask_bytes,
+            backup_index_bytes,
+            backup_value_bytes,
+            replay_image_bytes,
+            replay_label_bytes,
+            replay_logit_bytes,
+        ))
+        return {
+            "model_parameter_bytes": model_parameter_bytes,
+            "side_network_parameter_bytes": side_network_parameter_bytes,
+            "active_side_networks": len(side_nets),
+            "subnet_mask_bytes": mask_bytes,
+            "backup_index_bytes": backup_index_bytes,
+            "backup_value_bytes": backup_value_bytes,
+            "replay_image_bytes": replay_image_bytes,
+            "replay_label_bytes": replay_label_bytes,
+            "replay_logit_bytes": replay_logit_bytes,
+            "accounted_total_bytes": accounted_total_bytes,
+        }
+
     def log_progress(self, message):
         elapsed = self._format_elapsed(self._elapsed_since(self._lifecycle_start))
         print(f"[INFO] [{self.__class__.__name__}] +{elapsed} {message}", flush=True)

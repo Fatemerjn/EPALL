@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 
-TAG = "adapter_retraining_reference_v2"
+TAG = "pall_modified_retraining_reference_v1"
 
 
 def load_json(path):
@@ -23,7 +23,7 @@ def select_latest(root, tag):
         config = load_json(config_path)
         if not isinstance(config, dict):
             continue
-        if config.get("experiment_tag") != tag or config.get("method") != "pall_adapter":
+        if config.get("experiment_tag") != tag or config.get("method") != "pall_modified":
             continue
         metrics = load_json(config_path.with_name("metrics.json"))
         if not isinstance(metrics, dict):
@@ -116,8 +116,23 @@ def main():
     args = parser.parse_args()
 
     rows = build_rows(select_latest(args.root, args.tag))
-    if not rows:
-        raise SystemExit(f"No completed retraining-reference runs for tag={args.tag!r}")
+    expected_keys = {(dataset, seed) for dataset in ("cifar10", "cifar100") for seed in (0, 1)}
+    actual_keys = {(row["dataset"], int(row["seed"])) for row in rows}
+    metric_fields = (
+        "agreement_forget", "agreement_retained_mean",
+        "js_forget", "js_retained_mean",
+        "logit_l2_forget", "logit_l2_retained_mean",
+        "feature_cosine_forget", "feature_cosine_retained_mean",
+    )
+    incomplete = [
+        (row["dataset"], row["seed"], field)
+        for row in rows for field in metric_fields if row.get(field) is None
+    ]
+    if actual_keys != expected_keys or incomplete:
+        raise SystemExit(
+            f"Expected exact four-run retraining-reference matrix for tag={args.tag!r}; "
+            f"keys={sorted(actual_keys)}, incomplete_metrics={incomplete}"
+        )
     write_csv(args.out_prefix.with_suffix(".csv"), rows)
     write_markdown(args.out_prefix.with_suffix(".md"), rows, args.tag)
     print(f"Selected {len(rows)} latest run(s); wrote {args.out_prefix}.csv/.md")

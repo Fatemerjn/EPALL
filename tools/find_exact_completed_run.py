@@ -123,6 +123,9 @@ def convert_value(raw: str, type_name: Optional[str]) -> Any:
 def derive_variant(config: Dict[str, Any]) -> str:
     method = config["method"]
     if method == "pall_modified":
+        component_mode = str(config.get("modified_component_mode", "full"))
+        if component_mode == "no_anchor":
+            return "pall_modified_no_anchor"
         has_target = config["protect_ratio"] is not None or config["protect_threshold"] is not None
         protecting = has_target and float(config["lambda_protect"] or 0.0) > 0.0
         if not protecting:
@@ -134,6 +137,8 @@ def derive_variant(config: Dict[str, Any]) -> str:
         }.get(str(config["protect_importance"]), "pall_modified_grad")
         if config["adaptive_protect"]:
             label += "_adapt"
+        if component_mode != "full":
+            label += f"_{component_mode}"
         return label
     if method == "pall_adapter":
         if int(config["adapter_shared_bottleneck"] or 0) <= 0 or float(
