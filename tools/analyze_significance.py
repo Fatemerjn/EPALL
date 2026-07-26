@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""Paired significance tests for the EPALL vs PALL-Original main comparison.
+
+With three matched schedule seeds per dataset, the exact one-sided Wilcoxon
+signed-rank and sign tests both have a minimum attainable p-value of 1/8 = 0.125,
+so no three-seed result can reach p < 0.05 regardless of effect size. We
+therefore report the exact tests together with that floor, plus the direction
+consistency (how many of the three paired seeds favour EPALL) and Cohen's d_z,
+and we label the outcome as a *directional consistency* claim rather than a
+significance claim. This is a transparency tool: it exists so the manuscript can
+state exactly what a three-seed design can and cannot establish.
+
+Reads results/aggregates/paired_main_runs.csv (per-seed paired deltas produced by
+tools/analyze_paired_main.py) and writes
+results/aggregates/significance_tests.{csv,md}.
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import itertools
+import math
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+
+# Metric column -> (display name, direction in which a positive delta is good).
+METRICS = {
+    "delta_A_final_favor_modified": "A_final",
+    "delta_WorstDrop_favor_modified": "WorstDrop",
+    "delta_F_avg_favor_modified": "F_avg",
+}
+
+
+def exact_sign_test_p(deltas: list[float]) -> float:
+    """One-sided exact sign test: P(#positive >= observed | p=0.5), ties dropped."""
+    nonzero = [d for d in deltas if d != 0.0]
+    n = len(nonzero)
+    if n == 0:
+        return 1.0
+    k = sum(1 for d in nonzero if d > 0)
+    tail = sum(math.comb(n, i) for i in range(k, n + 1))
+    return tail / (2 ** n)
+
+
+def exact_wilcoxon_p(deltas: list[float]) -> float:
+    """One-sided exact Wilcoxon signed-rank p-value (small n, ties dropped).
+
+    Enumerates all 2^n sign assignments of the observed |d| ranks under H0.
+    """
+    nonzero = [d for d in deltas if d != 0.0]
+    n = len(nonzero)
+    if n == 0:
+        return 1.0
+    order = sorted(range(n), key=lambda i: abs(nonzero[i]))
+    ranks = [0.0] * n
+    for rank, idx in enumerate(order, start=1):
+        ranks[idx] = float(rank)
+    w_plus = sum(ranks[i] for i in range(n) if nonzero[i] > 0)
+    count = 0
+    for signs in itertools.product([0, 1], repeat=n):
+        stat = sum(ranks[i] for i in range(n) if signs[i])
+        if stat >= w_plus:
+            count += 1
+    return count / (2 ** n)
+
+
+def cohens_dz(deltas: list[float]) -> float | None:
+    n = len(deltas)
+    if n < 2:
+        return None
+    mean = sum(deltas) / n
+    var = sum((d - mean) ** 2 for d in deltas) / (n - 1)
+    sd = math.sqrt(var)
+    if sd == 0.0:
+        return math.inf if mean > 0 else (0.0 if mean == 0 else -math.inf)
+    return mean / sd
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--runs", type=Path,
+                        default=REPO / "results/aggregates/paired_main_runs.csv")
+    parser.add_argument("--out-prefix", type=Path,
+                        default=REPO / "results/aggregates/significance_tests")
+    args = parser.parse_args()
+
+    with args.runs.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    datasets = sorted({row["dataset"] for row in rows})
+    out_rows = []
+    for dataset in datasets:
+        subset = [r for r in rows if r["dataset"] == dataset]
+        for column, label in METRICS.items():
+            deltas = [float(r[column]) for r in subset]
+            n = len(deltas)
+            n_pos = sum(1 for d in deltas if d > 0)
+            n_neg = sum(1 for d in deltas if d < 0)
+            n_tie = sum(1 for d in deltas if d == 0.0)
+            dz = cohens_dz(deltas)
+            out_rows.append({
+                "dataset": dataset,
+                "metric": label,
+                "n_pairs": n,
+                "n_favor_epall": n_pos,
+                "n_favor_original": n_neg,
+                "n_ties": n_tie,
+                "mean_delta": round(sum(deltas) / n, 6) if n else "",
+                "cohens_dz": ("inf" if dz == math.inf else
+                              ("" if dz is None else round(dz, 4))),
+                "wilcoxon_exact_p_onesided": round(exact_wilcoxon_p(deltas), 6),
+                "sign_exact_p_onesided": round(exact_sign_test_p(deltas), 6),
+                "min_attainable_p": round(1 / (2 ** max(1, n - n_tie)), 6),
+            })
+
+    csv_path = args.out_prefix.with_suffix(".csv")
+    with csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(out_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(out_rows)
+
+    lines = [
+        "# Paired Significance Tests (EPALL vs PALL-Original)",
+        "",
+        "Exact one-sided tests on matched schedule seeds. Positive deltas favour EPALL.",
+        "",
+        "**Power floor.** With three paired seeds the smallest attainable one-sided",
+        "p-value is 1/2^3 = 0.125, so *no* three-seed comparison can reach p < 0.05.",
+        "These tests therefore document direction consistency and effect size; they",
+        "are not, and cannot be, significance claims at conventional thresholds.",
+        "",
+        "| Dataset | Metric | Pairs | Favour EPALL | Ties | Mean delta | Cohen's d_z | Wilcoxon p | Sign p | Min attainable p |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for row in out_rows:
+        lines.append(
+            f"| {row['dataset']} | {row['metric']} | {row['n_pairs']} | "
+            f"{row['n_favor_epall']} | {row['n_ties']} | {row['mean_delta']} | "
+            f"{row['cohens_dz']} | {row['wilcoxon_exact_p_onesided']} | "
+            f"{row['sign_exact_p_onesided']} | {row['min_attainable_p']} |"
+        )
+    md_path = args.out_prefix.with_suffix(".md")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    print(f"Wrote {csv_path.name} and {md_path.name} ({len(out_rows)} rows)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

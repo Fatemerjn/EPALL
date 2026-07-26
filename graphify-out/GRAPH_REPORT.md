@@ -1,16 +1,16 @@
-# Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-21)
+# Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-26)
 
 ## Corpus Check
-- 181 files · ~287,596 words
+- 193 files · ~292,056 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1666 nodes · 3543 edges · 151 communities (82 shown, 69 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 231 edges (avg confidence: 0.62)
+- 1689 nodes · 3599 edges · 153 communities (84 shown, 69 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 232 edges (avg confidence: 0.62)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7791af02`
+- Built from commit: `3d320b6e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -166,6 +166,8 @@
 - [[_COMMUNITY_analyze_paired_main.py|analyze_paired_main.py]]
 - [[_COMMUNITY_analyze_corrected_mia.py|analyze_corrected_mia.py]]
 - [[_COMMUNITY__merge_sparse_backup|_merge_sparse_backup]]
+- [[_COMMUNITY_.__init__|.__init__]]
+- [[_COMMUNITY_analyze_significance.py|analyze_significance.py]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `PALLBase` - 46 edges
@@ -175,7 +177,7 @@
 5. `VisionTransformer` - 36 edges
 6. `main()` - 34 edges
 7. `SubnetLinear` - 31 edges
-8. `run_server_experiments.sh script` - 30 edges
+8. `run_server_experiments.sh script` - 31 edges
 9. `RehearsalMemory` - 26 edges
 10. `SubnetConv2d` - 26 edges
 
@@ -197,7 +199,7 @@
 ## Hyperedges (group relationships)
 - **Besmellah Calligraphic Invocation** — thesis_front_template_images_besmellah_image, thesis_front_template_images_besmellah_bismillah_al_rahman_al_rahim, thesis_front_template_images_besmellah_arabic_calligraphy, thesis_front_template_images_besmellah_islamic_invocation [INFERRED 0.85]
 
-## Communities (151 total, 69 thin omitted)
+## Communities (153 total, 69 thin omitted)
 
 ### Community 0 - "Subnet Mask Layers"
 Cohesion: 0.06
@@ -237,7 +239,7 @@ Nodes (31): _betacf(), _betai(), _find_col(), _linregress(), _load_metric_by_met
 
 ### Community 9 - "Thesis Table Builder"
 Cohesion: 0.14
-Nodes (42): aggregate_group(), build_table(), canonicalize_method_variant(), config_group_value(), dedupe_latest_rows(), derive_adapter_param_ratio(), derive_unlearning_score(), derive_updated_param_ratio() (+34 more)
+Nodes (43): aggregate_group(), build_table(), canonicalize_method_variant(), config_group_value(), dedupe_latest_rows(), derive_adapter_param_ratio(), derive_unlearning_score(), derive_updated_param_ratio() (+35 more)
 
 ### Community 10 - "Overlap Summaries"
 Cohesion: 0.22
@@ -349,7 +351,7 @@ Nodes (9): DataFrame, compute_regression_band(), main(), parse_args(), plot_publ
 
 ### Community 42 - "Server Experiment Script"
 Cohesion: 0.17
-Nodes (32): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+24 more)
+Nodes (33): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+25 more)
 
 ### Community 44 - "Baseline Runner"
 Cohesion: 0.53
@@ -452,20 +454,20 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 106 - "main"
-Cohesion: 0.57
-Nodes (5): fig_mia(), fig_tradeoff(), fig_worstdrop(), main(), Path
+Cohesion: 0.36
+Nodes (9): fig_mia(), fig_overlap_response(), fig_storage(), fig_tradeoff(), fig_worstdrop(), main(), Path, Resident-state accounting: EPALL vs CLPU (total + per-active-task growth). (+1 more)
 
 ### Community 107 - "generate_main_standard_table.py"
-Cohesion: 0.17
-Nodes (29): assert_values(), audit_components(), audit_generated_main(), audit_overlap_heavy(), audit_pretrained(), expected_triplets(), fail(), main() (+21 more)
+Cohesion: 0.18
+Nodes (31): assert_values(), audit_components(), audit_generated_main(), audit_modified_components(), audit_overlap_heavy(), audit_pretrained(), audit_storage(), expected_triplets() (+23 more)
 
 ### Community 109 - "analyze_retraining_reference.py"
 Cohesion: 0.46
 Nodes (7): build_rows(), fmt(), load_json(), main(), select_latest(), write_csv(), write_markdown()
 
 ### Community 110 - "Experiments that remain genuinely necessary"
-Cohesion: 0.18
-Nodes (10): AAAI Review Action Matrix, Current position, Evidence already safe to use, Latest-review actions, Manuscript changes after results return, PALL-Adapter negative component finding, PALL-Modified standard comparison, Runs required before final evidence freeze (+2 more)
+Cohesion: 0.17
+Nodes (11): AAAI Review Action Matrix, Completed evidence groups, Current position, EPALL standard comparison, Evidence already safe to use, Latest-review actions, Manuscript changes after results return, PALL-Adapter negative component finding (+3 more)
 
 ### Community 111 - "EWC"
 Cohesion: 0.35
@@ -509,7 +511,7 @@ Nodes (6): build_requests_with_active_tasks(), generate_user_requests(), get_req
 
 ### Community 145 - "audit_seed_completeness.py"
 Cohesion: 0.13
-Nodes (32): adapter_config(), audit(), config_label(), expected_specs(), ExpectedSpec, find_partial_dirs(), load_actual_runs(), main() (+24 more)
+Nodes (31): adapter_config(), audit(), config_label(), expected_specs(), ExpectedSpec, find_partial_dirs(), load_actual_runs(), main() (+23 more)
 
 ### Community 147 - ".__init__"
 Cohesion: 0.23
@@ -527,8 +529,16 @@ Nodes (6): latest_rows(), load(), main(), value(), write_csv(), write_markdown()
 Cohesion: 0.24
 Nodes (11): StorageAnalysisTest, fmt(), linear_slope(), load_json(), main(), mb(), select_runs(), summarize() (+3 more)
 
+### Community 151 - ".__init__"
+Cohesion: 0.57
+Nodes (7): arrow(), build(), panel_a(), panel_b(), panel_c(), rounded(), step_box()
+
+### Community 152 - "analyze_significance.py"
+Cohesion: 0.43
+Nodes (6): cohens_dz(), exact_sign_test_p(), exact_wilcoxon_p(), main(), One-sided exact sign test: P(#positive >= observed | p=0.5), ties dropped., One-sided exact Wilcoxon signed-rank p-value (small n, ties dropped).      Enume
+
 ## Knowledge Gaps
-- **180 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `capture_server_environment.sh script` (+175 more)
+- **181 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `capture_server_environment.sh script` (+176 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **69 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -536,11 +546,11 @@ Nodes (11): StorageAnalysisTest, fmt(), linear_slope(), load_json(), main(), mb(
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `RehearsalMemory` connect `SalUn` to `PALL Adapter Logic`, `PALL Base Forgetting`, `LoRA`, `Regularization Methods`, `.__init__`, `Method Modules`, `SalUn`?**
-  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+  _High betweenness centrality (0.077) - this node is a cross-community bridge._
 - **Why does `SubnetVisionTransformer` connect `Method Modules` to `Subnet Mask Layers`, `PALL Base Forgetting`, `CLPU Method`, `Regularization Methods`, `Base Model Params`, `.__init__`, `SalUn`, `SalUn`, `SSD`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
+  _High betweenness centrality (0.062) - this node is a cross-community bridge._
 - **Why does `PALLAdapter` connect `PALL Adapter Logic` to `Training Main Metrics`, `.__init__`, `SalUn`, `Replay Methods`?**
-  _High betweenness centrality (0.058) - this node is a cross-community bridge._
+  _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **Are the 8 inferred relationships involving `PALLBase` (e.g. with `RehearsalMemory` and `.__init__()`) actually correct?**
   _`PALLBase` has 8 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 8 inferred relationships involving `Base` (e.g. with `.__init__()` and `SalUn`) actually correct?**

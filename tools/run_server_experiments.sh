@@ -26,6 +26,7 @@
 #   GROUP 25 (g25_modified_components): direct PALL-Modified mechanism controls -- ON DEMAND, resume-safe
 #   GROUP 26 (g26_corrected_mia): corrected PALL-Modified MIA, both CIFAR datasets, 3 seeds -- ON DEMAND, resume-safe
 #   GROUP 27 (g27_storage_accounting): matched PALL-Modified/CLPU resident-state accounting, seed 0 -- ON DEMAND, resume-safe
+#   GROUP 28 (g28_standard_seed_extension): extend the complete 11-method standard table to seeds 0--7 -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -53,6 +54,7 @@
 #   bash tools/run_server_experiments.sh g24_retraining_reference --dry-run
 #   bash tools/run_server_experiments.sh g25_modified_components --dry-run
 #   bash tools/run_server_experiments.sh g26_corrected_mia --dry-run
+#   STANDARD_EXTRA_SEEDS="3 4 5 6 7" bash tools/run_server_experiments.sh g28_standard_seed_extension --dry-run
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -70,7 +72,8 @@ usage () {
         "Default GROUP is 'all' (g1 + g2 + g3)." \
         "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
         "g21_standard_unlearning, g22a_tiny_seed2, g22b_mia_anchor_seed2," \
-        "g23_adapter_components, g24_retraining_reference, g25_modified_components, g26_corrected_mia, and g27_storage_accounting." \
+        "g23_adapter_components, g24_retraining_reference, g25_modified_components, g26_corrected_mia," \
+        "g27_storage_accounting, and g28_standard_seed_extension." \
         "" \
         "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
         "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
@@ -79,7 +82,7 @@ usage () {
         "        g18_probe g20_paper_completion g21_standard_unlearning" \
         "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components" \
         "        g24_retraining_reference g25_modified_components g26_corrected_mia" \
-        "        g27_storage_accounting"
+        "        g27_storage_accounting g28_standard_seed_extension"
 }
 
 if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
@@ -100,7 +103,7 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting) ;;
+        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension) ;;
         *)
             echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
@@ -1223,10 +1226,10 @@ group25_modified_components () {
         esac
         for seed in $seeds; do
             case "$seed" in
-                0|1|2) ;;
+                0|1|2|3|4|5|6|7) ;;
                 *)
                     ((FAILED_RUNS += 1))
-                    echo "    FAIL: unsupported MODIFIED_COMPONENT_SEEDS entry '${seed}'" >&2
+                    echo "    FAIL: MODIFIED_COMPONENT_SEEDS must be drawn from 0--7 (got '${seed}')" >&2
                     continue
                     ;;
             esac
@@ -1307,6 +1310,131 @@ group27_storage_accounting () {
         --method clpu --experiment_tag "$TAG"
 }
 
+# ------------------------------------ GROUP 28 standard-table seed extension
+# Add pre-specified schedule seeds to every row in the matched 11-method
+# standard Split-CIFAR comparison.  The default extends the existing seeds
+# 0/1/2 to eight total seeds (0--7).  Core paired comparisons are launched
+# first, so an interrupted queue still prioritizes the main EPALL evidence.
+# Existing exact completed configs are skipped safely.
+group28_standard_seed_extension () {
+    echo "===== GROUP 28: complete standard-table seed extension (resume-safe) ====="
+    local seeds="${STANDARD_EXTRA_SEEDS:-3 4 5 6 7}"
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local LORA="--lora_rank 8 --lora_alpha 16"
+    local FI="--forget_iters 50"
+    local SSD_ARGS="--ssd_alpha 1.0 --ssd_lambda 1.0"
+    local SALUN_ARGS="--salun_mask_ratio 0.1 --salun_target uniform --forget_iters 50"
+    local seed c10 c100
+
+    for seed in $seeds; do
+        case "$seed" in
+            3|4|5|6|7) ;;
+            *)
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: STANDARD_EXTRA_SEEDS must be drawn from 3 4 5 6 7 (got '${seed}')" >&2
+                continue
+                ;;
+        esac
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        if [[ ! -f "$c10" || ! -f "$c100" ]]; then
+            ((FAILED_RUNS += 1))
+            echo "    FAIL: missing seed-${seed} standard schedule(s): ${c10}, ${c100}" >&2
+            continue
+        fi
+
+        # Priority 1: paired main claim and isolation reference.
+        launch_resume_safe "std_ext_c10_pall_original_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method pall_original --retrain_steps 50 --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c10_pall_modified_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method pall_modified $PALL_MOD --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c10_clpu_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method clpu --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c100_pall_original_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method pall_original --retrain_steps 50 --experiment_tag cifar100_standard
+        launch_resume_safe "std_ext_c100_pall_modified_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method pall_modified $PALL_MOD --experiment_tag cifar100_standard
+        launch_resume_safe "std_ext_c100_clpu_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method clpu --experiment_tag cifar100_standard
+    done
+
+    # Priority 2: remaining continual-learning/reference rows.
+    for seed in $seeds; do
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        [[ -f "$c10" && -f "$c100" ]] || continue
+
+        launch_resume_safe "std_ext_c10_pall_adapter_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method pall_adapter $ADAPTER --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c10_lora_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method lora $LORA --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c10_er_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method er $FI --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c10_derpp_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method derpp $FI --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c10_ewc_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method ewc --experiment_tag cifar10_standard
+        launch_resume_safe "std_ext_c10_lwf_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method lwf --experiment_tag cifar10_standard
+
+        launch_resume_safe "std_ext_c100_pall_adapter_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method pall_adapter $ADAPTER --experiment_tag cifar100_standard
+        launch_resume_safe "std_ext_c100_lora_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method lora $LORA --lr 1e-3 --experiment_tag cifar100_standard
+        launch_resume_safe "std_ext_c100_er_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method er $FI --experiment_tag cifar100_standard
+        launch_resume_safe "std_ext_c100_derpp_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method derpp $FI --experiment_tag cifar100_standard
+        launch_resume_safe "std_ext_c100_ewc_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method ewc --experiment_tag cifar100_standard
+        launch_resume_safe "std_ext_c100_lwf_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method lwf --experiment_tag cifar100_standard
+    done
+
+    # Priority 3: matched unlearning baselines, kept under their own strict tag.
+    for seed in $seeds; do
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        [[ -f "$c10" && -f "$c100" ]] || continue
+
+        launch_resume_safe "std_ext_c10_ssd_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method ssd $SSD_ARGS --experiment_tag standard_unlearning_ssd_salun_v1
+        launch_resume_safe "std_ext_c10_salun_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method salun $SALUN_ARGS --experiment_tag standard_unlearning_ssd_salun_v1
+        launch_resume_safe "std_ext_c100_ssd_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method ssd $SSD_ARGS --experiment_tag standard_unlearning_ssd_salun_v1
+        launch_resume_safe "std_ext_c100_salun_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method salun $SALUN_ARGS --experiment_tag standard_unlearning_ssd_salun_v1
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -1338,6 +1466,7 @@ case "$WHICH" in
     g25_modified_components) group25_modified_components ;;
     g26_corrected_mia) group26_corrected_mia ;;
     g27_storage_accounting) group27_storage_accounting ;;
+    g28_standard_seed_extension) group28_standard_seed_extension ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -1354,7 +1483,7 @@ echo "===================================================================="
 echo "AGGREGATING TABLES ..."
 AGG_SUFFIX=""
 case "$WHICH" in
-    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting)
+    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension)
         # These completion groups must never overwrite an existing CSV. A
         # timestamped canonical-tool rebuild can be inspected and synced while
         # the paper-facing canonical paths remain unchanged until every gap is

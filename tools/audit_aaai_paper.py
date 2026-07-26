@@ -103,14 +103,16 @@ def assert_values(context: str, line: str, expected: list[float]) -> None:
 
 
 def audit_generated_main(tex: str, report_path: Path, generated_path: Path) -> list[str]:
-    if r"\input{generated/main_standard_comparison.tex}" not in tex:
-        fail("main manuscript does not input generated/main_standard_comparison.tex")
     rows = read_rows(report_path)
     selected = select_rows(rows)
     expected = render_table(selected, report_path)
-    actual = generated_path.read_text(encoding="utf-8")
-    if actual != expected:
-        fail("generated Table 1 is stale; rerun tools/generate_main_standard_table.py")
+    # The generated table is inlined verbatim into the single submission .tex
+    # (AAAI requires one source file); it must match the current generator output.
+    if expected.strip() not in tex:
+        fail("inlined Table 1 is missing or stale; regenerate and re-inline main_standard_comparison")
+    generated_file = generated_path.read_text(encoding="utf-8")
+    if generated_file.strip() != expected.strip():
+        fail("generated/main_standard_comparison.tex is stale vs generator output")
     return [
         f"Table 1: {dataset}/{method} <- {row['experiment_tag']} [{row['config_id']}]"
         for (dataset, method), row in sorted(selected.items())
@@ -188,11 +190,90 @@ def audit_components(
     return provenance
 
 
+def audit_modified_components(
+    tex: str,
+    summary_path: Path,
+    runs_path: Path,
+    expected_tag: str,
+) -> list[str]:
+    summary = read_csv(summary_path)
+    runs = read_csv(runs_path)
+    modes = ("no_anchor", "overlap_only", "random_budget", "ranking_no_overlap", "full")
+    expected_keys = {
+        (dataset, seed, mode)
+        for dataset in ("cifar10", "cifar100")
+        for seed in (0, 1, 2)
+        for mode in modes
+    }
+    actual_keys = {(row["dataset"], int(row["seed"]), row["mode"]) for row in runs}
+    if actual_keys != expected_keys:
+        fail(
+            "modified-component run matrix mismatch: expected 30 exact keys, "
+            f"found {len(actual_keys)}"
+        )
+    for row in runs:
+        config_path = REPO / row["source_run"] / "config.json"
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        if config.get("experiment_tag") != expected_tag:
+            fail(
+                f"modified-component provenance {config_path} has "
+                f"tag={config.get('experiment_tag')!r}; expected {expected_tag!r}"
+            )
+
+    block = table_block(tex, "tab:modified-components")
+    labels = {
+        "no_anchor": "No anchor",
+        "overlap_only": "Overlap only",
+        "random_budget": "Random budget",
+        "ranking_no_overlap": "Ranking/no-ovl",
+        "full": "Full",
+    }
+    provenance = []
+    for dataset, marker, next_marker in (("cifar10", "C10", "C100"), ("cifar100", "C100", None)):
+        for mode, label in labels.items():
+            row = one(summary, dataset=dataset, mode=mode)
+            expected = [
+                float(row["A_final_mean"]), float(row["A_final_std"]),
+                float(row["WorstDrop_mean"]), float(row["WorstDrop_std"]),
+                float(row["Au_distance_to_chance_mean"]), float(row["Au_distance_to_chance_std"]),
+            ]
+            line = row_line(block, marker, next_marker, label)
+            assert_values(f"Modified-components table {dataset}/{mode}", line, expected)
+            provenance.append(
+                f"Modified-components: {dataset}/{mode} <- {expected_tag}, seeds 0/1/2"
+            )
+    return provenance
+
+
+def audit_storage(tex: str, summary_path: Path, expected_tag: str) -> list[str]:
+    summary = read_csv(summary_path)
+    block = table_block(tex, "tab:storage")
+    provenance = []
+    for dataset, marker, next_marker in (("cifar10", "C10", "C100"), ("cifar100", "C100", None)):
+        for method, label in (("pall_modified", "EPALL"), ("clpu", "CLPU")):
+            row = one(summary, dataset=dataset, method=method)
+            config_path = REPO / row["source_run"] / "config.json"
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            if config.get("experiment_tag") != expected_tag:
+                fail(
+                    f"storage provenance {config_path} has tag={config.get('experiment_tag')!r}; "
+                    f"expected {expected_tag!r}"
+                )
+            expected = [
+                round(float(row["accounted_total_mb_at_max"]), 2),
+                round(float(row["training_growth_mb_per_active_task"]), 2),
+            ]
+            line = row_line(block, marker, next_marker, label)
+            assert_values(f"Storage {dataset}/{method}", line, expected)
+            provenance.append(f"Storage: {dataset}/{method} <- {expected_tag}, seed 0")
+    return provenance
+
+
 def audit_overlap_heavy(tex: str, thesis_rows: list[dict[str, str]]) -> list[str]:
     block = table_block(tex, "tab:pall_overlap_heavy")
     labels = {
         "pall_original": "PALL-Original",
-        "pall_modified": "PALL-Modified",
+        "pall_modified": "EPALL",
         "pall_adapter": "PALL-Adapter",
     }
     provenance = []
@@ -222,8 +303,23 @@ def main() -> int:
         provenance = []
         provenance.extend(audit_generated_main(tex, args.report, args.generated))
         provenance.extend(audit_pretrained(tex, thesis_rows))
-        provenance.extend(audit_components(tex, args.component_summary, args.component_runs, args.component_tag))
+        # The adapter component table was compressed out of the manuscript (its
+        # negative finding is stated in prose); audit it only if the table exists.
+        if r"\label{tab:adapter-components}" in tex:
+            provenance.extend(audit_components(tex, args.component_summary, args.component_runs, args.component_tag))
+        provenance.extend(audit_modified_components(
+            tex,
+            REPO / "results/aggregates/modified_components_summary.csv",
+            REPO / "results/aggregates/modified_components_runs.csv",
+            "pall_modified_components_overlapmatched_v2",
+        ))
         provenance.extend(audit_overlap_heavy(tex, thesis_rows))
+        if r"\label{tab:storage}" in tex:
+            provenance.extend(audit_storage(
+            tex,
+                REPO / "results/aggregates/storage_accounting_summary.csv",
+                "storage_accounting_v1",
+            ))
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         print(f"[FAIL] AAAI paper audit: {exc}", file=sys.stderr)
         return 1

@@ -159,7 +159,7 @@ def write_markdown(path, summary, pairs, tag):
         lines.append(f"| {row['dataset']} | {row['mode']} | {row['n_seeds']} | " + " | ".join(cells) + " |")
     lines.extend([
         "", "## Paired differences relative to Full", "",
-        "Positive deltas favor Full. Bootstrap intervals are descriptive with three seeds.", "",
+        "Positive deltas favor Full. Bootstrap intervals are descriptive across the matched seeds.", "",
         "| Dataset | Control | Pairs | ΔA_final | ΔWorstDrop | Δ|Au-chance| |",
         "|---|---|---:|---:|---:|---:|",
     ])
@@ -180,10 +180,19 @@ def main():
     parser.add_argument("--out-prefix", type=Path, default=Path("results/aggregates/modified_components"))
     args = parser.parse_args()
     rows = select_rows(args.root, args.tag)
+    seeds_by_dataset = {
+        dataset: {int(row["seed"]) for row in rows if row["dataset"] == dataset}
+        for dataset in ("cifar10", "cifar100")
+    }
+    if not seeds_by_dataset["cifar10"] or seeds_by_dataset["cifar10"] != seeds_by_dataset["cifar100"]:
+        raise SystemExit(
+            f"Expected the same non-empty seed set for both datasets; got {seeds_by_dataset}"
+        )
+    selected_seeds = seeds_by_dataset["cifar10"]
     expected_keys = {
         (dataset, seed, mode)
         for dataset in ("cifar10", "cifar100")
-        for seed in (0, 1, 2)
+        for seed in selected_seeds
         for mode in MODES
     }
     actual_keys = {(row["dataset"], int(row["seed"]), row["mode"]) for row in rows}
@@ -191,7 +200,7 @@ def main():
         missing = sorted(expected_keys.difference(actual_keys))
         extra = sorted(actual_keys.difference(expected_keys))
         raise SystemExit(
-            f"Expected exact 30-run PALL-Modified matrix for tag={args.tag!r}; "
+            f"Expected a complete {len(expected_keys)}-run PALL-Modified matrix for tag={args.tag!r}; "
             f"found {len(actual_keys)} keys, missing={missing}, extra={extra}"
         )
     summary = summarize(rows)

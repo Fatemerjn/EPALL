@@ -111,7 +111,7 @@ Algorithm~\ref{alg:pall-modified} states the default gradient-magnitude path use
 
 \begin{figure*}[t]
 \centering
-\includegraphics{Figures/EPALL_mechanism.png}
+\includegraphics[width=.92\textwidth]{Figures/EPALL_mechanism.png}
 \caption{EPALL. (a) The problem: forgotten- and retained-task paths run through shared coordinates (orange), so a naive reset causes collateral retained-task drift. (b) Selection: the candidate set is the structural overlap $S_{share}=M_f\cap M_r$ between the forgotten mask and the retained-mask union; within it the top-$\rho$ coordinates ranked by retained-buffer gradient sensitivity form the protected subset $S_{share\_crit}$. (c) The request, in implementation order: the target buffer $\mathcal{B}_f$ is deleted at the request boundary once its optional diagnostic has been computed; the retained union is then formed, the overlap ranked, and anchors cached on $S_{share\_crit}$; PALL's branch-dependent reset suppresses the target path; and retained-only repair under Eq.~\eqref{eq:repair} holds the protected subset near its cached anchor. The objectives are empirical, not certified-removal guarantees.}
 \label{fig:epall}
 \end{figure*}

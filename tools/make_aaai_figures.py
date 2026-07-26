@@ -29,15 +29,15 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 
 # Okabe-Ito colorblind-safe hues, fixed order: Original, Modified, Adapter.
-COLORS = {"PALL-Original": "#0072B2", "PALL-Modified": "#E69F00", "PALL-Adapter": "#009E73"}
-HATCH = {"PALL-Original": "", "PALL-Modified": "//", "PALL-Adapter": "xx"}
-MARKER = {"PALL-Original": "o", "PALL-Modified": "s", "PALL-Adapter": "^"}
-METHODS = ["PALL-Original", "PALL-Modified", "PALL-Adapter"]
+COLORS = {"PALL-Original": "#0072B2", "EPALL": "#E69F00", "PALL-Adapter": "#009E73"}
+HATCH = {"PALL-Original": "", "EPALL": "//", "PALL-Adapter": "xx"}
+MARKER = {"PALL-Original": "o", "EPALL": "s", "PALL-Adapter": "^"}
+METHODS = ["PALL-Original", "EPALL", "PALL-Adapter"]
 DATASETS = ["CIFAR-10", "CIFAR-100"]
 CURRENT_WORSTDROP_DATASETS = ["CIFAR-10", "CIFAR-100"]
 
 _DATASET_KEYS = {"CIFAR-10": ("cifar10", "cifar10_main"), "CIFAR-100": ("cifar100", "cifar100_main")}
-_METHOD_KEYS = {"PALL-Original": "pall_original", "PALL-Modified": "pall_modified", "PALL-Adapter": "pall_adapter"}
+_METHOD_KEYS = {"PALL-Original": "pall_original", "EPALL": "pall_modified", "PALL-Adapter": "pall_adapter"}
 
 
 def load_main_pall_metrics():
@@ -174,6 +174,87 @@ def fig_mia(outdir: Path) -> None:
     plt.close(fig)
 
 
+
+def fig_storage(outdir: Path) -> None:
+    """Resident-state accounting: EPALL vs CLPU (total + per-active-task growth)."""
+    df = pd.read_csv(ROOT / "results/aggregates/storage_accounting_summary.csv")
+    ds_labels = {"cifar10": "CIFAR-10", "cifar100": "CIFAR-100"}
+    methods = [("pall_modified", "EPALL", "#E69F00", "//"), ("clpu", "CLPU", "#0072B2", "")]
+    fig, axes = plt.subplots(1, 2, figsize=(3.4, 2.3))
+    panels = [
+        ("accounted_total_mb_at_max", "Total (MiB)"),
+        ("training_growth_mb_per_active_task", "MiB / active task"),
+    ]
+    x = np.arange(len(ds_labels))
+    width = 0.34
+    for ax, (col, ylabel) in zip(axes, panels):
+        for i, (key, label, color, hatch) in enumerate(methods):
+            vals = []
+            for ds in ds_labels:
+                rows = df[(df["dataset"] == ds) & (df["method"] == key)]
+                if len(rows) != 1:
+                    raise ValueError(f"expected one storage row for {(ds, key)}, found {len(rows)}")
+                vals.append(float(rows.iloc[0][col]))
+            ax.bar(x + (i - 0.5) * width, vals, width * 0.92, color=color, hatch=hatch,
+                   edgecolor="white", linewidth=0.5, label=label)
+        ax.set_xticks(x)
+        ax.set_xticklabels([ds_labels[d] for d in ds_labels], fontsize=8)
+        ax.set_ylabel(ylabel)
+        ax.grid(axis="x", visible=False)
+    axes[0].legend(frameon=False, loc="upper left", fontsize=8, handlelength=1.2,
+                   handletextpad=0.4)
+    fig.tight_layout(pad=0.3)
+    fig.savefig(outdir / "aaai_storage.pdf")
+    plt.close(fig)
+
+
+def fig_overlap_response(outdir: Path) -> None:
+    """WorstDrop vs controlled overlap level, read from the g17 run artifacts."""
+    import json, collections, statistics
+    levels = ["very_low", "low", "medium", "high", "very_high"]
+    show = [("pall_original", "PALL-Original", "#0072B2", "o", "-"),
+            ("pall_modified", "EPALL", "#E69F00", "s", "-"),
+            ("salun", "SalUn", "#CC79A7", "^", "--"),
+            ("clpu", "CLPU", "#009E73", "D", ":")]
+    data = collections.defaultdict(list)
+    for cfg in (ROOT / "runs").rglob("config.json"):
+        try:
+            c = json.loads(cfg.read_text())
+            tag = c.get("experiment_tag") or ""
+            if not tag.startswith("overlap_curve_v1_"):
+                continue
+            met = cfg.parent / "metrics.json"
+            if not met.exists():
+                continue
+            M = json.loads(met.read_text())
+            wd = M.get("WorstDrop")
+            if wd is None:
+                continue
+            data[(c.get("dataset"), c.get("method"), tag.replace("overlap_curve_v1_", ""))].append(float(wd))
+        except Exception:
+            continue
+    fig, axes = plt.subplots(1, 2, figsize=(3.4, 1.9), sharey=False)
+    x = np.arange(len(levels))
+    for ax, ds, title in zip(axes, ["cifar10", "cifar100"], ["CIFAR-10", "CIFAR-100"]):
+        for key, label, color, marker, ls in show:
+            ys = []
+            for lv in levels:
+                vals = data.get((ds, key, lv), [])
+                ys.append(statistics.mean(vals) if vals else np.nan)
+            ax.plot(x, ys, marker=marker, color=color, linestyle=ls, linewidth=1.2,
+                    markersize=3.5, label=label)
+        ax.set_xticks(x)
+        ax.set_xticklabels(["vl", "l", "m", "h", "vh"], fontsize=8)
+        ax.set_title(title, fontsize=9)
+        ax.set_xlabel("overlap level", fontsize=8)
+        ax.grid(axis="x", visible=False)
+    axes[0].set_ylabel("WorstDrop", fontsize=9)
+    axes[1].legend(frameon=False, fontsize=7, loc="upper left", handlelength=1.4,
+                   labelspacing=0.25, borderpad=0.2)
+    fig.tight_layout(pad=0.25)
+    fig.savefig(outdir / "aaai_overlap_response.pdf")
+    plt.close(fig)
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--outdir", default=str(ROOT / "paper/AuthorKit27/Figures"))
@@ -183,7 +264,9 @@ def main() -> None:
     fig_worstdrop(outdir)
     fig_tradeoff(outdir)
     fig_mia(outdir)
-    print(f"Wrote aaai_worstdrop.pdf, aaai_tradeoff.pdf, aaai_mia.pdf to {outdir}")
+    fig_storage(outdir)
+    fig_overlap_response(outdir)
+    print(f"Wrote aaai_worstdrop.pdf, aaai_tradeoff.pdf, aaai_mia.pdf, aaai_storage.pdf to {outdir}")
 
 
 if __name__ == "__main__":

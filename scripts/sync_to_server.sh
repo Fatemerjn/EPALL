@@ -33,7 +33,8 @@ rsync "${RSYNC_FLAGS[@]}" \
     --exclude "logs/" \
     --exclude "graphify-out/" \
     --exclude ".git/" \
-    main.py data.py methods models tools schedules docs requirements.txt \
+    main.py data.py feature_cache.py privacy_metrics.py reference_metrics.py \
+    methods models tools schedules docs requirements.txt \
     "${SERVER_USER}@${SERVER_HOST}:${SERVER_PATH}"
 
 echo "[DONE] Code synced. On the server, no git pull is needed/possible (offline)."

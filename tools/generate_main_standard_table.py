@@ -30,7 +30,7 @@ METHOD_LABELS = {
     "ssd": "SSD",
     "salun": "SalUn",
     "pall_original": "PALL-Original",
-    "pall_modified": r"\textbf{PALL-Modified}",
+    "pall_modified": r"\textbf{EPALL}",
     "pall_adapter": r"\textbf{PALL-Adapter}$^\dagger$",
 }
 
