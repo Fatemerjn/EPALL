@@ -27,6 +27,7 @@ from make_thesis_table import (
 
 SEEDS_01 = ("0", "1")
 SEEDS_012 = ("0", "1", "2")
+SEEDS_01234 = ("0", "1", "2", "3", "4")
 METHODS_STANDARD = (
     "pall_original",
     "pall_modified",
@@ -197,7 +198,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             METHODS_STANDARD,
             f"{prefix}_standard",
             "standard_split",
-            seeds=SEEDS_012,
+            seeds=SEEDS_01234,
             configs={
                 "pall_original": retrain_config(),
                 "pall_modified": protected_retrain_config(),
@@ -210,7 +211,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             ("ssd", "salun"),
             "standard_unlearning_ssd_salun_v1",
             "standard_split",
-            seeds=SEEDS_012,
+            seeds=SEEDS_01234,
         )
         add(
             "MIA from-scratch",

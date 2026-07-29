@@ -114,7 +114,7 @@ def write_markdown(path, summaries):
     lines = [
         "# Paired Main-Table Analysis", "",
         "PALL-Modified minus PALL-Original on identical schedule seeds. Positive deltas favor PALL-Modified.",
-        "Bootstrap intervals are descriptive because each dataset has only three paired seeds.", "",
+        "Bootstrap intervals are descriptive across the matched schedule seeds.", "",
         "| Dataset | Pairs | ΔA_final | ΔF_avg | ΔWorstDrop | Δ|Au-chance| | ΔT_f |",
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
@@ -132,13 +132,35 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=Path("results/aggregates/server_results.csv"))
     parser.add_argument("--out-prefix", type=Path, default=Path("results/aggregates/paired_main"))
+    parser.add_argument(
+        "--expected-seeds",
+        type=int,
+        default=None,
+        help="Require exactly this many matched seeds (default: infer, but still "
+        "require an identical contiguous seed set across datasets).",
+    )
     args = parser.parse_args()
     with args.input.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
     pairs = paired_rows(rows)
     summary = summaries(pairs)
-    if any(row["n_pairs"] != 3 for row in summary):
-        raise SystemExit(f"Expected exactly three matched seeds per dataset; got {summary}")
+    actual_by_dataset = {
+        dataset: {row["seed"] for row in pairs if row["dataset"] == dataset}
+        for dataset in SPECS
+    }
+    # The pairing must rest on one identical seed set across datasets; the size of
+    # that set may grow as the standard-table seed extension lands, so it is
+    # inferred rather than pinned, and still has to be contiguous from 0.
+    seed_sets = list(actual_by_dataset.values())
+    if len(set(map(frozenset, seed_sets))) != 1:
+        raise SystemExit(f"Datasets do not share one seed set; got {actual_by_dataset}")
+    seeds = seed_sets[0]
+    if seeds != set(range(len(seeds))):
+        raise SystemExit(f"Expected a contiguous seed set from 0; got {sorted(seeds)}")
+    if args.expected_seeds is not None and len(seeds) != args.expected_seeds:
+        raise SystemExit(
+            f"Expected {args.expected_seeds} matched seeds; got {len(seeds)}"
+        )
     write_csv(args.out_prefix.with_name(args.out_prefix.name + "_runs.csv"), pairs)
     write_csv(args.out_prefix.with_name(args.out_prefix.name + "_summary.csv"), summary)
     write_markdown(args.out_prefix.with_name(args.out_prefix.name + "_summary.md"), summary)

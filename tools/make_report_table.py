@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 OUTPUT_COLUMNS = [
     "dataset",
     "method",
+    "n_seeds",
     "regime",
     "experiment_tag",
     "config_id",
@@ -240,6 +241,7 @@ def compact_row(row: Dict[str, str]) -> Dict[str, str]:
     return {
         "dataset": str(row.get("dataset", "")).strip(),
         "method": str(row.get("method", "")).strip(),
+        "n_seeds": str(row.get("n_seeds", "")).strip(),
         "regime": derive_regime(row),
         "experiment_tag": str(row.get("experiment_tag", "")).strip(),
         "config_id": config_id(row),

@@ -2,9 +2,9 @@
 """Build the AAAI-compliant, full-width EPALL mechanism figure.
 
 The output is exactly 7 inches wide (the AAAI text width), uses no text below
-9.2 pt, and converts every glyph to vector outlines so the included figure has
-no external font dependency.  A 300-dpi PNG is also emitted for visual QA, but
-the paper should include the PDF.
+9.2 pt.  It emits an editable SVG in a Times-compatible family, a 300-dpi PNG
+for visual QA, and a PDF whose glyphs are converted to vector outlines so the
+submission has no external font dependency.  The paper should include the PDF.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "paper" / "AuthorKit27" / "Figures"
 OUT_PDF = OUT_DIR / "EPALL_mechanism_aaai.pdf"
 OUT_PNG = OUT_DIR / "EPALL_mechanism_aaai.png"
+OUT_SVG = OUT_DIR / "EPALL_mechanism_fixed.svg"
 
 # Okabe--Ito-inspired colors; line styles and labels also carry the meaning.
 RED = "#C43C39"
@@ -94,7 +95,7 @@ def panel_a(ax):
             va="center", transform=ax.transAxes)
     arrow(ax, (0.23, 0.67), (0.45, 0.53), color=RED, lw=1.25)
     arrow(ax, (0.75, 0.67), (0.53, 0.53), color=BLUE, lw=1.25, style="--")
-    ax.text(0.49, 0.37, r"shared $w\in S_{\rm share}$", color=ORANGE,
+    ax.text(0.49, 0.37, r"shared $w\in S_{\mathrm{share}}$", color=ORANGE,
             fontsize=9.2, ha="center", transform=ax.transAxes)
 
     # A target reset at the shared coordinate also perturbs the retained path.
@@ -109,7 +110,7 @@ def panel_a(ax):
 
 
 def panel_b(ax):
-    ax.text(0.03, 0.95, "(b) Rank shared overlap", fontsize=9.8,
+    ax.text(0.03, 0.95, "(b) Rank overlap", fontsize=9.8,
             fontweight="bold", va="top", transform=ax.transAxes)
 
     # Structural candidate set.
@@ -117,16 +118,16 @@ def panel_b(ax):
                         facecolor="#FFF1F0", edgecolor=RED, linewidth=1.1))
     ax.add_patch(Circle((0.59, 0.66), 0.19, transform=ax.transAxes,
                         facecolor="#EEF5FF", edgecolor=BLUE, linewidth=1.1))
-    ax.text(0.24, 0.86, "forget mask\n" + r"$M_f$", color=RED, fontsize=9.2,
+    ax.text(0.24, 0.66, "forget mask\n" + r"$M_f$", color=RED, fontsize=9.2,
             ha="center", transform=ax.transAxes)
-    ax.text(0.72, 0.86, "retained union\n" + r"$M_r$", color=BLUE, fontsize=9.2,
+    ax.text(0.72, 0.66, "retained union\n" + r"$M_r$", color=BLUE, fontsize=9.2,
             ha="center", transform=ax.transAxes)
     ax.add_patch(Rectangle((0.42, 0.49), 0.12, 0.34, transform=ax.transAxes,
                            facecolor="#F9CF8B", edgecolor="none", alpha=0.9))
-    ax.text(0.48, 0.66, r"$S_{\rm share}$", color=INK, fontsize=9.2, fontweight="bold",
+    ax.text(0.48, 0.66, r"$S_{\mathrm{share}}$", color=INK, fontsize=9.2, fontweight="bold",
             ha="center", va="center", rotation=90, transform=ax.transAxes)
 
-    ax.text(0.50, 0.40, r"$S_{\rm share}=M_f\cap M_r$", fontsize=9.5,
+    ax.text(0.50, 0.40, r"$S_{\mathrm{share}}=M_f\cap M_r$", fontsize=9.5,
             ha="center", transform=ax.transAxes)
     arrow(ax, (0.50, 0.36), (0.50, 0.29), color=INK, lw=0.9)
 
@@ -141,7 +142,7 @@ def panel_b(ax):
             ax.add_patch(Circle((x, 0.22), 0.050, transform=ax.transAxes,
                                 facecolor="none", edgecolor=BLUE, linewidth=1.2))
     ax.text(0.50, 0.105,
-            "rank by retained gradient\n" + r"protect top-$\rho$: $S_{\rm share\_crit}$",
+            "rank by retained gradient\n" + r"protect top-$\rho$: $S_{\mathrm{share,crit}}$",
             fontsize=9.2, color=INK, ha="center", va="center",
             linespacing=1.15, transform=ax.transAxes)
 
@@ -160,8 +161,8 @@ def panel_c(ax):
     ax.text(0.03, 0.95, "(c) Protected request", fontsize=9.8,
             fontweight="bold", va="top", transform=ax.transAxes)
 
-    step_box(ax, 0.745, 1, "optional diagnostic; delete B_f\nand retire M_f", RED, "#FFF4F3")
-    step_box(ax, 0.555, 2, "form M_r; rank overlap;\ncache critical anchors", ORANGE, "#FFF7E8")
+    step_box(ax, 0.745, 1, r"optional diagnostic; delete $B_f$" + "\n" + r"and retire $M_f$", RED, "#FFF4F3")
+    step_box(ax, 0.555, 2, r"form $M_r$; rank overlap;" + "\n" + "cache anchor values", ORANGE, "#FFF7E8")
     step_box(ax, 0.365, 3, "branch-dependent PALL\ntarget reset", GREEN, "#F0FAF5")
     step_box(ax, 0.175, 4, "retained repair + anchor;\nrebuild active union", BLUE, "#F1F6FF")
 
@@ -172,13 +173,15 @@ def panel_c(ax):
 
 def build():
     mpl.rcParams.update({
-        "font.family": "sans-serif",
-        "font.sans-serif": ["Helvetica", "Arial", "DejaVu Sans"],
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "TeX Gyre Termes", "PT Serif", "DejaVu Serif"],
         "font.size": 9.2,
         "axes.unicode_minus": False,
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
-        "svg.fonttype": "path",
+        # Keep the SVG editable in Inkscape.  The submission PDF is outlined
+        # below, so it does not depend on this font being installed elsewhere.
+        "svg.fonttype": "none",
     })
 
     fig = plt.figure(figsize=(7.0, 2.62), facecolor="white")
@@ -200,6 +203,7 @@ def build():
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT_PNG, dpi=300, facecolor="white", edgecolor="none")
+    fig.savefig(OUT_SVG, format="svg", facecolor="white", edgecolor="none")
 
     # Save a vector PDF, then convert glyphs to vector outlines. This avoids
     # Type-3 and unembedded-font problems in the submission PDF.
@@ -227,6 +231,7 @@ def build():
     plt.close(fig)
     print(f"wrote {OUT_PDF}")
     print(f"wrote {OUT_PNG}")
+    print(f"wrote {OUT_SVG}")
 
 
 if __name__ == "__main__":

@@ -209,51 +209,205 @@ def fig_storage(outdir: Path) -> None:
 
 
 def fig_overlap_response(outdir: Path) -> None:
-    """WorstDrop vs controlled overlap level, read from the g17 run artifacts."""
-    import json, collections, statistics
-    levels = ["very_low", "low", "medium", "high", "very_high"]
-    show = [("pall_original", "PALL-Original", "#0072B2", "o", "-"),
-            ("pall_modified", "EPALL", "#E69F00", "s", "-"),
-            ("salun", "SalUn", "#CC79A7", "^", "--"),
-            ("clpu", "CLPU", "#009E73", "D", ":")]
-    data = collections.defaultdict(list)
-    for cfg in (ROOT / "runs").rglob("config.json"):
-        try:
-            c = json.loads(cfg.read_text())
-            tag = c.get("experiment_tag") or ""
-            if not tag.startswith("overlap_curve_v1_"):
-                continue
-            met = cfg.parent / "metrics.json"
-            if not met.exists():
-                continue
-            M = json.loads(met.read_text())
-            wd = M.get("WorstDrop")
-            if wd is None:
-                continue
-            data[(c.get("dataset"), c.get("method"), tag.replace("overlap_curve_v1_", ""))].append(float(wd))
-        except Exception:
+    """Plot the strict, de-duplicated controlled-overlap WorstDrop response."""
+    import statistics
+
+    try:
+        from make_thesis_table import (
+            dedupe_latest_rows,
+            extract_run_row,
+            group_key,
+            load_json,
+            seed_key,
+        )
+    except ImportError:  # pragma: no cover - supports package-style imports
+        from tools.make_thesis_table import (
+            dedupe_latest_rows,
+            extract_run_row,
+            group_key,
+            load_json,
+            seed_key,
+        )
+
+    levels = ("very_low", "low", "medium", "high", "very_high")
+    level_ticks = ("VL", "L", "M", "H", "VH")
+    datasets = ("cifar10", "cifar100")
+    dataset_titles = {"cifar10": "CIFAR-10", "cifar100": "CIFAR-100"}
+    methods = (
+        ("pall_original", "PALL-Original", "#0072B2", "o", "-"),
+        ("pall_modified", "EPALL", "#E69F00", "s", "-"),
+        ("salun", "SalUn", "#CC79A7", "^", "--"),
+        ("clpu", "CLPU", "#009E73", "D", ":"),
+    )
+    method_keys = {method[0] for method in methods}
+    exact_tags = {level: f"overlap_curve_v1_{level}" for level in levels}
+    tag_to_level = {tag: level for level, tag in exact_tags.items()}
+    expected_seeds = {"0", "1"}
+
+    # A completed run has a readable metrics.json.  Use the same full-config
+    # extraction and latest completed group+seed selector as the canonical
+    # thesis aggregation instead of treating timestamped retries as samples.
+    candidates = []
+    for metrics_path in sorted((ROOT / "runs").rglob("metrics.json")):
+        row = extract_run_row(
+            metrics_path,
+            group_by_config=True,
+            include_tags=set(tag_to_level),
+        )
+        if row is None:
             continue
-    fig, axes = plt.subplots(1, 2, figsize=(3.4, 1.9), sharey=False)
-    x = np.arange(len(levels))
-    for ax, ds, title in zip(axes, ["cifar10", "cifar100"], ["CIFAR-10", "CIFAR-100"]):
-        for key, label, color, marker, ls in show:
-            ys = []
-            for lv in levels:
-                vals = data.get((ds, key, lv), [])
-                ys.append(statistics.mean(vals) if vals else np.nan)
-            ax.plot(x, ys, marker=marker, color=color, linestyle=ls, linewidth=1.2,
-                    markersize=3.5, label=label)
-        ax.set_xticks(x)
-        ax.set_xticklabels(["vl", "l", "m", "h", "vh"], fontsize=8)
-        ax.set_title(title, fontsize=9)
-        ax.set_xlabel("overlap level", fontsize=8)
-        ax.grid(axis="x", visible=False)
-    axes[0].set_ylabel("WorstDrop", fontsize=9)
-    axes[1].legend(frameon=False, fontsize=7, loc="upper left", handlelength=1.4,
-                   labelspacing=0.25, borderpad=0.2)
-    fig.tight_layout(pad=0.25)
-    fig.savefig(outdir / "aaai_overlap_response.pdf")
-    plt.close(fig)
+        if row["dataset"] not in datasets or row["method"] not in method_keys:
+            continue
+
+        config = load_json(metrics_path.with_name("config.json"))
+        if config is None:
+            raise ValueError(f"controlled-overlap run has no readable config: {metrics_path.parent}")
+        if str(config.get("dataset")) != row["dataset"] or str(config.get("method")) != row["method"]:
+            raise ValueError(
+                "controlled-overlap config/metrics identity mismatch: "
+                f"{metrics_path.parent}"
+            )
+        worst_drop = row.get("WorstDrop")
+        if worst_drop is None or not np.isfinite(float(worst_drop)):
+            raise ValueError(f"controlled-overlap run has invalid signed WorstDrop: {metrics_path.parent}")
+        row["WorstDrop"] = float(worst_drop)
+        candidates.append(row)
+
+    selected, retries_removed = dedupe_latest_rows(candidates, group_by_config=True)
+    cells = {}
+    for row in selected:
+        level = tag_to_level[row["experiment_tag"]]
+        cells.setdefault((row["dataset"], row["method"], level), []).append(row)
+
+    expected_cells = {
+        (dataset, method, level)
+        for dataset in datasets
+        for method in method_keys
+        for level in levels
+    }
+    unexpected_cells = set(cells) - expected_cells
+    if unexpected_cells:
+        raise ValueError(f"unexpected controlled-overlap cells: {sorted(unexpected_cells)}")
+
+    trace_rows = []
+    for dataset in datasets:
+        for method, _label, _color, _marker, _linestyle in methods:
+            for level in levels:
+                cell = (dataset, method, level)
+                rows = cells.get(cell, [])
+                seeds = [seed_key(row) for row in rows]
+                if len(rows) != len(expected_seeds) or set(seeds) != expected_seeds:
+                    raise ValueError(
+                        f"incomplete controlled-overlap cell {cell}: "
+                        f"expected seeds {sorted(expected_seeds)}, found {sorted(seeds)}"
+                    )
+                config_keys = {group_key(row, group_by_config=True) for row in rows}
+                if len(config_keys) != 1:
+                    raise ValueError(
+                        f"incompatible full configs in controlled-overlap cell {cell}: "
+                        f"found {len(config_keys)}"
+                    )
+                for row in sorted(rows, key=seed_key):
+                    run_path = Path(row["run_path"])
+                    try:
+                        run_path = run_path.relative_to(ROOT)
+                    except ValueError:
+                        pass
+                    trace_rows.append(
+                        {
+                            "dataset": dataset,
+                            "method": method,
+                            "level": level,
+                            "seed": seed_key(row),
+                            "selected_run_path": run_path.as_posix(),
+                            "WorstDrop": row["WorstDrop"],
+                        }
+                    )
+
+    if len(trace_rows) != len(expected_cells) * len(expected_seeds):
+        raise ValueError(
+            f"expected {len(expected_cells) * len(expected_seeds)} selected runs, "
+            f"found {len(trace_rows)}"
+        )
+
+    trace_path = ROOT / "paper/AuthorKit27/generated/overlap_response_trace.csv"
+    trace_path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(trace_rows).to_csv(trace_path, index=False, float_format="%.17g")
+
+    point_means = {}
+    for dataset, method, level in expected_cells:
+        values = [
+            float(row["WorstDrop"])
+            for row in trace_rows
+            if (row["dataset"], row["method"], row["level"])
+            == (dataset, method, level)
+        ]
+        point_means[(dataset, method, level)] = statistics.fmean(values)
+
+    figure_rc = {
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "TeX Gyre Termes", "Times", "DejaVu Serif"],
+        "axes.titlesize": 10.2,
+        "axes.labelsize": 9.8,
+        "xtick.labelsize": 9.8,
+        "ytick.labelsize": 9.8,
+        "legend.fontsize": 9.8,
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+    }
+    outdir.mkdir(parents=True, exist_ok=True)
+    with plt.rc_context(figure_rc):
+        fig, axes = plt.subplots(1, 2, figsize=(3.4, 2.4), sharey=True)
+        x = np.arange(len(levels))
+        for ax, dataset in zip(axes, datasets):
+            for method, label, color, marker, linestyle in methods:
+                y = [point_means[(dataset, method, level)] for level in levels]
+                ax.plot(
+                    x,
+                    y,
+                    color=color,
+                    linestyle=linestyle,
+                    linewidth=1.35,
+                    marker=marker,
+                    markersize=4.8,
+                    markeredgewidth=0.55,
+                    label=label,
+                    zorder=3,
+                )
+            ax.set_xticks(x, level_ticks)
+            ax.set_title(dataset_titles[dataset], pad=3.0)
+            ax.yaxis.grid(True, color="#e6e6e6", linewidth=0.45)
+            ax.xaxis.grid(False)
+            ax.set_axisbelow(True)
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            ax.tick_params(axis="both", pad=2.0)
+            ax.margins(x=0.06, y=0.10)
+
+        fig.supylabel("WorstDrop ↓", x=0.015, fontsize=9.8)
+        fig.supxlabel("Controlled overlap level", x=0.54, y=0.205, fontsize=9.8)
+        handles, labels = axes[0].get_legend_handles_labels()
+        fig.legend(
+            handles,
+            labels,
+            loc="lower center",
+            bbox_to_anchor=(0.54, 0.012),
+            ncol=2,
+            frameon=False,
+            columnspacing=1.25,
+            handlelength=2.2,
+            handletextpad=0.55,
+            borderaxespad=0.0,
+        )
+        fig.subplots_adjust(left=0.18, right=0.985, top=0.87, bottom=0.36, wspace=0.16)
+        fig.savefig(outdir / "aaai_overlap_response.pdf")
+        fig.savefig(outdir / "aaai_overlap_response.png", dpi=300)
+        plt.close(fig)
+
+    print(
+        f"[INFO] overlap response: selected {len(trace_rows)} completed runs; "
+        f"removed {retries_removed} duplicate retries; trace={trace_path}"
+    )
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)

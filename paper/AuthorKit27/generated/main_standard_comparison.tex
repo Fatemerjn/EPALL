@@ -10,21 +10,21 @@
 \cmidrule(lr){1-7}
 \textbf{Family} & \textbf{Method} & \textbf{$A_{\mathrm{final}}\!\uparrow$} & \textbf{$F_{\mathrm{avg}}\!\downarrow$} & \textbf{WorstDrop $\downarrow$} & \textbf{$A_u\!\rightarrow\!$ chance} & \textbf{$T_f\!\downarrow$ (s)} \\
 \midrule
-\multirow{1}{*}{\textit{Isolation}} & CLPU & $0.9604\mathbin{\pm}0.0191$ & $0.2949\mathbin{\pm}0.0414$ & $0.0000\mathbin{\pm}0.0000$ & $0.5210\mathbin{\pm}0.0048$ & 0.0005 \\
+\multirow{1}{*}{\textit{Isolation}} & CLPU & $0.9500\mathbin{\pm}0.0169$ & $0.2803\mathbin{\pm}0.0266$ & $0.0000\mathbin{\pm}0.0000$ & $0.5041\mathbin{\pm}0.0152$ & 0.0005 \\
 \addlinespace[2pt]
-\multirow{4}{*}{\textit{Shared CL}} & DER++ & $0.9191\mathbin{\pm}0.0356$ & $0.2702\mathbin{\pm}0.0804$ & $0.0037\mathbin{\pm}0.0032$ & $0.5225\mathbin{\pm}0.1032$ & 2.3188 \\
- & ER & $0.9054\mathbin{\pm}0.0399$ & $0.3061\mathbin{\pm}0.0464$ & $0.0123\mathbin{\pm}0.0168$ & $0.4485\mathbin{\pm}0.0495$ & 2.0622 \\
- & EWC & $0.8436\mathbin{\pm}0.0724$ & $0.2964\mathbin{\pm}0.1496$ & $0.0000\mathbin{\pm}0.0000$ & $0.9418\mathbin{\pm}0.0298$ & 0.0001 \\
- & LwF & $0.9406\mathbin{\pm}0.0185$ & $0.0866\mathbin{\pm}0.0604$ & $0.0000\mathbin{\pm}0.0000$ & $0.9582\mathbin{\pm}0.0196$ & 0.0000 \\
+\multirow{4}{*}{\textit{Shared CL}} & DER++ & $0.8891\mathbin{\pm}0.0449$ & $0.2773\mathbin{\pm}0.0535$ & $0.0002\mathbin{\pm}0.0113$ & $0.5937\mathbin{\pm}0.1343$ & 2.8334 \\
+ & ER & $0.8679\mathbin{\pm}0.0464$ & $0.3022\mathbin{\pm}0.0471$ & $0.0253\mathbin{\pm}0.0317$ & $0.4918\mathbin{\pm}0.0521$ & 2.2502 \\
+ & EWC & $0.7258\mathbin{\pm}0.1421$ & $0.2912\mathbin{\pm}0.0983$ & $0.0000\mathbin{\pm}0.0000$ & $0.8122\mathbin{\pm}0.2102$ & 0.0001 \\
+ & LwF & $0.9168\mathbin{\pm}0.0317$ & $0.0781\mathbin{\pm}0.0448$ & $0.0000\mathbin{\pm}0.0000$ & $0.9469\mathbin{\pm}0.0280$ & 0.0001 \\
 \addlinespace[2pt]
-\multirow{2}{*}{\textit{Unlearning}} & SSD & $0.9011\mathbin{\pm}0.0581$ & $0.2241\mathbin{\pm}0.1560$ & $0.0027\mathbin{\pm}0.0025$ & $0.8030\mathbin{\pm}0.2715$ & 0.2330 \\
- & SalUn & $0.9032\mathbin{\pm}0.0114$ & $0.3077\mathbin{\pm}0.0743$ & $0.0100\mathbin{\pm}0.0087$ & $0.5452\mathbin{\pm}0.0294$ & 2.1656 \\
+\multirow{2}{*}{\textit{Unlearning}} & SSD & $0.8639\mathbin{\pm}0.0614$ & $0.1814\mathbin{\pm}0.0938$ & $0.0126\mathbin{\pm}0.0148$ & $0.8453\mathbin{\pm}0.1589$ & 0.2676 \\
+ & SalUn & $0.8555\mathbin{\pm}0.0473$ & $0.3168\mathbin{\pm}0.0527$ & $0.0291\mathbin{\pm}0.0443$ & $0.5039\mathbin{\pm}0.0986$ & 2.3862 \\
 \addlinespace[2pt]
-\multirow{2}{*}{\textit{Full PALL}} & PALL-Original & $0.9513\mathbin{\pm}0.0118$ & $0.2984\mathbin{\pm}0.0339$ & $0.0067\mathbin{\pm}0.0060$ & $0.5000\mathbin{\pm}0.0000$ & 2.1345 \\
- & \textbf{EPALL} & $0.9555\mathbin{\pm}0.0149$ & $0.2956\mathbin{\pm}0.0362$ & $0.0035\mathbin{\pm}0.0044$ & $0.5000\mathbin{\pm}0.0000$ & 2.7933 \\
+\multirow{2}{*}{\textit{Full PALL}} & PALL-Original & $0.9346\mathbin{\pm}0.0218$ & $0.2855\mathbin{\pm}0.0253$ & $0.0119\mathbin{\pm}0.0104$ & $0.4960\mathbin{\pm}0.0278$ & 2.7369 \\
+ & \textbf{EPALL} & $0.9433\mathbin{\pm}0.0160$ & $0.2872\mathbin{\pm}0.0249$ & $0.0027\mathbin{\pm}0.0031$ & $0.4863\mathbin{\pm}0.0216$ & 4.8349 \\
 \addlinespace[2pt]
-\multirow{2}{*}{\textit{PEFT$^\dagger$}} & LoRA$^\dagger$ & $0.7863\mathbin{\pm}0.0810$ & $0.1687\mathbin{\pm}0.0442$ & $0.0035\mathbin{\pm}0.0031$ & $0.5000\mathbin{\pm}0.0005$ & 3.2665 \\
- & \textbf{PALL-Adapter}$^\dagger$ & $0.7822\mathbin{\pm}0.0753$ & $0.1695\mathbin{\pm}0.0341$ & $0.0075\mathbin{\pm}0.0067$ & $0.4927\mathbin{\pm}0.0127$ & 3.5084 \\
+\multirow{2}{*}{\textit{PEFT$^\dagger$}} & LoRA$^\dagger$ & $0.7285\mathbin{\pm}0.0730$ & $0.1539\mathbin{\pm}0.0457$ & $0.0219\mathbin{\pm}0.0216$ & $0.4936\mathbin{\pm}0.0132$ & 3.4968 \\
+ & \textbf{PALL-Adapter}$^\dagger$ & $0.7222\mathbin{\pm}0.0715$ & $0.1556\mathbin{\pm}0.0428$ & $0.0117\mathbin{\pm}0.0162$ & $0.5097\mathbin{\pm}0.0349$ & 3.8352 \\
 \addlinespace[4pt]
 \midrule
 \addlinespace[2pt]
@@ -32,23 +32,23 @@
 \cmidrule(lr){1-7}
 \textbf{Family} & \textbf{Method} & \textbf{$A_{\mathrm{final}}\!\uparrow$} & \textbf{$F_{\mathrm{avg}}\!\downarrow$} & \textbf{WorstDrop $\downarrow$} & \textbf{$A_u\!\rightarrow\!$ chance} & \textbf{$T_f\!\downarrow$ (s)} \\
 \midrule
-\multirow{1}{*}{\textit{Isolation}} & CLPU & $0.7391\mathbin{\pm}0.0079$ & $0.1942\mathbin{\pm}0.0165$ & $0.0000\mathbin{\pm}0.0000$ & $0.1020\mathbin{\pm}0.0044$ & 0.0007 \\
+\multirow{1}{*}{\textit{Isolation}} & CLPU & $0.7355\mathbin{\pm}0.0069$ & $0.1935\mathbin{\pm}0.0151$ & $0.0000\mathbin{\pm}0.0000$ & $0.1047\mathbin{\pm}0.0107$ & 0.0007 \\
 \addlinespace[2pt]
-\multirow{4}{*}{\textit{Shared CL}} & DER++ & $0.6718\mathbin{\pm}0.0271$ & $0.2570\mathbin{\pm}0.0057$ & $0.0357\mathbin{\pm}0.0081$ & $0.2297\mathbin{\pm}0.0788$ & 10.7241 \\
- & ER & $0.6059\mathbin{\pm}0.0407$ & $0.2726\mathbin{\pm}0.0232$ & $0.0740\mathbin{\pm}0.0401$ & $0.3553\mathbin{\pm}0.0538$ & 6.2048 \\
- & EWC & $0.4685\mathbin{\pm}0.0424$ & $0.4002\mathbin{\pm}0.0220$ & $0.0000\mathbin{\pm}0.0000$ & $0.4487\mathbin{\pm}0.0975$ & 0.0001 \\
- & LwF & $0.6938\mathbin{\pm}0.0390$ & $0.1440\mathbin{\pm}0.0105$ & $0.0000\mathbin{\pm}0.0000$ & $0.7743\mathbin{\pm}0.0790$ & 0.0000 \\
+\multirow{4}{*}{\textit{Shared CL}} & DER++ & $0.6532\mathbin{\pm}0.0308$ & $0.2459\mathbin{\pm}0.0209$ & $0.0341\mathbin{\pm}0.0145$ & $0.3443\mathbin{\pm}0.1913$ & 12.3429 \\
+ & ER & $0.5923\mathbin{\pm}0.0389$ & $0.2797\mathbin{\pm}0.0277$ & $0.0515\mathbin{\pm}0.0309$ & $0.3956\mathbin{\pm}0.1079$ & 6.9605 \\
+ & EWC & $0.4359\mathbin{\pm}0.0522$ & $0.3939\mathbin{\pm}0.0247$ & $0.0000\mathbin{\pm}0.0000$ & $0.4954\mathbin{\pm}0.2044$ & 0.0001 \\
+ & LwF & $0.6661\mathbin{\pm}0.0333$ & $0.1540\mathbin{\pm}0.0152$ & $0.0000\mathbin{\pm}0.0000$ & $0.7132\mathbin{\pm}0.1180$ & 0.0001 \\
 \addlinespace[2pt]
-\multirow{2}{*}{\textit{Unlearning}} & SSD & $0.6381\mathbin{\pm}0.0212$ & $0.3048\mathbin{\pm}0.0385$ & $0.0040\mathbin{\pm}0.0046$ & $0.2977\mathbin{\pm}0.0870$ & 0.4086 \\
- & SalUn & $0.6191\mathbin{\pm}0.0449$ & $0.2681\mathbin{\pm}0.0262$ & $0.0750\mathbin{\pm}0.0325$ & $0.3333\mathbin{\pm}0.0241$ & 6.1575 \\
+\multirow{2}{*}{\textit{Unlearning}} & SSD & $0.4529\mathbin{\pm}0.2101$ & $0.4340\mathbin{\pm}0.1566$ & $0.0295\mathbin{\pm}0.0365$ & $0.2619\mathbin{\pm}0.0801$ & 0.5007 \\
+ & SalUn & $0.5892\mathbin{\pm}0.0480$ & $0.2869\mathbin{\pm}0.0270$ & $0.0583\mathbin{\pm}0.0407$ & $0.3967\mathbin{\pm}0.1222$ & 6.9425 \\
 \addlinespace[2pt]
-\multirow{2}{*}{\textit{Full PALL}} & PALL-Original & $0.7155\mathbin{\pm}0.0155$ & $0.2116\mathbin{\pm}0.0139$ & $0.0210\mathbin{\pm}0.0040$ & $0.1037\mathbin{\pm}0.0055$ & 10.8251 \\
- & \textbf{EPALL} & $0.7346\mathbin{\pm}0.0095$ & $0.1989\mathbin{\pm}0.0146$ & $0.0010\mathbin{\pm}0.0026$ & $0.0903\mathbin{\pm}0.0085$ & 14.8144 \\
+\multirow{2}{*}{\textit{Full PALL}} & PALL-Original & $0.7223\mathbin{\pm}0.0168$ & $0.2068\mathbin{\pm}0.0144$ & $0.0222\mathbin{\pm}0.0138$ & $0.1023\mathbin{\pm}0.0040$ & 12.6364 \\
+ & \textbf{EPALL} & $0.7371\mathbin{\pm}0.0093$ & $0.1958\mathbin{\pm}0.0121$ & $0.0056\mathbin{\pm}0.0062$ & $0.0959\mathbin{\pm}0.0075$ & 24.6999 \\
 \addlinespace[2pt]
-\multirow{2}{*}{\textit{PEFT$^\dagger$}} & LoRA$^\dagger$ & $0.2686\mathbin{\pm}0.0056$ & $0.0595\mathbin{\pm}0.0139$ & $0.0170\mathbin{\pm}0.0170$ & $0.1097\mathbin{\pm}0.0085$ & 7.0411 \\
- & \textbf{PALL-Adapter}$^\dagger$ & $0.2643\mathbin{\pm}0.0255$ & $0.0772\mathbin{\pm}0.0101$ & $0.0290\mathbin{\pm}0.0165$ & $0.1027\mathbin{\pm}0.0031$ & 8.1277 \\
+\multirow{2}{*}{\textit{PEFT$^\dagger$}} & LoRA$^\dagger$ & $0.2695\mathbin{\pm}0.0163$ & $0.0652\mathbin{\pm}0.0128$ & $0.0310\mathbin{\pm}0.0174$ & $0.1042\mathbin{\pm}0.0095$ & 7.5442 \\
+ & \textbf{PALL-Adapter}$^\dagger$ & $0.2583\mathbin{\pm}0.0208$ & $0.0755\mathbin{\pm}0.0080$ & $0.0373\mathbin{\pm}0.0227$ & $0.1061\mathbin{\pm}0.0072$ & 8.8310 \\
 \bottomrule
 \end{tabular}
-\caption{Matched standard Split-CIFAR comparison (20 epochs/task; three seeds). Rows are grouped by operating assumption; bold method names denote our methods, while numeric cells are not ranked because the metrics must be read jointly. CLPU is the full-model isolation reference. $^\dagger$The PEFT rows freeze a random backbone here; their intended pretrained setting appears in Table~\ref{tab:pretrained}. Chance $A_u$ is $0.5$ for CIFAR-10 and $0.1$ for CIFAR-100. All metrics except the non-hardware-normalized $T_f$ are mean${\pm}$std.}
+\caption{Matched standard Split-CIFAR comparison (20 epochs/task; eight seeds). Rows group by operating assumption; bold names are our methods. Numeric cells are not ranked: the metrics must be read jointly. CLPU is the full-model isolation reference. $^\dagger$PEFT rows freeze a random backbone here; their pretrained setting is Table~\ref{tab:pretrained}. Chance $A_u$ is $0.5$/$0.1$. All metrics but the non-normalized $T_f$ are mean${\pm}$std.}
 \label{tab:main_standard}
 \end{table*}

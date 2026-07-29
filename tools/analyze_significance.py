@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
-"""Paired significance tests for the EPALL vs PALL-Original main comparison.
+"""Paired tests for the EPALL vs PALL-Original main comparison.
 
-With three matched schedule seeds per dataset, the exact one-sided Wilcoxon
-signed-rank and sign tests both have a minimum attainable p-value of 1/8 = 0.125,
-so no three-seed result can reach p < 0.05 regardless of effect size. We
-therefore report the exact tests together with that floor, plus the direction
-consistency (how many of the three paired seeds favour EPALL) and Cohen's d_z,
-and we label the outcome as a *directional consistency* claim rather than a
-significance claim. This is a transparency tool: it exists so the manuscript can
-state exactly what a three-seed design can and cannot establish.
+The analyzer reports exact one-sided tests, their attainable discrete floor,
+direction consistency, and Cohen's d_z.  The manuscript treats these as a
+small-sample paired audit rather than using significance as a stopping rule.
 
 Reads results/aggregates/paired_main_runs.csv (per-seed paired deltas produced by
 tools/analyze_paired_main.py) and writes
@@ -126,10 +121,9 @@ def main() -> int:
         "",
         "Exact one-sided tests on matched schedule seeds. Positive deltas favour EPALL.",
         "",
-        "**Power floor.** With three paired seeds the smallest attainable one-sided",
-        "p-value is 1/2^3 = 0.125, so *no* three-seed comparison can reach p < 0.05.",
-        "These tests therefore document direction consistency and effect size; they",
-        "are not, and cannot be, significance claims at conventional thresholds.",
+        "**Small-sample interpretation.** The attainable exact p-value is discrete",
+        "and depends on non-tied pairs. These tests document direction consistency",
+        "and effect size; the seed count was fixed independently of the outcome.",
         "",
         "| Dataset | Metric | Pairs | Favour EPALL | Ties | Mean delta | Cohen's d_z | Wilcoxon p | Sign p | Min attainable p |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",

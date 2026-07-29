@@ -40,6 +40,7 @@ _SMOKE_TAG_PREFIXES = ("smoke", "test")
 OUTPUT_COLUMNS = [
     "dataset",
     "method",
+    "n_seeds",
     "final_avg_acc_mean",
     "final_avg_acc_std",
     "avg_forgetting_mean",
@@ -196,6 +197,7 @@ CONFIG_MISSING_DEFAULTS = {
     "adapter_mask_mode": "discrete",
     "adapter_conflict_gamma": "1.0",
     "adapter_component_mode": "full",
+    "modified_component_mode": "full",
     "pretrained_input_norm": "legacy_dataset_stats",
 }
 
@@ -639,6 +641,7 @@ def aggregate_group(rows: List[Dict[str, Any]]) -> Dict[str, Optional[float]]:
     unlearning_score_mean, unlearning_score_std = mean_std(per_metric["unlearning_score"])
 
     return {
+        "n_seeds": len({seed_key(row) for row in rows}),
         "final_avg_acc_mean": final_avg_acc_mean,
         "final_avg_acc_std": final_avg_acc_std,
         "avg_forgetting_mean": avg_forgetting_mean,
@@ -726,7 +729,7 @@ def write_csv_table(path: Path, rows: List[Dict[str, Any]], decimals: int, group
             writer.writerow(
                 {
                     column: row.get(column)
-                    if column in ("dataset", "method") or column in CONFIG_GROUP_COLUMNS
+                    if column in ("dataset", "method", "n_seeds") or column in CONFIG_GROUP_COLUMNS
                     else format_number(row.get(column), decimals)
                     for column in columns
                 }
@@ -783,6 +786,12 @@ def parse_args() -> argparse.Namespace:
         help="Only include runs whose config.json experiment_tag matches one of these values.",
     )
     parser.add_argument(
+        "--seed",
+        nargs="+",
+        default=None,
+        help="Only include the listed canonical seed identifiers.",
+    )
+    parser.add_argument(
         "--seed-policy",
         choices=("mean", "latest"),
         default="mean",
@@ -811,6 +820,7 @@ def main() -> int:
     total_metrics_files = 0
     skipped_by_tag = 0
     include_tags = set(args.include_tags) if args.include_tags else None
+    include_seeds = {str(seed) for seed in args.seed} if args.seed else None
     for metrics_path in find_metrics_files(args.root):
         total_metrics_files += 1
         row = extract_run_row(
@@ -820,6 +830,8 @@ def main() -> int:
         )
         if row is not None:
             if not args.include_smoke and is_smoke_tag(row.get("experiment_tag")):
+                continue
+            if include_seeds is not None and seed_key(row) not in include_seeds:
                 continue
             run_rows.append(row)
         elif include_tags is not None:

@@ -1,97 +1,106 @@
-@misc{gdpr2016,
-  author = {{European Union}},
-  title = {Regulation ({EU}) 2016/679 of the {European} {Parliament} and of the {Council} ({General} {Data} {Protection} {Regulation})},
-  howpublished = {Official Journal of the European Union},
-  year = {2016}
-}
-
-@misc{ccpa2018,
-  author = {{California State Legislature}},
-  title = {California Civil Code Title 1.81.5, the {California} {Consumer} {Privacy} {Act} of 2018 ({CCPA})},
-  year = {2018}
-}
 
 @incollection{mccloskey1989catastrophic,
-  author = {McCloskey, Michael and Cohen, Neal J.},
+  author = {Michael McCloskey and Neal J. Cohen},
+  series = {Psychology of Learning and Motivation},
   title = {Catastrophic Interference in Connectionist Networks: The Sequential Learning Problem},
-  booktitle = {Psychology of Learning and Motivation},
+  editor = {Gordon H. Bower},
   volume = {24},
-  pages = {109--165},
+  pages = {109-165},
   publisher = {Academic Press},
-  year = {1989}
+  year = {1989},
+  issn = {0079-7421},
+  doi = {https://doi.org/10.1016/S0079-7421(08)60536-8},
+  url = {https://www.sciencedirect.com/science/article/pii/S0079742108605368},
+  abstract = {Publisher Summary Connectionist networks in which information is stored in weights on connections among simple processing units have attracted considerable interest in cognitive science. Much of the interest centers around two characteristics of these networks. First, the weights on connections between units need not be prewired by the model builder but rather may be established through training in which items to be learned are presented repeatedly to the network and the connection weights are adjusted in small increments according to a learning algorithm. Second, the networks may represent information in a distributed fashion. This chapter discusses the catastrophic interference in connectionist networks. Distributed representations established through the application of learning algorithms have several properties that are claimed to be desirable from the standpoint of modeling human cognition. These properties include content-addressable memory and so-called automatic generalization in which a network trained on a set of items responds correctly to other untrained items within the same domain. New learning may interfere catastrophically with old learning when networks are trained sequentially. The analysis of the causes of interference implies that at least some interference will occur whenever new learning may alter weights involved in representing old learning, and the simulation results demonstrate only that interference is catastrophic in some specific networks.}
 }
 
 @article{kirkpatrick2017overcoming,
-  author = {Kirkpatrick, James and Pascanu, Razvan and Rabinowitz, Neil and Veness, Joel and Desjardins, Guillaume and Rusu, Andrei A. and Milan, Kieran and Quan, John and Ramalho, Tiago and Grabska-Barwinska, Agnieszka and Hassabis, Demis and Clopath, Claudia and Kumaran, Dharshan and Hadsell, Raia},
-  title = {Overcoming Catastrophic Forgetting in Neural Networks},
+  author = {James Kirkpatrick  and Razvan Pascanu  and Neil Rabinowitz  and Joel Veness  and Guillaume Desjardins  and Andrei A. Rusu  and Kieran Milan  and John Quan  and Tiago Ramalho  and Agnieszka Grabska-Barwinska  and Demis Hassabis  and Claudia Clopath  and Dharshan Kumaran  and Raia Hadsell },
+  title = {Overcoming catastrophic forgetting in neural networks},
   journal = {Proceedings of the National Academy of Sciences},
   volume = {114},
   number = {13},
-  pages = {3521--3526},
-  year = {2017}
+  pages = {3521-3526},
+  year = {2017},
+  doi = {10.1073/pnas.1611835114},
+  URL = {https://www.pnas.org/doi/abs/10.1073/pnas.1611835114},
+  eprint = {https://www.pnas.org/doi/pdf/10.1073/pnas.1611835114},
+  abstract = {Deep neural networks are currently the most successful machine-learning technique for solving a variety of tasks, including language translation, image classification, and image generation. One weakness of such models is that, unlike humans, they are unable to learn multiple tasks sequentially. In this work we propose a practical solution to train such models sequentially by protecting the weights important for previous tasks. This approach, inspired by synaptic consolidation in neuroscience, enables state of the art results on multiple reinforcement learning problems experienced sequentially. The ability to learn tasks in a sequential fashion is crucial to the development of artificial intelligence. Until now neural networks have not been capable of this and it has been widely thought that catastrophic forgetting is an inevitable feature of connectionist models. We show that it is possible to overcome this limitation and train networks that can maintain expertise on tasks that they have not experienced for a long time. Our approach remembers old tasks by selectively slowing down learning on the weights important for those tasks. We demonstrate our approach is scalable and effective by solving a set of classification tasks based on a hand-written digit dataset and by learning several Atari 2600 games sequentially.}}
+
+
 }
 
-@incollection{thrun1998lifelong,
-  author = {Thrun, Sebastian},
-  title = {Lifelong Learning Algorithms},
-  booktitle = {Learning to Learn},
-  editor = {Thrun, Sebastian and Pratt, Lorien},
-  pages = {181--209},
-  publisher = {Springer},
-  address = {Boston, MA},
-  year = {1998}
+@Inbook{thrun1998lifelong,
+  author="Thrun, Sebastian",
+  editor="Thrun, Sebastian
+  and Pratt, Lorien",
+  title="Lifelong Learning Algorithms",
+  bookTitle="Learning to Learn",
+  year="1998",
+  publisher="Springer US",
+  address="Boston, MA",
+  pages="181--209",
+  abstract="Machine learning has not yet succeeded in the design of robust learning algorithms that generalize well from very small datasets. In contrast, humans often generalize correctly from only a single training example, even if the number of potentially relevant features is large. To do so, they successfully exploit knowledge acquired in previous learning tasks, to bias subsequent learning.",
+  isbn="978-1-4615-5529-2",
+  doi="10.1007/978-1-4615-5529-2_8",
+  url="https://doi.org/10.1007/978-1-4615-5529-2_8"
 }
+
+
 
 @inproceedings{cao2015towards,
   author = {Cao, Yinzhi and Yang, Junfeng},
   title = {Towards Making Systems Forget with Machine Unlearning},
   booktitle = {2015 IEEE Symposium on Security and Privacy},
-  pages = {463--480},
-  publisher = {IEEE},
-  year = {2015}
-}
+  pages = {463-480},
+  year = {2015},
+  volume={},
+  number={},
+  keywords={Training data;Data models;Machine learning algorithms;Data privacy;Learning systems;Computational modeling;Feature extraction;Machine Unlearning;Forgetting System;Adversarial Machine Learning},
+  doi={10.1109/SP.2015.35}}
+
 
 @inproceedings{bourtoule2021machine,
   author = {Bourtoule, Lucas and Chandrasekaran, Varun and Choquette-Choo, Christopher A. and Jia, Hengrui and Travers, Adelin and Zhang, Baiwu and Lie, David and Papernot, Nicolas},
   title = {Machine Unlearning},
   booktitle = {2021 IEEE Symposium on Security and Privacy (SP)},
-  pages = {141--159},
-  publisher = {IEEE},
-  year = {2021}
-}
+  pages = {141-159},
+  year={2021},
+  volume={},
+  number={},
+  keywords={Training;Data privacy;Privacy;Limiting;Transfer learning;Training data;Stochastic processes},
+  doi={10.1109/SP40001.2021.00019}}
+
 
 @inproceedings{guo2020certified,
   author = {Guo, Chuan and Goldstein, Tom and Hannun, Awni and van der Maaten, Laurens},
   title = {Certified Data Removal from Machine Learning Models},
   booktitle = {Proceedings of the 37th International Conference on Machine Learning},
+  volume = {119},
   pages = {3832--3842},
   publisher = {PMLR},
   year = {2020}
 }
 
-@book{dwork2014algorithmic,
-  author = {Dwork, Cynthia and Roth, Aaron},
-  title = {The Algorithmic Foundations of Differential Privacy},
-  publisher = {Now Publishers},
-  year = {2014}
-}
 
-@inproceedings{steinke2023privacy,
-  author = {Steinke, Thomas and Nasr, Milad and Jagielski, Matthew},
-  title = {Privacy Auditing with One (1) Training Run},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume = {36},
-  pages = {49268--49280},
-  year = {2023}
+@misc{steinke2023privacy,
+  title={Privacy Auditing with One (1) Training Run},
+  author={Thomas Steinke and Milad Nasr and Matthew Jagielski},
+  year={2023},
+  eprint={2305.08846},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2305.08846},
 }
 
 @inproceedings{buzzega2020dark,
-  author = {Buzzega, Pietro and Boschini, Matteo and Porrello, Angelo and Abati, Davide and Calderara, Simone},
-  title = {Dark Experience for General Continual Learning: A Strong, Simple Baseline},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume = {33},
-  pages = {15920--15930},
-  year = {2020}
+  author = {Pietro Buzzega and Matteo Boschini and Angelo Porrello and Davide Abati and Simone Calderara},
+  title = {Dark Experience for General Continual Learning: a Strong, Simple Baseline},
+  year={2020},
+  eprint={2004.07211},
+  archivePrefix={arXiv},
+  primaryClass={stat.ML},
+  url={https://arxiv.org/abs/2004.07211},
 }
 
 @article{li2017learning,
@@ -100,9 +109,11 @@
   journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
   volume = {40},
   number = {12},
-  pages = {2935--2947},
-  year = {2017}
-}
+  pages = {2935-2947},
+  year = {2018},
+  keywords={Feature extraction;Deep learning;Training data;Neural networks;Convolutional neural networks;Knowledge engineering;Learning systems;Visual perception;Convolutional neural networks;transfer learning;multi-task learning;deep learning;visual recognition},
+  doi={10.1109/TPAMI.2017.2773081}}
+
 
 @inproceedings{golatkar2020forgetting,
   author = {Golatkar, Aditya and Achille, Alessandro and Soatto, Stefano},
@@ -113,228 +124,303 @@
   year = {2020}
 }
 
-@inproceedings{chen2023boundary,
-  author = {Chen, Min and Gao, Weizhuo and Liu, Gaoyang and Peng, Kai and Wang, Chen},
-  title = {Boundary Unlearning: Rapid Forgetting of Deep Networks via Shifting the Decision Boundary},
-  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  pages = {7766--7775},
-  year = {2023}
+@misc{golatkar2020eternalsunshinespotlessnet,
+  title={Eternal Sunshine of the Spotless Net: Selective Forgetting in Deep Networks},
+  author={Aditya Golatkar and Alessandro Achille and Stefano Soatto},
+  year={2020},
+  eprint={1911.04933},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/1911.04933}
 }
 
-@inproceedings{fan2024salun,
-  author = {Fan, Chongyu and Liu, Jiancheng and Zhang, Yihua and Wong, Eric and Wei, Dennis and Liu, Sijia},
-  title = {{SalUn}: Empowering Machine Unlearning via Gradient-Based Weight Saliency in Both Image Classification and Generation},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  year = {2024}
+@misc{chen2023boundary,
+  title={Boundary Unlearning},
+  author={Min Chen and Weizhuo Gao and Gaoyang Liu and Kai Peng and Chen Wang},
+  year={2023},
+  eprint={2303.11570},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2303.11570},
 }
 
-@inproceedings{foster2024ssd,
-  author = {Foster, Jack and Schoepf, Stefan and Brintrup, Alexandra},
-  title = {Fast Machine Unlearning without Retraining through Selective Synaptic Dampening},
-  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
-  volume = {38},
-  pages = {12043--12051},
-  year = {2024}
+@misc{fan2024salun,
+  title={SalUn: Empowering Machine Unlearning via Gradient-based Weight Saliency in Both Image Classification and Generation},
+  author={Chongyu Fan and Jiancheng Liu and Yihua Zhang and Eric Wong and Dennis Wei and Sijia Liu},
+  year={2024},
+  eprint={2310.12508},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2310.12508},
+}
+
+@misc{foster2023ssd,
+  title={Fast Machine Unlearning Without Retraining Through Selective Synaptic Dampening},
+  author={Jack Foster and Stefan Schoepf and Alexandra Brintrup},
+  year={2023},
+  eprint={2308.07707},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2308.07707},
 }
 
 @inproceedings{houlsby2019parameter,
-  author = {Houlsby, Neil and Giurgiu, Andrei and Jastrzebski, Stanislaw and Morrone, Bruna and de Laroussilhe, Quentin and Gesmundo, Andrea and Attariyan, Mona and Gelly, Sylvain},
-  title = {Parameter-Efficient Transfer Learning for {NLP}},
-  booktitle = {Proceedings of the 36th International Conference on Machine Learning},
-  pages = {2790--2799},
-  publisher = {PMLR},
-  year = {2019}
+  title = 	 {Parameter-Efficient Transfer Learning for {NLP}},
+  author =       {Houlsby, Neil and Giurgiu, Andrei and Jastrzebski, Stanislaw and Morrone, Bruna and De Laroussilhe, Quentin and Gesmundo, Andrea and Attariyan, Mona and Gelly, Sylvain},
+  booktitle = 	 {Proceedings of the 36th International Conference on Machine Learning},
+  pages = 	 {2790--2799},
+  year = 	 {2019},
+  editor = 	 {Chaudhuri, Kamalika and Salakhutdinov, Ruslan},
+  volume = 	 {97},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {09--15 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v97/houlsby19a/houlsby19a.pdf},
+  url = 	 {https://proceedings.mlr.press/v97/houlsby19a.html},
+  abstract = 	 {Fine-tuning large pretrained models is an effective transfer mechanism in NLP. However, in the presence of many downstream tasks, fine-tuning is parameter inefficient: an entire new model is required for every task. As an alternative, we propose transfer with adapter modules. Adapter modules yield a compact and extensible model; they add only a few trainable parameters per task, and new tasks can be added without revisiting previous ones. The parameters of the original network remain fixed, yielding a high degree of parameter sharing. To demonstrate adapter’s effectiveness, we transfer the recently proposed BERT Transformer model to $26$ diverse text classification tasks, including the GLUE benchmark. Adapters attain near state-of-the-art performance, whilst adding only a few parameters per task. On GLUE, we attain within $0.8%$ of the performance of full fine-tuning, adding only $3.6%$ parameters per task. By contrast, fine-tuning trains $100%$ of the parameters per task.}
 }
 
-@inproceedings{hu2021lora,
-  author = {Hu, Edward J. and Shen, Yelong and Wallis, Phillip and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and Wang, Lu and Chen, Weizhu},
-  title = {{LoRA}: Low-Rank Adaptation of Large Language Models},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  year = {2022}
+
+@misc{hu2021lora,
+  title={LoRA: Low-Rank Adaptation of Large Language Models},
+  author={Edward J. Hu and Yelong Shen and Phillip Wallis and Zeyuan Allen-Zhu and Yuanzhi Li and Shean Wang and Lu Wang and Weizhu Chen},
+  year={2021},
+  eprint={2106.09685},
+  archivePrefix={arXiv},
+  primaryClass={cs.CL},
+  url={https://arxiv.org/abs/2106.09685},
 }
 
 @misc{rachapudi2026bidlora,
-  author = {Rachapudi, Jagadeesh and Vatsi, Ritali and Hambarde, Praful and Shukla, Amit},
-  title = {{BID-LoRA}: A Parameter-Efficient Framework for Continual Learning and Unlearning},
-  year = {2026},
-  eprint = {2604.12686},
-  archivePrefix = {arXiv}
+  title={BID-LoRA: A Parameter-Efficient Framework for Continual Learning and Unlearning},
+  author={Jagadeesh Rachapudi and Ritali Vatsi and Praful Hambarde and Amit Shukla},
+  year={2026},
+  eprint={2604.12686},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2604.12686},
 }
 
-@misc{adhikari2026uncle,
-  author = {Adhikari, Sayanta and Kumaravelu, Vishnuprasadh and Srijith, P. K.},
-  title = {An Unlearning Framework for Continual Learning},
-  year = {2025},
-  eprint = {2509.17530},
-  archivePrefix = {arXiv}
+@misc{adhikari2025uncle,
+  title={An Unlearning Framework for Continual Learning},
+  author={Sayanta Adhikari and Vishnuprasadh Kumaravelu and P. K. Srijith},
+  year={2025},
+  eprint={2509.17530},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2509.17530},
 }
 
 @misc{chatterjee2024unified,
-  author = {Chatterjee, Romit and Chundawat, Vikram and Tarun, Ayush and Mali, Ankur and Mandal, Murari},
-  title = {A Unified Framework for Continual Learning and Unlearning},
-  year = {2024},
-  eprint = {2408.11374},
-  archivePrefix = {arXiv}
+  title={A Unified Framework for Continual Learning and Unlearning},
+  author={Romit Chatterjee and Vikram Chundawat and Ayush Tarun and Ankur Mali and Murari Mandal},
+  year={2024},
+  eprint={2408.11374},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2408.11374},
 }
 
 @misc{lin2026cata,
-  author = {Lin, Shen and Dong, Junhao and Chen, Rongjie and Zhang, Xiaoyu and Xu, Li and Chen, Xiaofeng},
-  title = {{CATA}: Continual Machine Unlearning via Conflict-Averse Task Arithmetic},
-  year = {2026},
-  eprint = {2605.18610},
-  archivePrefix = {arXiv}
+  title={CATA: Continual Machine Unlearning via Conflict-Averse Task Arithmetic},
+  author={Shen Lin and Junhao Dong and Rongjie Chen and Xiaoyu Zhang and Li Xu and Xiaofeng Chen},
+  year={2026},
+  eprint={2605.18610},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2605.18610},
 }
 
 @inproceedings{ozdenizci2025pall,
-  author = {{\"O}zdenizci, Ozan and Rueckert, Elmar and Legenstein, Robert},
   title = {Privacy-Aware Lifelong Learning},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  year = {2025}
+  author = {Ozan Ozdenizci and Elmar Rueckert and Robert Legenstein},
+  booktitle = {The Thirteenth International Conference on Learning Representations},
+  year = {2025},
+  url={https://openreview.net/forum?id=UstOpZCESc}
 }
 
 @inproceedings{liu2022clpu,
-  author = {Liu, Bo and Liu, Qiang and Stone, Peter},
-  title = {Continual Learning and Private Unlearning},
-  booktitle = {Proceedings of the 1st Conference on Lifelong Learning Agents (CoLLAs)},
-  pages = {243--254},
-  publisher = {PMLR},
-  year = {2022}
+  title = 	 {Continual Learning and Private Unlearning},
+  author =       {Liu, Bo and Liu, Qiang and Stone, Peter},
+  booktitle = 	 {Proceedings of The 1st Conference on Lifelong Learning Agents},
+  pages = 	 {243--254},
+  year = 	 {2022},
+  editor = 	 {Chandar, Sarath and Pascanu, Razvan and Precup, Doina},
+  volume = 	 {199},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {22--24 Aug},
+  publisher =    {PMLR},
+  pdf = 	 {https://proceedings.mlr.press/v199/liu22a/liu22a.pdf},
+  url = 	 {https://proceedings.mlr.press/v199/liu22a.html},
+  abstract = 	 {As intelligent agents become autonomous over longer periods of time, they may eventually become lifelong counterparts to specific people. If so, it may be common for a user to want the agent to master a task temporarily but later on to forget the task due to privacy concerns. However enabling an agent to forget privately what the user specified without degrading the rest of the learned knowledge is a challenging problem. With the aim of addressing this challenge, this paper formalizes this continual learning and private unlearning (CLPU) problem. The paper further introduces a straightforward but exactly private solution, CLPU-DER++, as the first step towards solving the CLPU problem, along with a set of carefully designed benchmark problems to evaluate the effectiveness of the proposed solution.}
 }
 
-@techreport{krizhevsky2009learning,
-  author = {Krizhevsky, Alex and Hinton, Geoffrey},
-  title = {Learning Multiple Layers of Features from Tiny Images},
-  institution = {University of Toronto},
-  year = {2009}
+
+@inproceedings{krizhevsky2009learning,
+  title={Learning Multiple Layers of Features from Tiny Images},
+  author={Alex Krizhevsky},
+  year={2009},
+  url={https://api.semanticscholar.org/CorpusID:18268744}
 }
 
-@techreport{le2015tinyimagenet,
-  author = {Le, Ya and Yang, Xuan},
-  title = {Tiny {ImageNet} Visual Recognition Challenge},
-  institution = {CS 231N, Stanford University},
-  year = {2015}
+@inproceedings{le2015tinyimagenet,
+  title={Tiny ImageNet Visual Recognition Challenge},
+  author={Ya Le and Xuan S. Yang},
+  year={2015},
+  url={https://api.semanticscholar.org/CorpusID:16664790}
 }
 
-@inproceedings{he2016deep,
-  author = {He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
-  title = {Deep Residual Learning for Image Recognition},
-  booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-  pages = {770--778},
-  year = {2016}
+@misc{he2015deep,
+      title={Deep Residual Learning for Image Recognition},
+      author={Kaiming He and Xiangyu Zhang and Shaoqing Ren and Jian Sun},
+      year={2015},
+      eprint={1512.03385},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/1512.03385},
 }
 
 @article{robbins1951sgd,
-  author = {Robbins, Herbert and Monro, Sutton},
-  title = {A Stochastic Approximation Method},
-  journal = {The Annals of Mathematical Statistics},
+  author = {Herbert Robbins and Sutton Monro},
+  title = {{A Stochastic Approximation Method}},
   volume = {22},
+  journal = {The Annals of Mathematical Statistics},
   number = {3},
-  pages = {400--407},
-  year = {1951}
+  publisher = {Institute of Mathematical Statistics},
+  pages = {400 -- 407},
+  year = {1951},
+  doi = {10.1214/aoms/1177729586},
+  URL = {https://doi.org/10.1214/aoms/1177729586}
 }
+
 
 @inproceedings{nair2010relu,
-  author = {Nair, Vinod and Hinton, Geoffrey E.},
-  title = {Rectified Linear Units Improve Restricted {Boltzmann} Machines},
-  booktitle = {Proceedings of the 27th International Conference on Machine Learning (ICML)},
-  pages = {807--814},
-  year = {2010}
-}
-
-@book{goodfellow2016deep,
-  author = {Goodfellow, Ian and Bengio, Yoshua and Courville, Aaron},
-  title = {Deep Learning},
-  publisher = {MIT Press},
-  year = {2016}
-}
-
-@inproceedings{he2015delving,
-  author = {He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
-  title = {Delving Deep into Rectifiers: Surpassing Human-Level Performance on {ImageNet} Classification},
-  booktitle = {Proceedings of the IEEE International Conference on Computer Vision (ICCV)},
-  pages = {1026--1034},
-  year = {2015}
+  title={Rectified Linear Units Improve Restricted Boltzmann Machines},
+  author={Vinod Nair and Geoffrey E. Hinton},
+  booktitle={International Conference on Machine Learning},
+  year={2010},
+  url={https://api.semanticscholar.org/CorpusID:15539264}
 }
 
 @inproceedings{kang2022wsn,
   author = {Kang, Haeyong and Mina, Rusty John Lloyd and Madjid, Sultan Rizky Hikmawan and Yoon, Jaehong and Hasegawa-Johnson, Mark and Hwang, Sung Ju and Yoo, Chang D.},
-  title = {Forget-Free Continual Learning with Winning Subnetworks},
-  booktitle = {Proceedings of the 39th International Conference on Machine Learning},
-  pages = {10734--10750},
-  publisher = {PMLR},
-  year = {2022}
+  title = {Forget-free Continual Learning with Winning Subnetworks},
+  booktitle = 	 {Proceedings of the 39th International Conference on Machine Learning},
+  pages = 	 {10734--10750},
+  year = 	 {2022},
+  editor = 	 {Chaudhuri, Kamalika and Jegelka, Stefanie and Song, Le and Szepesvari, Csaba and Niu, Gang and Sabato, Sivan},
+  volume = 	 {162},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {17--23 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {https://proceedings.mlr.press/v162/kang22b/kang22b.pdf},
+  url = 	 {https://proceedings.mlr.press/v162/kang22b.html},
+  abstract = 	 {Inspired by Lottery Ticket Hypothesis that competitive subnetworks exist within a dense network, we propose a continual learning method referred to as Winning SubNetworks (WSN), which sequentially learns and selects an optimal subnetwork for each task. Specifically, WSN jointly learns the model weights and task-adaptive binary masks pertaining to subnetworks associated with each task whilst attempting to select a small set of weights to be activated (winning ticket) by reusing weights of the prior subnetworks. The proposed method is inherently immune to catastrophic forgetting as each selected subnetwork model does not infringe upon other subnetworks. Binary masks spawned per winning ticket are encoded into one N-bit binary digit mask, then compressed using Huffman coding for a sub-linear increase in network capacity with respect to the number of tasks.}
 }
 
-@inproceedings{mallya2018packnet,
-  author = {Mallya, Arun and Lazebnik, Svetlana},
-  title = {{PackNet}: Adding Multiple Tasks to a Single Network by Iterative Pruning},
-  booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-  pages = {7765--7773},
-  year = {2018}
+
+@misc{mallya2018packnet,
+  author = {Arun Mallya and Svetlana Lazebnik},
+  title = {PackNet: Adding Multiple Tasks to a Single Network by Iterative Pruning},
+  year={2018},
+  eprint={1711.05769},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/1711.05769},
 }
 
 @inproceedings{serra2018hat,
-  author = {Serr{\`a}, Joan and Sur{\'i}s, D{\'i}dac and Miron, Marius and Karatzoglou, Alexandros},
-  title = {Overcoming Catastrophic Forgetting with Hard Attention to the Task},
-  booktitle = {Proceedings of the 35th International Conference on Machine Learning},
-  pages = {4548--4557},
-  publisher = {PMLR},
-  year = {2018}
+  title = 	 {Overcoming Catastrophic Forgetting with Hard Attention to the Task},
+  author =       {Serra, Joan and Suris, Didac and Miron, Marius and Karatzoglou, Alexandros},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {4548--4557},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v80/serra18a/serra18a.pdf},
+  url = 	 {https://proceedings.mlr.press/v80/serra18a.html},
+  abstract = 	 {Catastrophic forgetting occurs when a neural network loses the information learned in a previous task after training on subsequent tasks. This problem remains a hurdle for artificial intelligence systems with sequential learning capabilities. In this paper, we propose a task-based hard attention mechanism that preserves previous tasks’ information without affecting the current task’s learning. A hard attention mask is learned concurrently to every task, through stochastic gradient descent, and previous masks are exploited to condition such learning. We show that the proposed mechanism is effective for reducing catastrophic forgetting, cutting current rates by 45 to 80%. We also show that it is robust to different hyperparameter choices, and that it offers a number of monitoring capabilities. The approach features the possibility to control both the stability and compactness of the learned knowledge, which we believe makes it also attractive for online learning or network compression applications.}
 }
 
-@inproceedings{wortsman2020supsup,
-  author = {Wortsman, Mitchell and Ramanujan, Vivek and Liu, Rosanne and Kembhavi, Aniruddha and Rastegari, Mohammad and Yosinski, Jason and Farhadi, Ali},
-  title = {Supermasks in Superposition},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume = {33},
-  year = {2020}
+
+@misc{wortsman2020supsup,
+  title={Supermasks in Superposition},
+  author={Mitchell Wortsman and Vivek Ramanujan and Rosanne Liu and Aniruddha Kembhavi and Mohammad Rastegari and Jason Yosinski and Ali Farhadi},
+  year={2020},
+  eprint={2006.14769},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2006.14769},
 }
 
-@inproceedings{ramanujan2020hidden,
-  author = {Ramanujan, Vivek and Wortsman, Mitchell and Kembhavi, Aniruddha and Farhadi, Ali and Rastegari, Mohammad},
-  title = {What's Hidden in a Randomly Weighted Neural Network?},
-  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  pages = {11893--11902},
-  year = {2020}
+@misc{ramanujan2020hidden,
+  title={What's Hidden in a Randomly Weighted Neural Network?},
+  author={Vivek Ramanujan and Mitchell Wortsman and Aniruddha Kembhavi and Ali Farhadi and Mohammad Rastegari},
+  year={2020},
+  eprint={1911.13299},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/1911.13299},
 }
 
-@inproceedings{frankle2019lottery,
-  author = {Frankle, Jonathan and Carbin, Michael},
-  title = {The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  year = {2019}
+@misc{frankle2019lottery,
+  title={The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks},
+  author={Jonathan Frankle and Michael Carbin},
+  year={2019},
+  eprint={1803.03635},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/1803.03635},
 }
 
 @inproceedings{zenke2017continual,
-  author = {Zenke, Friedemann and Poole, Ben and Ganguli, Surya},
+  author = {Friedemann Zenke and Ben Poole and Surya Ganguli},
   title = {Continual Learning Through Synaptic Intelligence},
   booktitle = {Proceedings of the 34th International Conference on Machine Learning},
   pages = {3987--3995},
   publisher = {PMLR},
-  year = {2017}
+  year = {2017},
+  editor = 	 {Precup, Doina and Teh, Yee Whye},
+  volume = 	 {70},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {06--11 Aug},
+  pdf = 	 {http://proceedings.mlr.press/v70/zenke17a/zenke17a.pdf},
+  url = 	 {https://proceedings.mlr.press/v70/zenke17a.html},
+  abstract = 	 {While deep learning has led to remarkable advances across diverse applications, it struggles in domains where the data distribution changes over the course of learning. In stark contrast, biological neural networks continually adapt to changing domains, possibly by leveraging complex molecular machinery to solve many tasks simultaneously. In this study, we introduce intelligent synapses that bring some of this biological complexity into artificial neural networks. Each synapse accumulates task relevant information over time, and exploits this information to rapidly store new memories without forgetting old ones. We evaluate our approach on continual learning of classification tasks, and show that it dramatically reduces forgetting while maintaining computational efficiency.}
 }
 
-@inproceedings{lopezpaz2017gem,
-  author = {Lopez-Paz, David and Ranzato, Marc'Aurelio},
-  title = {Gradient Episodic Memory for Continual Learning},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume = {30},
-  year = {2017}
+
+@misc{lopezpaz2022gem,
+  title={Gradient Episodic Memory for Continual Learning},
+  author={David Lopez-Paz and Marc'Aurelio Ranzato},
+  year={2022},
+  eprint={1706.08840},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/1706.08840},
 }
 
-@inproceedings{chaudhry2019agem,
-  author = {Chaudhry, Arslan and Ranzato, Marc'Aurelio and Rohrbach, Marcus and Elhoseiny, Mohamed},
-  title = {Efficient Lifelong Learning with {A-GEM}},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  year = {2019}
+@misc{chaudhry2019agem,
+  title={Efficient Lifelong Learning with A-GEM},
+  author={Arslan Chaudhry and Marc'Aurelio Ranzato and Marcus Rohrbach and Mohamed Elhoseiny},
+  year={2019},
+  eprint={1812.00420},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/1812.00420},
 }
 
 @inproceedings{rebuffi2017icarl,
-  author = {Rebuffi, Sylvestre-Alvise and Kolesnikov, Alexander and Sperl, Georg and Lampert, Christoph H.},
-  title = {{iCaRL}: Incremental Classifier and Representation Learning},
-  booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-  pages = {2001--2010},
-  year = {2017}
+  author = {Sylvestre-Alvise Rebuffi and Alexander Kolesnikov and Georg Sperl and Christoph H. Lampert},
+  title = {iCaRL: Incremental Classifier and Representation Learning},
+  year={2017},
+  eprint={1611.07725},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/1611.07725},
 }
 
 @article{delange2022survey,
@@ -343,58 +429,317 @@
   journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
   volume = {44},
   number = {7},
-  pages = {3366--3385},
-  year = {2022}
-}
+  pages = {3366-3385},
+  year = {2022},
+  keywords={Task analysis;Knowledge engineering;Neural networks;Training;Training data;Learning systems;Interference;Continual learning;lifelong learning;task incremental learning;catastrophic forgetting;classification;neural networks},
+  doi={10.1109/TPAMI.2021.3057446}}
 
-@inproceedings{sekhari2021remember,
-  author = {Sekhari, Ayush and Acharya, Jayadev and Kamath, Gautam and Suresh, Ananda Theertha},
-  title = {Remember What You Want to Forget: Algorithms for Machine Unlearning},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume = {34},
-  year = {2021}
+
+@misc{sekhari2021remember,
+  title={Remember What You Want to Forget: Algorithms for Machine Unlearning},
+  author={Ayush Sekhari and Jayadev Acharya and Gautam Kamath and Ananda Theertha Suresh},
+  year={2021},
+  eprint={2103.03279},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2103.03279},
 }
 
 @inproceedings{neel2021descent,
-  author = {Neel, Seth and Roth, Aaron and Sharifi-Malvajerdi, Saeed},
-  title = {Descent-to-Delete: Gradient-Based Methods for Machine Unlearning},
-  booktitle = {Proceedings of the 32nd International Conference on Algorithmic Learning Theory},
-  pages = {931--962},
-  publisher = {PMLR},
-  year = {2021}
+  title = 	 {Descent-to-Delete: Gradient-Based Methods for Machine Unlearning},
+  author =       {Neel, Seth and Roth, Aaron and Sharifi-Malvajerdi, Saeed},
+  booktitle = 	 {Proceedings of the 32nd International Conference on Algorithmic Learning Theory},
+  pages = 	 {931--962},
+  year = 	 {2021},
+  editor = 	 {Feldman, Vitaly and Ligett, Katrina and Sabato, Sivan},
+  volume = 	 {132},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {16--19 Mar},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v132/neel21a/neel21a.pdf},
+  url = 	 {https://proceedings.mlr.press/v132/neel21a.html},
+  abstract = 	 {We study the data deletion problem for convex models. By leveraging techniques from convex optimization and reservoir sampling, we give the first data deletion algorithms that are able to handle an arbitrarily long sequence of adversarial updates while promising both per-deletion run-time and steady-state error that do not grow with the length of the update sequence. We also introduce several new conceptual distinctions: for example, we can ask that after a deletion, the entire state maintained by the optimization algorithm is statistically indistinguishable from the state that would have resulted had we retrained, or we can ask for the weaker condition that only the observable output is statistically indistinguishable from the observable output that would have resulted from retraining. We are able to give more efficient deletion algorithms under this weaker deletion criterion.}
 }
+
 
 @inproceedings{graves2021amnesiac,
   author = {Graves, Laura and Nagisetty, Vineel and Ganesh, Vijay},
   title = {Amnesiac Machine Learning},
   booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
   volume = {35},
+  number = {13},
+  pages = {11516--11524},
   year = {2021}
 }
 
 @inproceedings{shokri2017membership,
-  author = {Shokri, Reza and Stronati, Marco and Song, Congzheng and Shmatikov, Vitaly},
-  title = {Membership Inference Attacks Against Machine Learning Models},
-  booktitle = {2017 IEEE Symposium on Security and Privacy (SP)},
-  pages = {3--18},
-  publisher = {IEEE},
-  year = {2017}
+  author={Shokri, Reza and Stronati, Marco and Song, Congzheng and Shmatikov, Vitaly},
+  booktitle={2017 IEEE Symposium on Security and Privacy (SP)},
+  title={Membership Inference Attacks Against Machine Learning Models},
+  year={2017},
+  volume={},
+  number={},
+  pages={3-18},
+  keywords={Training;Data models;Predictive models;Privacy;Sociology;Statistics;Google},
+  doi={10.1109/SP.2017.41}}
+
+
+@misc{carlini2022membership,
+  title={Membership Inference Attacks From First Principles},
+  author={Nicholas Carlini and Steve Chien and Milad Nasr and Shuang Song and Andreas Terzis and Florian Tramer},
+  year={2022},
+  eprint={2112.03570},
+  archivePrefix={arXiv},
+  primaryClass={cs.CR},
+  url={https://arxiv.org/abs/2112.03570},
 }
 
-@inproceedings{carlini2022membership,
-  author = {Carlini, Nicholas and Chien, Steve and Nasr, Milad and Song, Shuang and Terzis, Andreas and Tram{\`e}r, Florian},
-  title = {Membership Inference Attacks From First Principles},
-  booktitle = {2022 IEEE Symposium on Security and Privacy (SP)},
-  pages = {1897--1914},
-  publisher = {IEEE},
+@misc{yeom2018privacy,
+  title={Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting},
+  author={Samuel Yeom and Irene Giacomelli and Matt Fredrikson and Somesh Jha},
+  year={2018},
+  eprint={1709.01604},
+  archivePrefix={arXiv},
+  primaryClass={cs.CR},
+  url={https://arxiv.org/abs/1709.01604},
+}
+
+@inproceedings{shibata2021lsf,
+  title     = {Learning with Selective Forgetting},
+  author    = {Shibata, Takashi and Irie, Go and Ikami, Daiki and Mitsuzumi, Yu},
+  booktitle = {Proceedings of the Thirtieth International Joint Conference on
+               Artificial Intelligence, {IJCAI-21}},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  editor    = {Zhi-Hua Zhou},
+  pages     = {989--996},
+  year      = {2021},
+  month     = {8},
+  note      = {Main Track},
+  doi       = {10.24963/ijcai.2021/137},
+  url       = {https://doi.org/10.24963/ijcai.2021/137},
+}
+
+
+@misc{kang2023softnet,
+      title={Forget-free Continual Learning with Soft-Winning SubNetworks},
+      author={Haeyong Kang and Jaehong Yoon and Sultan Rizky Madjid and Sung Ju Hwang and Chang D. Yoo},
+      year={2023},
+      eprint={2303.14962},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2303.14962},
+}
+
+@misc{jia2023sparsity,
+  title={Model Sparsity Can Simplify Machine Unlearning},
+  author={Jinghan Jia and Jiancheng Liu and Parikshit Ram and Yuguang Yao and Gaowen Liu and Yang Liu and Pranay Sharma and Sijia Liu},
+  year={2024},
+  eprint={2304.04934},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2304.04934},
+}
+
+@misc{patel2025conflicts,
+  title={Learning to Unlearn while Retaining: Combating Gradient Conflicts in Machine Unlearning},
+  author={Gaurav Patel and Qiang Qiu},
+  year={2025},
+  eprint={2503.06339},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2503.06339},
+}
+
+@misc{huang2025taskagnostic,
+  author = {Huang, Zhehao and Cheng, Xinwen and Zhang, Jie and Zheng, Jinghao and Wang, Haoran and He, Zhengbao and Li, Tao and Huang, Xiaolin},
+  title = {A Unified Gradient-based Framework for Task-agnostic Continual Learning-Unlearning},
+  year = {2025},
+  eprint = {2505.15178},
+  archivePrefix = {arXiv}
+}
+
+@misc{qureshi2025incremental,
+  author = {Qureshi, Sadia and Shaik, Thanveer and Tao, Xiaohui and Xie, Haoran and Li, Lin and Yong, Jianming and Jia, Xiaohua},
+  title = {Exploring Incremental Unlearning: Techniques, Challenges, and Future Directions},
+  year = {2025},
+  eprint = {2502.16708},
+  archivePrefix = {arXiv}
+}
+
+@misc{ye2022recoverable,
+  title={Learning with Recoverable Forgetting},
+  author={Jingwen Ye and Yifang Fu and Jie Song and Xingyi Yang and Songhua Liu and Xin Jin and Mingli Song and Xinchao Wang},
+  year={2022},
+  eprint={2207.08224},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2207.08224},
+}
+
+@misc{zuo2024ecilmu,
+  title={eCIL-MU: Embedding based Class Incremental Learning and Machine Unlearning},
+  author={Zhiwei Zuo and Zhuo Tang and Bin Wang and Kenli Li and Anwitaman Datta},
+  year={2024},
+  eprint={2401.02457},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2401.02457},
+}
+
+@inproceedings{chen2021jeopardizes,
+   series={CCS ’21},
+   title={When Machine Unlearning Jeopardizes Privacy},
+   url={http://dx.doi.org/10.1145/3460120.3484756},
+   DOI={10.1145/3460120.3484756},
+   booktitle={Proceedings of the 2021 ACM SIGSAC Conference on Computer and Communications Security},
+   publisher={ACM},
+   author={Chen, Min and Zhang, Zhikun and Wang, Tianhao and Backes, Michael and Humbert, Mathias and Zhang, Yang},
+   year={2021},
+   month=Nov, pages={896–911},
+   collection={CCS ’21} }
+
+
+@misc{hayes2024inexact,
+  title={Inexact Unlearning Needs More Careful Evaluations to Avoid a False Sense of Privacy},
+  author={Jamie Hayes and Ilia Shumailov and Eleni Triantafillou and Amr Khalifa and Nicolas Papernot},
+  year={2024},
+  eprint={2403.01218},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2403.01218},
+}
+
+@misc{goel2023adversarial,
+  title={Towards Adversarial Evaluations for Inexact Machine Unlearning},
+  author={Shashwat Goel and Ameya Prabhu and Amartya Sanyal and Ser-Nam Lim and Philip Torr and Ponnurangam Kumaraguru},
+  year={2023},
+  eprint={2201.06640},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2201.06640},
+}
+
+@article{vandeven2022three,
+  author = {van de Ven, Gido M. and Tuytelaars, Tinne and Tolias, Andreas S.},
+  title = {Three Types of Incremental Learning},
+  journal = {Nature Machine Intelligence},
+  volume = {4},
+  number = {12},
+  pages = {1185--1197},
   year = {2022}
 }
 
-@inproceedings{yeom2018privacy,
-  author = {Yeom, Samuel and Giacomelli, Irene and Fredrikson, Matt and Jha, Somesh},
-  title = {Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting},
-  booktitle = {2018 IEEE 31st Computer Security Foundations Symposium (CSF)},
-  pages = {268--282},
-  publisher = {IEEE},
-  year = {2018}
+@article{mantelero2013forgotten,
+title = {The EU Proposal for a General Data Protection Regulation and the roots of the ‘right to be forgotten’},
+journal = {Computer Law \& Security Review},
+volume = {29},
+number = {3},
+pages = {229-235},
+year = {2013},
+issn = {2212-473X},
+doi = {https://doi.org/10.1016/j.clsr.2013.03.010},
+url = {https://www.sciencedirect.com/science/article/pii/S0267364913000654},
+author = {Alessandro Mantelero},
+keywords = {Right to be forgotten, General Data Protection Regulation, Directive 95/46/EC},
+abstract = {The EU Proposal for a General Data Protection Regulation has caused a wide debate between lawyers and legal scholars and many opinions have been voiced on the issue of the right to be forgotten. In order to analyse the relevance of the new rule provided by Article 17 of the Proposal, this paper considers the original idea of the right to be forgotten, pre-existing in both European and U.S. legal frameworks. This article focuses on the new provisions of Article 17 of the EU Proposal for a General Data Protection Regulation and evaluates its effects on court decisions. The author assumes that the new provisions do not seem to represent a revolutionary change to the existing rules with regard to the right granted to the individual, but instead have an impact on the extension of the protection of the information disseminated on-line.}
+}
+
+@inproceedings{aljundi2018mas,
+  author="Aljundi, Rahaf
+  and Babiloni, Francesca
+  and Elhoseiny, Mohamed
+  and Rohrbach, Marcus
+  and Tuytelaars, Tinne",
+  editor="Ferrari, Vittorio
+  and Hebert, Martial
+  and Sminchisescu, Cristian
+  and Weiss, Yair",
+  title="Memory Aware Synapses: Learning What (not) to Forget",
+  booktitle="Computer Vision -- ECCV 2018",
+  year="2018",
+  publisher="Springer International Publishing",
+  address="Cham",
+  pages="144--161",
+  abstract="Humans can learn in a continuous manner. Old rarely utilized knowledge can be overwritten by new incoming information while important, frequently used knowledge is prevented from being erased. In artificial learning systems, lifelong learning so far has focused mainly on accumulating knowledge over tasks and overcoming catastrophic forgetting. In this paper, we argue that, given the limited model capacity and the unlimited new information to be learned, knowledge has to be preserved or erased selectively. Inspired by neuroplasticity, we propose a novel approach for lifelong learning, coined Memory Aware Synapses (MAS). It computes the importance of the parameters of a neural network in an unsupervised and online manner. Given a new sample which is fed to the network, MAS accumulates an importance measure for each parameter of the network, based on how sensitive the predicted output function is to a change in this parameter. When learning a new task, changes to important parameters can then be penalized, effectively preventing important knowledge related to previous tasks from being overwritten. Further, we show an interesting connection between a local version of our method and Hebb's rule, which is a model for the learning process in the brain. We test our method on a sequence of object recognition tasks and on the challenging problem of learning an embedding for predicting <subject, predicate, object> triplets. We show state-of-the-art performance and, for the first time, the ability to adapt the importance of the parameters based on unlabeled data towards what the network needs (not) to forget, which may vary depending on test conditions.",
+  isbn="978-3-030-01219-9"
+}
+
+
+
+@misc{he2015delving,
+  title={Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification},
+  author={Kaiming He and Xiangyu Zhang and Shaoqing Ren and Jian Sun},
+  year={2015},
+  eprint={1502.01852},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/1502.01852},
+}
+
+@misc{dosovitskiy2021vit,
+  title={An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale},
+  author={Alexey Dosovitskiy and Lucas Beyer and Alexander Kolesnikov and Dirk Weissenborn and Xiaohua Zhai and Thomas Unterthiner and Mostafa Dehghani and Matthias Minderer and Georg Heigold and Sylvain Gelly and Jakob Uszkoreit and Neil Houlsby},
+  year={2021},
+  eprint={2010.11929},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2010.11929},
+}
+
+@misc{heng2023amnesia,
+  title={Selective Amnesia: A Continual Learning Approach to Forgetting in Deep Generative Models},
+  author={Alvin Heng and Harold Soh},
+  year={2023},
+  eprint={2305.10120},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2305.10120},
+}
+
+@misc{shan2024contrastive,
+  title={Lifelong Learning and Selective Forgetting via Contrastive Strategy},
+  author={Lianlei Shan and Wenzhang Zhou and Wei Li and Xingyu Ding},
+  year={2024},
+  eprint={2405.18663},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI},
+  url={https://arxiv.org/abs/2405.18663},
+}
+
+@article{zhang2023reversing,
+  AUTHOR = {Zhang, Yongjing and Lu, Zhaobo and Zhang, Feng and Wang, Hao and Li, Shaojing},
+  TITLE = {Machine Unlearning by Reversing the Continual Learning},
+  JOURNAL = {Applied Sciences},
+  VOLUME = {13},
+  YEAR = {2023},
+  NUMBER = {16},
+  ARTICLE-NUMBER = {9341},
+  URL = {https://www.mdpi.com/2076-3417/13/16/9341},
+  ISSN = {2076-3417},
+  ABSTRACT = {Recent legislations, such as the European General Data Protection Regulation (GDPR), require user data holders to guarantee the individual’s right to be forgotten. This means that user data holders must completely delete user data upon request. However, in the field of machine learning, it is not possible to simply remove these data from the back-end database wherein the training dataset is stored, because the machine learning model still retains this data information. Retraining the model using a dataset with these data removed can overcome this problem; however, this can lead to expensive computational overheads. In order to remedy this shortcoming, we propose two effective methods to help model owners or data holders remove private data from a trained model. The first method uses an elastic weight consolidation (EWC) constraint term and a modified loss function to neutralize the data to be removed. The second method approximates the posterior distribution of the model as a Gaussian distribution, and the model after unlearning is computed by decreasingly matching the moment (DMM) of the posterior distribution of the neural network trained on all data and the data to be removed. Finally, we conducted experiments on three standard datasets using backdoor attacks as the evaluation metric. The results show that both methods are effective in removing backdoor triggers in deep learning models. Specifically, EWC can reduce the success rate of backdoor attacks to 0. IMM can ensure that the model prediction accuracy is higher than 80% and keep the success rate of backdoor attacks below 10%.},
+  DOI = {10.3390/app13169341}
+}
+
+
+
+
+
+@misc{nguyen2024survey,
+  title={A Survey of Machine Unlearning},
+  author={Thanh Tam Nguyen and Thanh Trung Huynh and Zhao Ren and Phi Le Nguyen and Alan Wee-Chung Liew and Hongzhi Yin and Quoc Viet Hung Nguyen},
+  year={2024},
+  eprint={2209.02299},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2209.02299},
+}
+
+@misc{gao2025llmunlearn,
+  title={On Large Language Model Continual Unlearning},
+  author={Chongyang Gao and Lixu Wang and Kaize Ding and Chenkai Weng and Xiao Wang and Qi Zhu},
+  year={2025},
+  eprint={2407.10223},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2407.10223},
 }

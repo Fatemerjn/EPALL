@@ -66,7 +66,15 @@ def table_block(tex: str, label: str) -> str:
     if not ends:
         fail(f"cannot find table end for {label}")
     end = min(ends)
-    return tex[begin:end]
+    block = tex[begin:end]
+    # Return only the tabular body.  Captions sit above the tabular (AAAI
+    # convention) and their prose mentions row markers such as "C10", which
+    # would otherwise be matched instead of the actual data rows.
+    body_start = block.find(r"\begin{tabular}")
+    body_end = block.find(r"\end{tabular}", body_start + 1) if body_start >= 0 else -1
+    if body_start < 0 or body_end < 0:
+        fail(f"cannot find tabular body for {label}")
+    return block[body_start:body_end]
 
 
 def numeric_tokens(line: str) -> list[float]:
@@ -199,17 +207,23 @@ def audit_modified_components(
     summary = read_csv(summary_path)
     runs = read_csv(runs_path)
     modes = ("no_anchor", "overlap_only", "random_budget", "ranking_no_overlap", "full")
+    datasets = ("cifar10", "cifar100")
+    actual_keys = {(row["dataset"], int(row["seed"]), row["mode"]) for row in runs}
+    # The seed count grows as the control sweep is extended, so it is inferred;
+    # what must hold is a complete, identical dataset x seed x mode grid.
+    seeds = {seed for _, seed, _ in actual_keys}
+    if seeds != set(range(len(seeds))):
+        fail(f"modified-component seeds must be contiguous from 0; got {sorted(seeds)}")
     expected_keys = {
         (dataset, seed, mode)
-        for dataset in ("cifar10", "cifar100")
-        for seed in (0, 1, 2)
+        for dataset in datasets
+        for seed in seeds
         for mode in modes
     }
-    actual_keys = {(row["dataset"], int(row["seed"]), row["mode"]) for row in runs}
     if actual_keys != expected_keys:
         fail(
-            "modified-component run matrix mismatch: expected 30 exact keys, "
-            f"found {len(actual_keys)}"
+            f"modified-component run matrix mismatch: expected {len(expected_keys)} "
+            f"exact keys over seeds {sorted(seeds)}, found {len(actual_keys)}"
         )
     for row in runs:
         config_path = REPO / row["source_run"] / "config.json"
@@ -240,7 +254,8 @@ def audit_modified_components(
             line = row_line(block, marker, next_marker, label)
             assert_values(f"Modified-components table {dataset}/{mode}", line, expected)
             provenance.append(
-                f"Modified-components: {dataset}/{mode} <- {expected_tag}, seeds 0/1/2"
+                f"Modified-components: {dataset}/{mode} <- {expected_tag}, "
+                f"seeds 0--{max(seeds)}"
             )
     return provenance
 
