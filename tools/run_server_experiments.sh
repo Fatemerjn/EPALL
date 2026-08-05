@@ -27,6 +27,7 @@
 #   GROUP 26 (g26_corrected_mia): corrected PALL-Modified MIA, both CIFAR datasets, 3 seeds -- ON DEMAND, resume-safe
 #   GROUP 27 (g27_storage_accounting): matched PALL-Modified/CLPU resident-state accounting, seed 0 -- ON DEMAND, resume-safe
 #   GROUP 28 (g28_standard_seed_extension): extend the complete 11-method standard table to seeds 0--7 -- ON DEMAND, resume-safe
+#   GROUP 29 (g29_standard_reinit): eight-seed standard PALL-Modified candidate with explicit reinit anchor -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -55,6 +56,7 @@
 #   bash tools/run_server_experiments.sh g25_modified_components --dry-run
 #   bash tools/run_server_experiments.sh g26_corrected_mia --dry-run
 #   STANDARD_EXTRA_SEEDS="3 4 5 6 7" bash tools/run_server_experiments.sh g28_standard_seed_extension --dry-run
+#   REINIT_STANDARD_SEEDS="0 1 2 3 4 5 6 7" bash tools/run_server_experiments.sh g29_standard_reinit --dry-run
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -73,7 +75,7 @@ usage () {
         "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
         "g21_standard_unlearning, g22a_tiny_seed2, g22b_mia_anchor_seed2," \
         "g23_adapter_components, g24_retraining_reference, g25_modified_components, g26_corrected_mia," \
-        "g27_storage_accounting, and g28_standard_seed_extension." \
+        "g27_storage_accounting, g28_standard_seed_extension, and g29_standard_reinit." \
         "" \
         "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
         "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
@@ -82,7 +84,7 @@ usage () {
         "        g18_probe g20_paper_completion g21_standard_unlearning" \
         "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components" \
         "        g24_retraining_reference g25_modified_components g26_corrected_mia" \
-        "        g27_storage_accounting g28_standard_seed_extension"
+        "        g27_storage_accounting g28_standard_seed_extension g29_standard_reinit"
 }
 
 if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
@@ -103,7 +105,7 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension) ;;
+        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit) ;;
         *)
             echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
@@ -200,7 +202,7 @@ group1 () {
 # (subnet_/adapter_/lora_), so the same --arch in $C10/$C100 serves every method.
 group2 () {
     echo "===== GROUP 2: proposed methods (pall_original / pall_modified / pall_adapter / lora) ====="
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -326,7 +328,7 @@ group5 () {
 group6_standard () {
     echo "===== GROUP 6 (standard): literature-comparable Split-CIFAR (all methods) ====="
     local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -372,7 +374,7 @@ group7_tiny () {
     echo "===== GROUP 7: TinyImageNet main + pretrained PEFT ====="
     local TINY="--dataset tinyimagenet --class_per_task 10 --n_tasks 20 --n_forget 3 --arch resnet18"
     local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth --cache_features"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -407,7 +409,7 @@ group7_tiny () {
 group8_mia () {
     echo "===== GROUP 8: MIA-enabled proposed/pretrained PEFT + CLPU ====="
     local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -510,7 +512,7 @@ group9b_ssd_tune () {
 # measurable. Run ON DEMAND (g10_anchor) -- intentionally NOT part of `all`.
 group10_anchor () {
     echo "===== GROUP 10: anchor ablation (pall_modified old vs reinit, MIA on) ====="
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     for s in $SEEDS; do
         local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
         local c100="schedules/cifar100_t10_f3_seed${s}.json"
@@ -537,7 +539,7 @@ group10_anchor () {
 group11_vit () {
     echo "===== GROUP 11: ViT-T/8 cross-architecture (pall_original / pall_modified) ====="
     local COMMON_E5="${COMMON/--n_epochs 3/--n_epochs 5}"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local VIT_C10="--dataset cifar10  --class_per_task 2 --n_tasks 5  --n_forget 3 --arch vit_t8 --sparsity 0.8"
     local VIT_C100="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch vit_t8 --sparsity 0.9"
     for s in $SEEDS; do
@@ -569,7 +571,7 @@ group11_vit () {
 # DEMAND (g12_agreement) -- intentionally NOT part of `all`.
 group12_agreement () {
     echo "===== GROUP 12: model agreement rate (pall_modified + pall_adapter, n_forget=1) ====="
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -681,7 +683,7 @@ group15_seed2 () {
     local s=2
     local c10="schedules/cifar10_t5_f3_fixed_seed2.json"
     local c100="schedules/cifar100_t10_f3_seed2.json"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -756,7 +758,7 @@ group15_seed2 () {
 # It is fixed to seeds 0/1 and intentionally NOT part of `all`. Total: 120 runs.
 group17_overlap_curve () {
     echo "===== GROUP 17: five-grade overlap-response curves (six methods) ====="
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -825,7 +827,7 @@ group17_overlap_curve () {
 # seeds 0/1 and intentionally NOT part of `all`. Total: 20 runs.
 group18_probe () {
     echo "===== GROUP 18: MAIN-config linear-probe audit (five methods) ====="
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -893,7 +895,7 @@ group20_paper_completion () {
     local sch="schedules/tinyimagenet_t20_f3_seed1.json"
     local TINY="--dataset tinyimagenet --class_per_task 10 --n_tasks 20 --n_forget 3 --arch resnet18"
     local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth --cache_features"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -1040,7 +1042,7 @@ group22b_mia_anchor_seed2 () {
     echo "===== GROUP 22B: MIA + anchor paper seed 2 (12 resume-safe runs) ====="
     local s=2
     local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -1165,7 +1167,7 @@ group24_retraining_reference () {
     echo "===== GROUP 24: same-method retraining-reference audit (resume-safe) ====="
     local datasets="${REFERENCE_DATASETS:-cifar10 cifar100}"
     local seeds="${REFERENCE_SEEDS:-0 1}"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local TAG="pall_modified_retraining_reference_v1"
     local dataset seed spec schedule
     for dataset in $datasets; do
@@ -1269,7 +1271,7 @@ group25_modified_components () {
 # augmentation-matched, average-rank AUC diagnostics for the primary method.
 group26_corrected_mia () {
     echo "===== GROUP 26: corrected PALL-Modified MIA (resume-safe) ====="
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local TAG="pall_modified_mia_corrected_v2"
     local seed c10 c100
     for seed in 0 1 2; do
@@ -1292,7 +1294,7 @@ group26_corrected_mia () {
 group27_storage_accounting () {
     echo "===== GROUP 27: matched resident-state accounting (resume-safe) ====="
     local TAG="storage_accounting_v1"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local c10="schedules/cifar10_t5_f3_fixed_seed0.json"
     local c100="schedules/cifar100_t10_f3_seed0.json"
 
@@ -1321,7 +1323,7 @@ group28_standard_seed_extension () {
     local seeds="${STANDARD_EXTRA_SEEDS:-3 4 5 6 7}"
     local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
     local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
-    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -1435,6 +1437,48 @@ group28_standard_seed_extension () {
     done
 }
 
+# ------------------------------------ GROUP 29 standard reinit-anchor candidate
+# Isolate the only configuration that changes when considering `reinit` as the
+# PALL-Modified default.  Baselines and PALL-Original are intentionally not
+# repeated: the existing eight-seed standard runs are exact matched references.
+# Separate tags prevent candidate evidence from being mixed into the canonical
+# main table before the paired, multi-objective comparison is approved.
+group29_standard_reinit () {
+    echo "===== GROUP 29: eight-seed standard PALL-Modified reinit candidate (resume-safe) ====="
+    local seeds="${REINIT_STANDARD_SEEDS:-0 1 2 3 4 5 6 7}"
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    local PALL_MOD_REINIT="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --protect_anchor reinit --retrain_steps 50"
+    local seed c10 c100
+
+    for seed in $seeds; do
+        case "$seed" in
+            0|1|2|3|4|5|6|7) ;;
+            *)
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: REINIT_STANDARD_SEEDS must be drawn from 0 1 2 3 4 5 6 7 (got '${seed}')" >&2
+                continue
+                ;;
+        esac
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        if [[ ! -f "$c10" || ! -f "$c100" ]]; then
+            ((FAILED_RUNS += 1))
+            echo "    FAIL: missing seed-${seed} standard schedule(s): ${c10}, ${c100}" >&2
+            continue
+        fi
+
+        launch_resume_safe "std_reinit_c10_pall_modified_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method pall_modified $PALL_MOD_REINIT \
+            --experiment_tag cifar10_standard_reinit_v1
+        launch_resume_safe "std_reinit_c100_pall_modified_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method pall_modified $PALL_MOD_REINIT \
+            --experiment_tag cifar100_standard_reinit_v1
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -1467,6 +1511,7 @@ case "$WHICH" in
     g26_corrected_mia) group26_corrected_mia ;;
     g27_storage_accounting) group27_storage_accounting ;;
     g28_standard_seed_extension) group28_standard_seed_extension ;;
+    g29_standard_reinit) group29_standard_reinit ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -1483,7 +1528,7 @@ echo "===================================================================="
 echo "AGGREGATING TABLES ..."
 AGG_SUFFIX=""
 case "$WHICH" in
-    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension)
+    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit)
         # These completion groups must never overwrite an existing CSV. A
         # timestamped canonical-tool rebuild can be inspected and synced while
         # the paper-facing canonical paths remain unchanged until every gap is
