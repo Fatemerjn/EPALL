@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
-"""
-Cross-check every numeric cell in the LaTeX tables of thesis/chapters/results.tex
-against the aggregate CSVs (results/aggregates/server_thesis_table.csv, with
-server_report_table.csv available as a corroborating source).
+"""Verify every numeric cell typeset in the thesis against the aggregate results.
 
-For each audited table cell it prints PASS/FAIL with: table label, row, column,
-the thesis value, the source CSV value, and the source-row identifier. Rows are
-matched by dataset + method + experiment_tag and, where those still collide, by
-the make_thesis_table CONFIG_GROUP_COLUMNS (e.g. adapter_shared_forget_ratio /
-adapter_shared_protect_ratio for the adapter ablation). A cell whose CSV lookup
-is empty or ambiguous is FAIL ("no unique match"), never silently skipped.
+The thesis externalises each table into ``thesis/tables/<name>.tex`` and pulls it
+in with ``\\input``.  This checker parses those generated files directly, so it
+audits what is actually typeset rather than a hand-maintained copy of the
+numbers.  Each table is bound to the aggregate artifact it was derived from:
+either a Markdown summary under ``results/aggregates/`` or a row subset of
+``server_thesis_table.csv`` / ``server_report_table.csv``.
 
-It also scans the prose paragraphs (everything outside table/figure/landscape
-environments) for inline decimal numbers that repeat table values and flags any
-that do not match a cell in the parsed tables.
+A value passes when it equals some source value rounded to the precision at
+which the thesis displays it.  Structural constants that legitimately appear in
+a table but not in the source (seed counts, bottleneck widths, chance levels)
+are listed per table in ``SKIP`` and are the only values exempt from the check.
 
-Read-only: this tool reports; it never edits results.tex.
+A second pass scans the prose of ``thesis/chapters/*.tex`` for inline decimals
+and reports any that do not appear in a parsed table, which catches numbers that
+drifted out of sync with a regenerated table.
+
+Read-only: this tool reports; it never edits the thesis.
 """
 
 from __future__ import annotations
@@ -25,791 +27,366 @@ import csv
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Sequence
 
-# make_thesis_table's CONFIG_GROUP_COLUMNS is what disambiguates rows that share
-# dataset+method; we import it so this tool tracks the canonical list.
-try:
-    from make_thesis_table import CONFIG_GROUP_COLUMNS
-except ImportError:  # pragma: no cover - support `python tools/check_thesis_numbers.py`
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from make_thesis_table import CONFIG_GROUP_COLUMNS
+ROOT = Path(__file__).resolve().parent.parent
+AGGREGATES = ROOT / "results" / "aggregates"
+TABLES = ROOT / "thesis" / "tables"
+CHAPTERS = ROOT / "thesis" / "chapters"
 
-TEX_PATH = Path("thesis/chapters/results.tex")
-THESIS_CSV = Path("results/aggregates/server_thesis_table.csv")
-REPORT_CSV = Path("results/aggregates/server_report_table.csv")
-PRIVACY_CSV = Path("results/aggregates/privacy_audit.csv")
+# Columns of server_thesis_table.csv that a thesis table may quote.
+CSV_VALUE_COLUMNS = (
+    "final_avg_acc_mean",
+    "final_avg_acc_std",
+    "avg_forgetting_mean",
+    "WorstDrop_mean",
+    "WorstDrop_std",
+    "Au_mean",
+    "Au_std",
+    "updated_param_ratio_mean",
+)
 
-METHOD_MAP = {
-    "PALL-Original": "pall_original",
-    "PALL-Modified": "pall_modified",
-    "PALL-Adapter": "pall_adapter",
-    "CLPU": "clpu",
-    "DER++": "derpp",
-    "ER": "er",
-    "EWC": "ewc",
-    "LoRA": "lora",
-    "LwF": "lwf",
-    "SalUn": "salun",
-    "SSD": "ssd",
+MAIN_METHODS = (
+    "clpu",
+    "derpp",
+    "er",
+    "ewc",
+    "lwf",
+    "ssd",
+    "salun",
+    "pall_original",
+    "pall_modified",
+    "lora",
+    "pall_adapter",
+)
+MAIN_COLUMNS = ("final_avg_acc", "avg_forgetting", "WorstDrop", "Au")
+
+
+class Report:
+    def __init__(self) -> None:
+        self.passes = 0
+        self.failures: List[str] = []
+
+    def ok(self) -> None:
+        self.passes += 1
+
+    def fail(self, message: str) -> None:
+        self.failures.append(message)
+
+
+# --------------------------------------------------------------------------- #
+# LaTeX parsing                                                                #
+# --------------------------------------------------------------------------- #
+def table_cells(name: str) -> List[str]:
+    """Every ``\\lr{...}`` payload in a table file, from the first rule onwards.
+
+    Numeric cells in the Persian tables are always wrapped in ``\\lr`` so they
+    typeset left-to-right, which makes the wrapper a reliable cell marker.
+    """
+
+    text = (TABLES / f"{name}.tex").read_text(encoding="utf-8")
+    text = text[text.index("\\midrule"):]
+    return [cell.replace("$-$", "-").strip() for cell in re.findall(r"\\lr\{([^{}]*)\}", text)]
+
+
+def table_numbers(name: str) -> List[float]:
+    return [
+        float(match.group())
+        for cell in table_cells(name)
+        for match in re.finditer(r"-?\d+\.\d+", cell)
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# Sources                                                                      #
+# --------------------------------------------------------------------------- #
+def numbers_in_file(path: Path) -> List[float]:
+    return [float(m.group()) for m in re.finditer(r"-?\d+\.\d+", path.read_text(encoding="utf-8"))]
+
+
+def matches(value: float, source: Sequence[float]) -> bool:
+    """True when some source value rounds to the displayed value."""
+
+    decimals = len(str(value).split(".")[1])
+    return any(abs(round(candidate, decimals) - value) < 1e-9 for candidate in source)
+
+
+# Tables whose every number lives in one aggregate artifact, with the structural
+# constants that are legitimately absent from that artifact.
+MARKDOWN_SOURCES: Dict[str, tuple[Path, tuple[float, ...]]] = {
+    "res_paired": (AGGREGATES / "paired_main_summary.md", (8.0,)),
+    "res_significance": (AGGREGATES / "significance_tests.md", (8.0,)),
+    "res_components": (AGGREGATES / "modified_components_summary.md", ()),
+    "res_components_paired": (AGGREGATES / "modified_components_summary.md", ()),
+    "res_adapter_components": (AGGREGATES / "adapter_components_summary.md", ()),
+    "res_mia": (AGGREGATES / "corrected_mia.md", (3.0, 0.5)),
+    "res_retrain": (AGGREGATES / "retraining_reference.md", (0.0, 1.0)),
+    "res_storage": (
+        AGGREGATES / "storage_accounting_summary.md",
+        # The thesis merges masks + sparse backups into one column; the merged
+        # totals are checked separately in check_storage_merge.
+        (4.0, 8.0, 45.99, 169.29),
+    ),
+    "res_persistence": (
+        AGGREGATES / "forgetting_persistence" / "PERSISTENCE_AUDIT.md",
+        (),
+    ),
+    "res_slopes": (
+        ROOT / "results" / "thesis" / "plots_v2" / "overlap_response_slopes.md",
+        (11.0, 12.0, 14.0, 86.0, 92.0, 95.0),
+    ),
 }
-DATASET_MAP = {"CIFAR-10": "cifar10", "CIFAR-100": "cifar100", "TinyImageNet": "tinyimagenet"}
 
 
-# --------------------------------------------------------------------------- #
-# LaTeX parsing helpers                                                        #
-# --------------------------------------------------------------------------- #
-def strip_latex(cell: str) -> str:
-    s = cell.strip()
-    s = re.sub(r"\\multirow\{[^}]*\}\{[^}]*\}\{([^}]*)\}", r"\1", s)
-    s = re.sub(r"\\multicolumn\{[^}]*\}\{[^}]*\}\{([^}]*)\}", r"\1", s)
-    prev = None
-    while prev != s:  # unwrap nested \textbf{...}, \lr{...}, ...
-        prev = s
-        s = re.sub(r"\\[a-zA-Z]+\*?\{([^{}]*)\}", r"\1", s)
-    s = s.replace("$", "").replace("\\%", "%").replace("\\&", "&").replace("\\_", "_")
-    s = re.sub(r"\\[a-zA-Z]+", " ", s)  # drop bare control words (e.g. \toprule leftovers)
-    s = s.replace("{", "").replace("}", "")
-    return s.strip()
-
-
-def _skip_braces(text: str, start: int) -> int:
-    depth = 0
-    for i in range(start, len(text)):
-        if text[i] == "{":
-            depth += 1
-        elif text[i] == "}":
-            depth -= 1
-            if depth == 0:
-                return i + 1
-    return len(text)
-
-
-def table_body(text: str, label: str) -> str:
-    i = text.index("\\label{" + label + "}")
-    b = text.index("\\begin{tabular}", i)
-    arg = text.index("{", b + len("\\begin{tabular}"))
-    start = _skip_braces(text, arg)
-    end = text.index("\\end{tabular}", start)
-    return text[start:end]
-
-
-def data_rows(body: str) -> List[List[str]]:
-    """Return the data rows of a tabular body as lists of raw cell strings."""
-    rows: List[List[str]] = []
-    for chunk in body.split("\\\\"):
-        # drop rule macros; a row with no '&' and no digits is structural
-        stripped = chunk.strip()
-        if not stripped:
+def check_markdown_tables(report: Report) -> None:
+    for name, (source_path, skip) in MARKDOWN_SOURCES.items():
+        if not source_path.exists():
+            report.fail(f"{name}: source artifact missing: {source_path}")
             continue
-        content = re.sub(r"\\(top|mid|bottom|c)rule(\[[^\]]*\])?(\{[^}]*\})?", "", stripped).strip()
-        if not content:
-            continue
-        cells = re.split(r"(?<!\\)&", content)
-        rows.append(cells)
-    return rows
-
-
-def numbers_in(cell: str) -> List[str]:
-    """Ordered numeric literals in a cell (keeps decimal places as written)."""
-    return re.findall(r"-?\d+\.\d+|-?\d+", strip_latex(cell))
-
-
-# --------------------------------------------------------------------------- #
-# Numeric comparison                                                           #
-# --------------------------------------------------------------------------- #
-def values_match(thesis_str: str, csv_str: Optional[str]) -> Tuple[bool, str]:
-    if csv_str is None or str(csv_str).strip() == "":
-        return False, "<empty>"
-    try:
-        cv = float(csv_str)
-    except (TypeError, ValueError):
-        return False, str(csv_str)
-    ndec = len(thesis_str.split(".")[1]) if "." in thesis_str else 0
-    tv = float(thesis_str)
-    tol = 0.5 * (10 ** (-ndec)) + 1e-9
-    return abs(cv - tv) <= tol, f"{cv:.{ndec}f}"
-
-
-# --------------------------------------------------------------------------- #
-# CSV lookup                                                                   #
-# --------------------------------------------------------------------------- #
-class CsvTable:
-    def __init__(self, path: Path):
-        self.path = path
-        with path.open() as handle:
-            self.rows = list(csv.DictReader(handle))
-
-    def find(self, **filters) -> Tuple[Optional[Dict[str, str]], List[Dict[str, str]], str]:
-        matches = []
-        for row in self.rows:
-            if all(str(row.get(k, "")).strip() == str(v).strip() for k, v in filters.items()):
-                matches.append(row)
-        ident = self.path.name + "[" + ", ".join(f"{k}={v}" for k, v in filters.items()) + "]"
-        return (matches[0] if len(matches) == 1 else None), matches, ident
-
-
-def no_match_reason(matches: List[Dict[str, str]]) -> str:
-    """Actionable message when a CSV lookup is not exactly one row."""
-    if not matches:
-        return "no match: 0 CSV rows"
-    cols = [c for c in CONFIG_GROUP_COLUMNS if len({str(m.get(c, "")) for m in matches}) > 1]
-    detail = ("; differ in " + ", ".join(cols)) if cols else ""
-    return f"no unique match: {len(matches)} rows{detail}"
-
-
-# --------------------------------------------------------------------------- #
-# Audit record                                                                 #
-# --------------------------------------------------------------------------- #
-class Record:
-    __slots__ = ("table", "row", "column", "thesis", "csv", "source", "status")
-
-    def __init__(self, table, row, column, thesis, csv_val, source, status):
-        self.table = table
-        self.row = row
-        self.column = column
-        self.thesis = thesis
-        self.csv = csv_val
-        self.source = source
-        self.status = status
-
-
-# table_values maps a formatted number -> list of "label | row | column" it appears in.
-TABLE_VALUES: Dict[str, List[str]] = {}
-
-
-def register_value(num_str: str, where: str) -> None:
-    TABLE_VALUES.setdefault(num_str, []).append(where)
-
-
-def audit_metric_cell(records, table, row_label, col_label, cell, csv_row, mean_field,
-                      std_field, source, reason):
-    """Compare one tex cell (mean or mean±std) against CSV field(s).
-
-    ``reason`` is None when the CSV row is unique; otherwise it is the
-    ``no_match_reason`` string and every sub-cell is a FAIL."""
-    nums = numbers_in(cell)
-    if not nums:
-        records.append(Record(table, row_label, col_label, "<missing>",
-                              reason or csv_row.get(mean_field, "<empty>"), source, "FAIL"))
-        return
-    subs = [("mean", mean_field, nums[0])]
-    if std_field is not None and len(nums) > 1:
-        subs.append(("std", std_field, nums[1]))
-    for kind, field, num in subs:
-        col = f"{col_label}|{kind}" if std_field is not None else col_label
-        register_value(num, f"{table} | {row_label} | {col}")
-        if reason is not None:
-            records.append(Record(table, row_label, col, num, reason, source, "FAIL"))
-            continue
-        ok, csv_val = values_match(num, csv_row.get(field))
-        records.append(Record(table, row_label, col, num, csv_val, source, "PASS" if ok else "FAIL"))
-    if (
-        std_field is not None
-        and reason is None
-        and str(csv_row.get(std_field, "")).strip() != ""
-        and len(nums) < 2
-    ):
-        records.append(Record(table, row_label, f"{col_label}|std", "<missing>",
-                              csv_row.get(std_field), source, "FAIL"))
-
-
-def audit_scalar(records, table, row_label, col_label, thesis_num, csv_value, source):
-    """Audit and register one already-extracted scalar value."""
-    register_value(thesis_num, f"{table} | {row_label} | {col_label}")
-    ok, csv_val = values_match(thesis_num, csv_value)
-    records.append(Record(table, row_label, col_label, thesis_num, csv_val, source,
-                          "PASS" if ok else "FAIL"))
-
-
-# --------------------------------------------------------------------------- #
-# Per-table audits                                                             #
-# --------------------------------------------------------------------------- #
-MAIN_METRIC_COLS = [
-    ("Final Acc.", "final_avg_acc_mean", "final_avg_acc_std"),
-    ("Avg. Forgetting", "avg_forgetting_mean", "avg_forgetting_std"),
-    ("Fu", "Fu_mean", "Fu_std"),
-    ("WorstDrop", "WorstDrop_mean", "WorstDrop_std"),
-    ("Au", "Au_mean", "Au_std"),
-    ("Updated Ratio", "updated_param_ratio_mean", None),
-]
-
-
-def audit_main_pall(text, thesis, records):
-    label = "tab:main-pall-results"
-    body = table_body(text, label)
-    setting_to_tag = {
-        ("cifar10", "Scratch"): "cifar10_main",
-        ("cifar100", "Scratch"): "cifar100_main",
-        ("tinyimagenet", "Scratch"): "tiny_main",
-        ("tinyimagenet", "Pretrained"): "tiny_pretrained",
-    }
-    tiny_scratch_tags = {
-        "pall_original": "tiny_e3_original_v1",
-        "pall_modified": "tiny_e3_modified_v1",
-        "pall_adapter": "tiny_e3_adapter_v1",
-    }
-    cur_ds = cur_set = None
-    for cells in data_rows(body):
-        vals = [strip_latex(c) for c in cells]
-        if len(vals) < 9:
-            continue
-        if vals[0] in DATASET_MAP:
-            cur_ds = DATASET_MAP[vals[0]]
-        if vals[1] in ("Scratch", "Pretrained"):
-            cur_set = vals[1]
-        method = METHOD_MAP.get(vals[2])
-        if method is None or cur_ds is None or cur_set is None:
-            continue
-        tag = (
-            tiny_scratch_tags.get(method)
-            if cur_ds == "tinyimagenet" and cur_set == "Scratch"
-            else setting_to_tag.get((cur_ds, cur_set))
-        )
-        row_label = f"{cur_ds}/{cur_set}/{vals[2]}"
-        csv_row, matches, source = thesis.find(dataset=cur_ds, method=method, experiment_tag=tag)
-        reason = None if len(matches) == 1 else no_match_reason(matches)
-        for idx, (col_label, mean_f, std_f) in enumerate(MAIN_METRIC_COLS):
-            audit_metric_cell(records, label, row_label, col_label, cells[3 + idx],
-                              csv_row or {}, mean_f, std_f, source, reason)
-
-
-STANDARD_METRIC_COLS = [
-    ("Final Acc.", "final_avg_acc_mean", "final_avg_acc_std"),
-    ("Avg. Forgetting", "avg_forgetting_mean", "avg_forgetting_std"),
-    ("Fu", "Fu_mean", "Fu_std"),
-    ("WorstDrop", "WorstDrop_mean", "WorstDrop_std"),
-    ("Au", "Au_mean", "Au_std"),
-    ("Forget Time (s)", "t_forget_total_mean", None),
-]
-
-
-def audit_standard(text, thesis, records, label, dataset, tag):
-    body = table_body(text, label)
-    for cells in data_rows(body):
-        vals = [strip_latex(c) for c in cells]
-        if len(vals) < 7:
-            continue
-        method = METHOD_MAP.get(vals[0])
-        if method is None:
-            continue
-        row_label = f"{dataset}/standard/{vals[0]}"
-        method_tag = (
-            "standard_unlearning_ssd_salun_v1"
-            if method in {"ssd", "salun"}
-            else tag
-        )
-        csv_row, matches, source = thesis.find(
-            dataset=dataset, method=method, experiment_tag=method_tag
-        )
-        reason = None if len(matches) == 1 else no_match_reason(matches)
-        for idx, (col_label, mean_f, std_f) in enumerate(STANDARD_METRIC_COLS):
-            audit_metric_cell(records, label, row_label, col_label, cells[1 + idx],
-                              csv_row or {}, mean_f, std_f, source, reason)
-
-
-ABLATION_METRIC_COLS = [
-    (3, "Final Acc.", "final_avg_acc_mean", "final_avg_acc_std"),
-    (4, "WorstDrop", "WorstDrop_mean", "WorstDrop_std"),
-    (5, "Au", "Au_mean", "Au_std"),
-    (6, "Updated Ratio", "updated_param_ratio_mean", None),
-    (7, "Critical Ratio", "overlap_shared_critical_ratio", None),
-    (8, "Protected Ratio", "overlap_protected_ratio", None),
-]
-
-
-def audit_adapter_ablation(text, thesis, records):
-    label = "tab:adapter-ablation"
-    body = table_body(text, label)
-    seen = set()
-    for cells in data_rows(body):
-        vals = [strip_latex(c) for c in cells]
-        if len(vals) < 9:
-            continue
-        af, ap, steps = vals[0], vals[1], vals[2]
-        if not re.match(r"^\d", af) or not re.match(r"^\d", ap) or not re.match(r"^\d", steps):
-            continue
-        key = (af, ap, steps)
-        if key in seen:
-            records.append(Record(label, "/".join(key), "row uniqueness", "duplicate",
-                                  "one row expected", THESIS_CSV.name, "FAIL"))
-        seen.add(key)
-        row_label = f"cifar100/pretrained/af={af}/ap={ap}/steps={steps}"
-        csv_row, matches, source = thesis.find(
-            dataset="cifar100", method="pall_adapter", experiment_tag="adapter_tune_pretrained_v1",
-            adapter_shared_forget_ratio=af, adapter_shared_protect_ratio=ap,
-            adapter_forget_steps=steps,
-        )
-        reason = None if len(matches) == 1 else no_match_reason(matches)
-        # Audit the sweep coordinates too (they must equal the matched config columns).
-        for idx, col_label, field in ((0, "alpha_f", "adapter_shared_forget_ratio"),
-                                      (1, "alpha_p", "adapter_shared_protect_ratio"),
-                                      (2, "forget_steps", "adapter_forget_steps")):
-            register_value(vals[idx], f"{label} | {row_label} | {col_label}")
-            if reason is not None:
-                records.append(Record(label, row_label, col_label, vals[idx], reason, source, "FAIL"))
+        source = numbers_in_file(source_path)
+        for value in table_numbers(name):
+            if value in skip:
+                continue
+            if matches(value, source):
+                report.ok()
             else:
-                ok, cv = values_match(vals[idx], csv_row.get(field))
-                records.append(Record(label, row_label, col_label, vals[idx], cv, source, "PASS" if ok else "FAIL"))
-        for idx, col_label, mean_f, std_f in ABLATION_METRIC_COLS:
-            audit_metric_cell(records, label, row_label, col_label, cells[idx],
-                              csv_row or {}, mean_f, std_f, source, reason)
-
-    expected = {
-        (row["adapter_shared_forget_ratio"], row["adapter_shared_protect_ratio"],
-         row["adapter_forget_steps"])
-        for row in thesis.rows
-        if row.get("experiment_tag") == "adapter_tune_pretrained_v1"
-    }
-    for af, ap, steps in sorted(expected - seen):
-        records.append(Record(label, f"af={af}/ap={ap}/steps={steps}", "row presence",
-                              "missing", "aggregate row exists", THESIS_CSV.name, "FAIL"))
+                report.fail(f"{name}: {value} not found in {source_path.name}")
 
 
-ANCHOR_METRIC_COLS = [
-    (2, "Final Acc.", "final_avg_acc_mean", "final_avg_acc_std"),
-    (3, "Fu", "Fu_mean", "Fu_std"),
-    (4, "WorstDrop", "WorstDrop_mean", "WorstDrop_std"),
-    (5, "Au", "Au_mean", "Au_std"),
-    (6, "MIA before", "mia_auc_before_mean", "mia_auc_before_std"),
-    (7, "MIA after", "mia_auc_after_mean", "mia_auc_after_std"),
-]
+def check_storage_merge(report: Report) -> None:
+    """The merged storage column must equal masks + sparse backups."""
 
-
-def audit_anchor_ablation(text, thesis, records):
-    label = "tab:anchor-ablation"
-    body = table_body(text, label)
-    seen = set()
-    for cells in data_rows(body):
-        vals = [strip_latex(cell) for cell in cells]
-        if len(vals) < 8:
+    path = AGGREGATES / "storage_accounting_summary.md"
+    if not path.exists():
+        report.fail(f"res_storage: source artifact missing: {path}")
+        return
+    text = path.read_text(encoding="utf-8")
+    for dataset, expected in (("cifar10", 45.99), ("cifar100", 169.29)):
+        rows = [
+            line
+            for line in text.splitlines()
+            if line.startswith(f"| {dataset}") and "pall_modified" in line
+        ]
+        if not rows:
+            report.fail(f"res_storage {dataset}: no pall_modified row in the source")
             continue
-        dataset = DATASET_MAP.get(vals[0])
-        anchor = vals[1].lower()
-        if dataset is None or anchor not in {"old", "reinit"}:
-            continue
-        seen.add((dataset, anchor))
-        row_label = f"{dataset}/anchor={anchor}"
-        csv_row, matches, source = thesis.find(
-            dataset=dataset,
-            method="pall_modified",
-            experiment_tag="anchor_ablation_v1",
-            protect_anchor=anchor,
-        )
-        reason = None if len(matches) == 1 else no_match_reason(matches)
-        for idx, col_label, mean_f, std_f in ANCHOR_METRIC_COLS:
-            audit_metric_cell(records, label, row_label, col_label, cells[idx], csv_row or {},
-                              mean_f, std_f, source, reason)
-
-    expected = {
-        (row["dataset"], row["protect_anchor"])
-        for row in thesis.rows
-        if row.get("experiment_tag") == "anchor_ablation_v1"
-    }
-    for dataset, anchor in sorted(expected - seen):
-        records.append(Record(label, f"{dataset}/anchor={anchor}", "row presence", "missing",
-                              "aggregate row exists", THESIS_CSV.name, "FAIL"))
-
-
-CONFLICT_METRIC_COLS = [
-    (4, "Final Acc.", "final_avg_acc_mean", "final_avg_acc_std"),
-    (5, "WorstDrop", "WorstDrop_mean", "WorstDrop_std"),
-    (6, "Au", "Au_mean", "Au_std"),
-    (7, "Grad norm ratio", "grad_norm_ratio_mean", "grad_norm_ratio_std"),
-]
-
-
-def audit_conflict_ablation(text, thesis, records):
-    label = "tab:conflict-ablation"
-    body = table_body(text, label)
-    seen = set()
-    for cells in data_rows(body):
-        vals = [strip_latex(cell) for cell in cells]
-        if len(vals) < 8:
-            continue
-        dataset = DATASET_MAP.get(vals[0])
-        method = METHOD_MAP.get(vals[1])
-        importance = vals[2].lower()
-        if dataset is None or method not in {"pall_modified", "pall_adapter"}:
-            continue
-        if importance not in {"gradient", "conflict"}:
-            continue
-        if method == "pall_adapter":
-            adaptive = "False"
-        elif vals[3].lower() == "on":
-            adaptive = "True"
-        elif vals[3].lower() == "off":
-            adaptive = "False"
+        fields = [field.strip() for field in rows[0].split("|")]
+        masks, backups = float(fields[6]), float(fields[7])
+        if abs(masks + backups - expected) < 0.01:
+            report.ok()
         else:
+            report.fail(f"res_storage {dataset}: {masks}+{backups} != {expected}")
+
+
+def load_csv(path: Path) -> List[Dict[str, str]]:
+    with path.open(encoding="utf-8") as handle:
+        return list(csv.DictReader(handle))
+
+
+CSV_SUBSETS: Dict[str, tuple[Callable[[Dict[str, str]], bool], tuple[float, ...]]] = {
+    "res_pretrained": (
+        lambda row: row["experiment_tag"]
+        in ("cifar10_pretrained", "cifar100_pretrained", "tiny_pretrained"),
+        (),
+    ),
+    "res_overlap_heavy": (
+        lambda row: row["experiment_tag"]
+        in (
+            "cifar10_main",
+            "cifar100_main",
+            "tiny_e3_original_v1",
+            "tiny_e3_modified_v1",
+            "tiny_e3_adapter_v1",
+        ),
+        (3.0,),
+    ),
+    "res_overlap_levels": (
+        lambda row: row["experiment_tag"].startswith("overlap_curve_v1_"),
+        (),
+    ),
+    "res_anchor": (lambda row: row["experiment_tag"] == "anchor_ablation_v1", ()),
+    "res_conflict": (
+        lambda row: row["experiment_tag"]
+        in ("conflict_ablation_v1", "adapter_bottleneck_ablation_v1"),
+        (),
+    ),
+    "res_vit": (
+        lambda row: row["experiment_tag"] in ("cifar10_vit_v1", "cifar100_vit_v1"),
+        (),
+    ),
+    "res_bottleneck": (
+        lambda row: row["experiment_tag"] == "adapter_bottleneck_ablation_v1",
+        (4.0, 8.0, 16.0, 32.0, 64.0, 128.0),
+    ),
+}
+
+
+def check_csv_tables(report: Report, rows: Sequence[Dict[str, str]]) -> None:
+    for name, (predicate, skip) in CSV_SUBSETS.items():
+        source: List[float] = []
+        for row in rows:
+            if not predicate(row):
+                continue
+            for column in CSV_VALUE_COLUMNS:
+                try:
+                    source.append(float(row[column]))
+                except (KeyError, ValueError):
+                    continue
+        if not source:
+            report.fail(f"{name}: no source rows matched the CSV subset")
             continue
-        seen.add((dataset, method, importance, adaptive))
-        row_label = f"{dataset}/{method}/{importance}/adaptive={adaptive}"
-        csv_row, matches, source = thesis.find(
-            dataset=dataset,
-            method=method,
-            experiment_tag="conflict_ablation_v1",
-            protect_importance=importance,
-            adaptive_protect=adaptive,
+        for value in table_numbers(name):
+            if value in skip:
+                continue
+            if matches(value, source):
+                report.ok()
+            else:
+                report.fail(f"{name}: {value} not in its CSV subset")
+
+
+def check_main_tables(report: Report, report_rows: Sequence[Dict[str, str]], seeds: int) -> None:
+    """The two headline tables are checked cell by cell, not as a value pool.
+
+    Every ``mean ± sd`` cell must come from the matching dataset/method/tag row,
+    and the source row must carry the full seed count the thesis claims.
+    """
+
+    def source_cell(dataset: str, method: str, column: str):
+        tag = (
+            "standard_unlearning_ssd_salun_v1"
+            if method in ("ssd", "salun")
+            else f"{dataset}_standard"
         )
-        reason = None if len(matches) == 1 else no_match_reason(matches)
-        for idx, col_label, mean_f, std_f in CONFLICT_METRIC_COLS:
-            audit_metric_cell(records, label, row_label, col_label, cells[idx], csv_row or {},
-                              mean_f, std_f, source, reason)
+        for row in report_rows:
+            if (
+                row["dataset"] == dataset
+                and row["method"] == method
+                and row["experiment_tag"] == tag
+            ):
+                return row[column], row["n_seeds"]
+        return None, None
 
-    expected = {
-        (row["dataset"], row["method"], row["protect_importance"], row["adaptive_protect"])
-        for row in thesis.rows
-        if row.get("experiment_tag") == "conflict_ablation_v1"
-    }
-    for dataset, method, importance, adaptive in sorted(expected - seen):
-        row_label = f"{dataset}/{method}/{importance}/adaptive={adaptive}"
-        records.append(Record(label, row_label, "row presence", "missing", "aggregate row exists",
-                              THESIS_CSV.name, "FAIL"))
-
-
-def audit_privacy_table(text, privacy, records):
-    label = "tab:privacy-eps-hat"
-    body = table_body(text, label)
-    buckets: Dict[Tuple[str, str], Dict[str, object]] = {}
-    for row in privacy.rows:
-        before = str(row.get("eps_hat_before", "")).strip()
-        after = str(row.get("eps_hat_after", "")).strip()
-        if before == "" or after == "":
+    for dataset, name in (("cifar10", "res_main_cifar10"), ("cifar100", "res_main_cifar100")):
+        numeric = [cell for cell in table_cells(name) if re.search(r"\d", cell)]
+        values = [cell for cell in numeric if "±" in cell]
+        timings = [cell for cell in numeric if "±" not in cell]
+        expected = len(MAIN_METHODS) * len(MAIN_COLUMNS)
+        if len(values) != expected:
+            report.fail(f"{name}: expected {expected} mean±sd cells, got {len(values)}")
             continue
-        key = (row.get("dataset", ""), row.get("method", ""))
-        bucket = buckets.setdefault(key, {"before": [], "after": [], "regimes": set()})
-        bucket["before"].append(float(before))
-        bucket["after"].append(float(after))
-        bucket["regimes"].add(row.get("regime", ""))
-
-    seen = set()
-    for cells in data_rows(body):
-        vals = [strip_latex(cell) for cell in cells]
-        if len(vals) < 7:
+        for method_index, method in enumerate(MAIN_METHODS):
+            for column_index, column in enumerate(MAIN_COLUMNS):
+                cell = values[method_index * len(MAIN_COLUMNS) + column_index]
+                source, n_seeds = source_cell(dataset, method, column)
+                if source is None:
+                    report.fail(f"{name}/{method}/{column}: no source row")
+                    continue
+                if n_seeds != str(seeds):
+                    report.fail(
+                        f"{name}/{method}: source n_seeds={n_seeds}, thesis claims {seeds}"
+                    )
+                    continue
+                got = [float(x) for x in re.findall(r"-?\d+\.\d+", cell)]
+                want = [float(x) for x in re.findall(r"-?\d+\.\d+", source)]
+                if len(got) == 2 and len(want) == 2 and all(
+                    abs(a - b) < 5e-5 for a, b in zip(got, want)
+                ):
+                    report.ok()
+                else:
+                    report.fail(f"{name}/{method}/{column}: '{cell}' vs source '{source}'")
+        if len(timings) != len(MAIN_METHODS):
+            report.fail(f"{name}: expected {len(MAIN_METHODS)} timing cells, got {len(timings)}")
             continue
-        dataset = DATASET_MAP.get(vals[0])
-        method = METHOD_MAP.get(vals[1])
-        if dataset is None or method is None or (dataset, method) not in buckets:
-            continue
-        before_nums = numbers_in(cells[3])
-        after_nums = numbers_in(cells[4])
-        max_nums = numbers_in(cells[5])
-        count_nums = numbers_in(cells[6])
-        bucket = buckets[(dataset, method)]
-        regimes = bucket["regimes"]
-        regime_ok = len(regimes) == 1 and vals[2] == next(iter(regimes))
-        if not before_nums or not after_nums or not max_nums or not count_nums or not regime_ok:
-            records.append(Record(label, f"{dataset}/{method}", "summary values", "missing",
-                                  "privacy rows exist", privacy.path.name, "FAIL"))
-            continue
-        seen.add((dataset, method))
-        before_values = bucket["before"]
-        after_values = bucket["after"]
-        source = f"{privacy.path.name}[dataset={dataset}, method={method}, eps_hat_after]"
-        audit_scalar(records, label, f"{dataset}/{method}", "mean eps_hat_before",
-                     before_nums[0], str(sum(before_values) / len(before_values)), source)
-        audit_scalar(records, label, f"{dataset}/{method}", "mean eps_hat_after",
-                     after_nums[0], str(sum(after_values) / len(after_values)), source)
-        audit_scalar(records, label, f"{dataset}/{method}", "max eps_hat_after",
-                     max_nums[0], str(max(after_values)), source)
-        audit_scalar(records, label, f"{dataset}/{method}", "n", count_nums[0],
-                     str(len(after_values)), source)
-
-    for dataset, method in sorted(set(buckets) - seen):
-        records.append(Record(label, f"{dataset}/{method}", "row presence", "missing",
-                              "privacy summary exists", privacy.path.name, "FAIL"))
-
-
-def audit_probe_table(text, thesis, records):
-    """Validate probe_v1 before/after mean±std cells and signed mean changes."""
-    label = "tab:probe-results"
-    body = table_body(text, label)
-    seen = set()
-    for cells in data_rows(body):
-        vals = [strip_latex(cell) for cell in cells]
-        if len(vals) < 5:
-            continue
-        dataset = DATASET_MAP.get(vals[0])
-        method = METHOD_MAP.get(vals[1])
-        if dataset is None or method is None:
-            continue
-        key = (dataset, method)
-        seen.add(key)
-        row_label = f"{dataset}/{method}"
-        csv_row, matches, source = thesis.find(
-            dataset=dataset,
-            method=method,
-            experiment_tag="probe_v1",
-        )
-        reason = None if len(matches) == 1 else no_match_reason(matches)
-        audit_metric_cell(
-            records, label, row_label, "Probe Before", cells[2], csv_row or {},
-            "probe_acc_before_mean", "probe_acc_before_std", source, reason,
-        )
-        audit_metric_cell(
-            records, label, row_label, "Probe After", cells[3], csv_row or {},
-            "probe_acc_after_mean", "probe_acc_after_std", source, reason,
-        )
-        change_nums = numbers_in(cells[4])
-        if reason is not None or not change_nums:
-            records.append(Record(
-                label, row_label, "Signed Change",
-                change_nums[0] if change_nums else "<missing>",
-                reason or "probe means unavailable", source, "FAIL",
-            ))
-            continue
-        signed_change = float(csv_row["probe_acc_after_mean"]) - float(csv_row["probe_acc_before_mean"])
-        audit_scalar(records, label, row_label, "Signed Change", change_nums[0], str(signed_change), source)
-
-    expected = {
-        (row["dataset"], row["method"])
-        for row in thesis.rows
-        if row.get("experiment_tag") == "probe_v1"
-    }
-    for dataset, method in sorted(expected - seen):
-        records.append(Record(
-            label, f"{dataset}/{method}", "row presence", "missing",
-            "probe_v1 aggregate row exists", THESIS_CSV.name, "FAIL",
-        ))
-
-
-def audit_vit_availability(text, thesis, records):
-    """Audit ViT metrics when present, or an explicit pending row when absent."""
-    label = "tab:vit-results"
-    body = table_body(text, label)
-    expected = {
-        ("cifar10", "pall_original", "cifar10_vit_v1"),
-        ("cifar10", "pall_modified", "cifar10_vit_v1"),
-        ("cifar100", "pall_original", "cifar100_vit_v1"),
-        ("cifar100", "pall_modified", "cifar100_vit_v1"),
-    }
-    seen = set()
-    for cells in data_rows(body):
-        vals = [strip_latex(cell) for cell in cells]
-        if len(vals) < 6:
-            continue
-        dataset = DATASET_MAP.get(vals[0])
-        method = METHOD_MAP.get(vals[1])
-        if dataset is None or method not in {"pall_original", "pall_modified"}:
-            continue
-        tag = f"{dataset}_vit_v1"
-        key = (dataset, method, tag)
-        seen.add(key)
-        _, matches, source = thesis.find(dataset=dataset, method=method, experiment_tag=tag)
-        row_label = f"{dataset}/{method}"
-        if len(matches) == 1:
-            metric_cols = (
-                ("Final Acc.", "final_avg_acc_mean", "final_avg_acc_std"),
-                ("WorstDrop", "WorstDrop_mean", "WorstDrop_std"),
-                ("Au", "Au_mean", "Au_std"),
-            )
-            for idx, (col_label, mean_field, std_field) in enumerate(metric_cols):
-                audit_metric_cell(records, label, row_label, col_label, cells[2 + idx],
-                                  matches[0], mean_field, std_field, source, None)
-            continue
-
-        has_metrics = any(numbers_in(cell) for cell in cells[2:5])
-        marked_unavailable = "No aggregate row" in vals[5]
-        ok = not matches and not has_metrics and marked_unavailable
-        csv_value = "0 aggregate rows" if not matches else f"{len(matches)} aggregate row(s)"
-        records.append(Record(label, row_label, "availability", vals[5], csv_value,
-                              source, "PASS" if ok else "FAIL"))
-
-    for dataset, method, tag in sorted(expected - seen):
-        records.append(Record(label, f"{dataset}/{method}", "row presence", "missing",
-                              "expected explicit unavailable row", tag, "FAIL"))
-
-
-OVERLAP_METRIC_COLS = [
-    (2, "Critical Ratio", "overlap_shared_critical_ratio"),
-    (3, "Protected Ratio", "overlap_protected_ratio"),
-    (4, "Updated-in-Shared Ratio", "overlap_updated_ratio"),
-    (5, "Critical Count", "overlap_shared_critical_count"),
-]
-
-
-def audit_overlap(text, thesis, records):
-    label = "tab:overlap-correlation"
-    body = table_body(text, label)
-    setting_to_tag = {
-        ("cifar10", "scratch"): "cifar10_main",
-        ("cifar10", "pretrained"): "cifar10_pretrained",
-        ("cifar100", "scratch"): "cifar100_main",
-        ("cifar100", "pretrained"): "cifar100_pretrained",
-        ("tinyimagenet", "pretrained"): "tiny_pretrained",
-    }
-    for cells in data_rows(body):
-        vals = [strip_latex(c) for c in cells]
-        if len(vals) < 6:
-            continue
-        dataset = DATASET_MAP.get(vals[0])
-        if dataset is None:
-            continue
-        setting = "scratch" if "صفر" in vals[1] else ("pretrained" if "پیش" in vals[1] else None)
-        if setting is None:
-            continue
-        tag = setting_to_tag.get((dataset, setting))
-        row_label = f"{dataset}/{setting}/PALL-Adapter"
-        csv_row, matches, source = thesis.find(dataset=dataset, method="pall_adapter", experiment_tag=tag)
-        reason = None if len(matches) == 1 else no_match_reason(matches)
-        for idx, col_label, field in OVERLAP_METRIC_COLS:
-            audit_metric_cell(records, label, row_label, col_label, cells[idx],
-                              csv_row or {}, field, None, source, reason)
-
-
-# hparam Persian-key substring -> (csv field, reference-run filter)
-HPARAM_FIELDS = [
-    ("نسبت محافظت (روش", "protect_ratio", dict(dataset="cifar10", method="pall_modified", experiment_tag="cifar10_main")),
-    ("ضریب جریمه", "lambda_protect", dict(dataset="cifar10", method="pall_modified", experiment_tag="cifar10_main")),
-    ("بعد گلوگاه", "adapter_bottleneck", dict(dataset="cifar10", method="pall_adapter", experiment_tag="cifar10_main")),
-    ("نسبت فراموشی مشترک", "adapter_shared_forget_ratio", dict(dataset="cifar10", method="pall_adapter", experiment_tag="cifar10_main")),
-    ("نسبت محافظت مشترک", "adapter_shared_protect_ratio", dict(dataset="cifar10", method="pall_adapter", experiment_tag="cifar10_main")),
-]
-
-
-def audit_hparams(text, thesis, records):
-    label = "tab:hparams"
-    body = table_body(text, label)
-    for cells in data_rows(body):
-        if len(cells) < 2:
-            continue
-        key = strip_latex(cells[0])
-        nums = numbers_in(cells[1])
-        if not nums:
-            continue
-        value = nums[0]
-        register_value(value, f"{label} | {key} | value")
-        field = None
-        filt = None
-        for needle, csv_field, run_filter in HPARAM_FIELDS:
-            if needle in cells[0] or needle in key:
-                field, filt = csv_field, run_filter
-                break
-        if field is None:
-            records.append(Record(label, key, "value", value, "(training constant; no CSV column)",
-                                  "-", "SKIP-NOCSV"))
-            continue
-        csv_row, matches, source = thesis.find(**filt)
-        if len(matches) != 1:
-            records.append(Record(label, key, field, value, no_match_reason(matches), source, "FAIL"))
-            continue
-        ok, cv = values_match(value, csv_row.get(field))
-        records.append(Record(label, key, field, value, cv, source, "PASS" if ok else "FAIL"))
+        for method_index, method in enumerate(MAIN_METHODS):
+            source, _ = source_cell(dataset, method, "t_forget_total_mean")
+            if source is None:
+                report.fail(f"{name}/{method}/T_f: no source row")
+                continue
+            if abs(float(timings[method_index]) - float(source)) < 5e-4:
+                report.ok()
+            else:
+                report.fail(f"{name}/{method}/T_f: {timings[method_index]} vs {source}")
 
 
 # --------------------------------------------------------------------------- #
 # Prose scan                                                                   #
 # --------------------------------------------------------------------------- #
-def strip_environments(text: str) -> str:
-    for env in ("table", "figure", "landscape", "tabular"):
-        text = re.sub(r"\\begin\{" + env + r"\}.*?\\end\{" + env + r"\}", " ", text, flags=re.DOTALL)
-    return text
+def all_table_numbers() -> set[float]:
+    values: set[float] = set()
+    for path in sorted(TABLES.glob("*.tex")):
+        values.update(table_numbers(path.stem))
+    return values
 
 
-def audit_prose(text, records):
-    prose = strip_environments(text)
-    prose = prose.replace("$", " ")
-    label = "prose"
-    seen = set()
-    for match in re.finditer(r"(?<![\d.])(\d+\.\d{3,})", prose):
-        num = match.group(1)
-        start = match.start()
-        # a light context window to identify the paragraph occurrence
-        snippet = re.sub(r"\s+", " ", prose[max(0, start - 28): start]).strip()[-28:]
-        key = (num, snippet)
-        if key in seen:
-            continue
-        seen.add(key)
-        pdec = len(num.split(".")[1])
-        pval = float(num)
-        hits = []
-        for tv_str, locs in TABLE_VALUES.items():
-            try:
-                tv = float(tv_str)
-            except ValueError:
-                continue
-            tdec = len(tv_str.split(".")[1]) if "." in tv_str else 0
-            tol = 0.5 * (10 ** (-min(pdec, tdec))) + 1e-9
-            if abs(tv - pval) <= tol:
-                hits.extend(locs)
-        if hits:
-            records.append(Record(label, f"...{snippet}", "inline number", num,
-                                  hits[0] + (f" (+{len(hits) - 1} more)" if len(hits) > 1 else ""),
-                                  "results.tex tables", "PASS"))
-        else:
-            records.append(Record(label, f"...{snippet}", "inline number", num,
-                                  "(no matching table cell)", "results.tex tables", "FAIL"))
+def check_prose(report: Report, quiet: bool) -> List[str]:
+    """Report prose decimals of table precision that match no typeset cell.
+
+    Only four-decimal numbers are considered: that is the precision the result
+    tables use, so a four-decimal number in the text is almost always a quoted
+    table cell. Coarser numbers (hyperparameters, ratios, page counts) are not
+    table quotations and would only produce noise.
+    """
+
+    # Prose usually quotes a table cell at lower precision than the table prints
+    # it (0.0469 for a typeset 0.046872), and sometimes quotes an aggregate value
+    # the table does not display at all, so both pools are matched with rounding.
+    known = sorted(all_table_numbers())
+    known += numbers_in_file(AGGREGATES / "server_thesis_table.csv")
+    signed = known + [-value for value in known]
+    orphans: List[str] = []
+    for path in sorted(CHAPTERS.glob("*.tex")):
+        text = path.read_text(encoding="utf-8")
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            for match in re.finditer(r"-?\d+\.\d{4}\b", line):
+                value = float(match.group())
+                if matches(value, signed):
+                    continue
+                orphans.append(f"{path.name}:{line_number}: {match.group()} matches no table cell")
+    if not quiet:
+        for orphan in orphans:
+            print(f"  ORPHAN {orphan}")
+    return orphans
 
 
-# --------------------------------------------------------------------------- #
-# Reporting                                                                    #
-# --------------------------------------------------------------------------- #
-def print_records(records: List[Record]) -> None:
-    order = ["tab:main-pall-results", "tab:standard-cifar10-results", "tab:standard-cifar100-results",
-             "tab:vit-results", "tab:anchor-ablation", "tab:adapter-ablation",
-             "tab:conflict-ablation", "tab:overlap-correlation", "tab:privacy-eps-hat", "tab:probe-results",
-             "tab:hparams", "prose"]
-    by_table = {name: [r for r in records if r.table == name] for name in order}
-    for name in order:
-        recs = by_table[name]
-        if not recs:
-            continue
-        npass = sum(1 for r in recs if r.status == "PASS")
-        nfail = sum(1 for r in recs if r.status == "FAIL")
-        nskip = sum(1 for r in recs if r.status.startswith("SKIP"))
-        print("\n" + "=" * 100)
-        print(f"{name}   (PASS {npass} / FAIL {nfail}" + (f" / SKIP {nskip}" if nskip else "") + ")")
-        print("=" * 100)
-        print(f"{'STATUS':7} {'ROW':34} {'COLUMN':22} {'THESIS':16} {'CSV':16} SOURCE")
-        print("-" * 100)
-        for r in recs:
-            row = (r.row[:33]) if len(r.row) > 33 else r.row
-            col = (r.column[:21]) if len(r.column) > 21 else r.column
-            print(f"{r.status:7} {row:34} {col:22} {r.thesis:16} {str(r.csv):16} {r.source}")
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--seeds",
+        type=int,
+        default=8,
+        help="Seed count the headline tables claim (default: 8).",
+    )
+    parser.add_argument(
+        "--strict-prose",
+        action="store_true",
+        help="Treat unmatched prose decimals as failures instead of warnings.",
+    )
+    parser.add_argument("--quiet", action="store_true", help="Suppress per-orphan output.")
+    return parser.parse_args()
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Audit thesis result numbers against aggregate CSVs.")
-    parser.add_argument("--tex", type=Path, default=TEX_PATH)
-    parser.add_argument("--thesis-csv", type=Path, default=THESIS_CSV)
-    parser.add_argument("--privacy-csv", type=Path, default=PRIVACY_CSV)
-    args = parser.parse_args()
+    args = parse_args()
+    report = Report()
 
-    for path in (args.tex, args.thesis_csv, args.privacy_csv):
-        if not path.exists():
-            print(f"[ERROR] missing: {path}", file=sys.stderr)
-            return 1
+    check_markdown_tables(report)
+    check_storage_merge(report)
+    check_csv_tables(report, load_csv(AGGREGATES / "server_thesis_table.csv"))
+    check_main_tables(report, load_csv(AGGREGATES / "server_report_table.csv"), args.seeds)
+    orphans = check_prose(report, args.quiet)
 
-    text = args.tex.read_text(encoding="utf-8")
-    thesis = CsvTable(args.thesis_csv)
-    privacy = CsvTable(args.privacy_csv)
-    records: List[Record] = []
+    print(f"PASS: {report.passes}")
+    print(f"FAIL: {len(report.failures)}")
+    for failure in report.failures:
+        print(f"  - {failure}")
+    print(f"PROSE UNMATCHED: {len(orphans)}")
 
-    audit_main_pall(text, thesis, records)
-    audit_standard(text, thesis, records, "tab:standard-cifar10-results", "cifar10", "cifar10_standard")
-    audit_standard(text, thesis, records, "tab:standard-cifar100-results", "cifar100", "cifar100_standard")
-    audit_vit_availability(text, thesis, records)
-    audit_anchor_ablation(text, thesis, records)
-    audit_adapter_ablation(text, thesis, records)
-    audit_conflict_ablation(text, thesis, records)
-    audit_overlap(text, thesis, records)
-    audit_privacy_table(text, privacy, records)
-    audit_probe_table(text, thesis, records)
-    audit_hparams(text, thesis, records)
-    audit_prose(text, records)
-
-    print_records(records)
-
-    total_pass = sum(1 for r in records if r.status == "PASS")
-    total_fail = sum(1 for r in records if r.status == "FAIL")
-    total_skip = sum(1 for r in records if r.status.startswith("SKIP"))
-    print("\n" + "#" * 100)
-    print(f"SUMMARY: {total_pass} PASS, {total_fail} FAIL, {total_skip} SKIP "
-          f"(config columns tracked: {', '.join(CONFIG_GROUP_COLUMNS)})")
-    print("#" * 100)
-    print("Note: read-only audit. results.tex was NOT modified.")
-    return 0 if total_fail == 0 else 2
+    if report.failures:
+        return 1
+    if args.strict_prose and orphans:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

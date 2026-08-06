@@ -78,6 +78,7 @@ IEEE_STYLE = {
     "legend.edgecolor": "0.7",
     "pdf.fonttype": 42,
     "ps.fonttype": 42,
+    "svg.fonttype": "none",
     "savefig.bbox": "tight",
     "savefig.pad_inches": 0.02,
 }
@@ -554,8 +555,10 @@ def plot_drop_decomposition(outdir, L, protect_strength, csv_path):
 def _save(fig, path):
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, format="pdf")
+    fig.savefig(path.with_suffix(".svg"), format="svg")
     plt.close(fig)
     print(f"[saved] {path}")
+    print(f"[saved] {path.with_suffix('.svg')}")
 
 
 def main(argv=None):

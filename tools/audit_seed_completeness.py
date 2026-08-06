@@ -28,6 +28,9 @@ from make_thesis_table import (
 SEEDS_01 = ("0", "1")
 SEEDS_012 = ("0", "1", "2")
 SEEDS_01234 = ("0", "1", "2", "3", "4")
+# The standard-protocol comparison was extended from five to eight seeds; every
+# aggregate that feeds the main tables is expected to carry the full set.
+SEEDS_0_7 = tuple(str(seed) for seed in range(8))
 METHODS_STANDARD = (
     "pall_original",
     "pall_modified",
@@ -59,7 +62,10 @@ class ExpectedSpec:
             "protect_importance": "gradient",
             "protect_ratio": "",
             "lambda_protect": 0.0,
-            "protect_anchor": "old",  # main.py argparse default, written into every run config
+            # Not the argparse default any more (main.py now defaults to "reinit");
+            # every runner group pins --protect_anchor old explicitly, so this is the
+            # value written into the configs of the runs these specs describe.
+            "protect_anchor": "old",
             "adaptive_protect": False,  # main.py argparse default (store_true), written into every run config
             "adapter_bottleneck": 16,
             "adapter_shared_bottleneck": 0,
@@ -198,7 +204,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             METHODS_STANDARD,
             f"{prefix}_standard",
             "standard_split",
-            seeds=SEEDS_01234,
+            seeds=SEEDS_0_7,
             configs={
                 "pall_original": retrain_config(),
                 "pall_modified": protected_retrain_config(),
@@ -211,7 +217,7 @@ def expected_specs(schedules_dir: Path) -> List[ExpectedSpec]:
             ("ssd", "salun"),
             "standard_unlearning_ssd_salun_v1",
             "standard_split",
-            seeds=SEEDS_01234,
+            seeds=SEEDS_0_7,
         )
         add(
             "MIA from-scratch",

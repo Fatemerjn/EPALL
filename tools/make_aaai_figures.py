@@ -79,6 +79,7 @@ plt.rcParams.update({
     "grid.linewidth": 0.5,
     "axes.axisbelow": True,
     "pdf.fonttype": 42,
+    "svg.fonttype": "none",
 })
 
 
@@ -100,6 +101,7 @@ def fig_worstdrop(outdir: Path) -> None:
     ax.legend(frameon=False, ncol=1, loc="upper left")
     fig.tight_layout(pad=0.3)
     fig.savefig(outdir / "aaai_worstdrop.pdf")
+    fig.savefig(outdir / "aaai_worstdrop.svg")
     plt.close(fig)
 
 
@@ -123,6 +125,7 @@ def fig_tradeoff(outdir: Path) -> None:
     ax.legend(frameon=False, loc="upper left")
     fig.tight_layout(pad=0.3)
     fig.savefig(outdir / "aaai_tradeoff.pdf")
+    fig.savefig(outdir / "aaai_tradeoff.svg")
     plt.close(fig)
 
 
@@ -171,6 +174,7 @@ def fig_mia(outdir: Path) -> None:
                    handlelength=1.2, handletextpad=0.4)
     fig.tight_layout(pad=0.3)
     fig.savefig(outdir / "aaai_mia.pdf")
+    fig.savefig(outdir / "aaai_mia.svg")
     plt.close(fig)
 
 
@@ -205,6 +209,7 @@ def fig_storage(outdir: Path) -> None:
                    handletextpad=0.4)
     fig.tight_layout(pad=0.3)
     fig.savefig(outdir / "aaai_storage.pdf")
+    fig.savefig(outdir / "aaai_storage.svg")
     plt.close(fig)
 
 
@@ -402,6 +407,7 @@ def fig_overlap_response(outdir: Path) -> None:
         fig.subplots_adjust(left=0.18, right=0.985, top=0.87, bottom=0.36, wspace=0.16)
         fig.savefig(outdir / "aaai_overlap_response.pdf")
         fig.savefig(outdir / "aaai_overlap_response.png", dpi=300)
+        fig.savefig(outdir / "aaai_overlap_response.svg")
         plt.close(fig)
 
     print(

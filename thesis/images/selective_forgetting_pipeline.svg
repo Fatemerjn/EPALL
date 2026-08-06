@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="520" viewBox="0 0 1700 520" role="img" aria-label="Selective forgetting lifecycle">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#263238"/></marker>
+<marker id="arrow-orange" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D55E00"/></marker>
+<pattern id="critical-hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#F8EDF4"/><line x1="0" y1="0" x2="0" y2="9" stroke="#6F3C8F" stroke-width="2"/></pattern>
+<style>
+text{font-family:'Times New Roman','DejaVu Serif',serif;fill:#263238}
+.label{font-size:25px}.small{font-size:20px}.tiny{font-size:17px}
+.panel{font-size:29px;font-weight:700}.math{font-style:italic}
+.card{stroke-width:2;rx:14;ry:14}.link{fill:none;stroke-width:3;marker-end:url(#arrow)}
+</style>
+</defs>
+<rect x="0" y="0" width="1700" height="520" fill="white"/>
+<rect x="55" y="118" width="250" height="105" rx="16" fill="#EAF4FA" stroke="#0072B2" stroke-width="3"/>
+<circle cx="260" cy="170" r="25" fill="white" stroke="#0072B2" stroke-width="3"/>
+<text x="260" y="179" font-size="35px" text-anchor="middle" fill="#0072B2" font-weight="700">+</text>
+<text x="160" y="181" font-size="29px" text-anchor="middle" fill="#263238" font-weight="700">Learn T1</text>
+<rect x="80" y="288" width="200" height="64" rx="12" fill="#EAF7F2" stroke="#009E73" stroke-width="2"/>
+<text x="180" y="329" font-size="25px" text-anchor="middle" fill="#009E73" font-weight="700">{T1}</text>
+<line x1="305" y1="170" x2="348" y2="170" stroke="#263238" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="360" y="118" width="250" height="105" rx="16" fill="#EAF4FA" stroke="#0072B2" stroke-width="3"/>
+<circle cx="565" cy="170" r="25" fill="white" stroke="#0072B2" stroke-width="3"/>
+<text x="565" y="179" font-size="35px" text-anchor="middle" fill="#0072B2" font-weight="700">+</text>
+<text x="465" y="181" font-size="29px" text-anchor="middle" fill="#263238" font-weight="700">Learn T2</text>
+<rect x="385" y="288" width="200" height="64" rx="12" fill="#EAF7F2" stroke="#009E73" stroke-width="2"/>
+<text x="485" y="329" font-size="25px" text-anchor="middle" fill="#009E73" font-weight="700">{T1, T2}</text>
+<line x1="610" y1="170" x2="653" y2="170" stroke="#263238" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="665" y="118" width="250" height="105" rx="16" fill="#EAF4FA" stroke="#0072B2" stroke-width="3"/>
+<circle cx="870" cy="170" r="25" fill="white" stroke="#0072B2" stroke-width="3"/>
+<text x="870" y="179" font-size="35px" text-anchor="middle" fill="#0072B2" font-weight="700">+</text>
+<text x="770" y="181" font-size="29px" text-anchor="middle" fill="#263238" font-weight="700">Learn T3</text>
+<rect x="690" y="288" width="200" height="64" rx="12" fill="#EAF7F2" stroke="#009E73" stroke-width="2"/>
+<text x="790" y="329" font-size="25px" text-anchor="middle" fill="#009E73" font-weight="700">{T1, T2, T3}</text>
+<line x1="915" y1="170" x2="958" y2="170" stroke="#263238" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="970" y="118" width="250" height="105" rx="16" fill="#FCEFEA" stroke="#D55E00" stroke-width="3"/>
+<circle cx="1175" cy="170" r="25" fill="white" stroke="#D55E00" stroke-width="3"/>
+<text x="1175" y="179" font-size="35px" text-anchor="middle" fill="#D55E00" font-weight="700">−</text>
+<text x="1075" y="181" font-size="29px" text-anchor="middle" fill="#263238" font-weight="700">Forget T2</text>
+<rect x="995" y="288" width="200" height="64" rx="12" fill="#F5F7F9" stroke="#69757F" stroke-width="2"/>
+<text x="1095" y="329" font-size="25px" text-anchor="middle" fill="#69757F" font-weight="700">{T1, T3}</text>
+<text x="565" y="394" font-size="21px" text-anchor="middle" fill="#69757F">Active task set</text>
+<line x1="1095" y1="112" x2="1095" y2="69" stroke="#D55E00" stroke-width="3" fill="none" marker-end="url(#arrow-orange)"/>
+<text x="1095" y="48" font-size="25px" text-anchor="middle" fill="#D55E00" font-weight="700">Aᵤ → chance level</text>
+<rect x="1295" y="82" width="345" height="125" rx="16" fill="#FCEFEA" stroke="#D55E00" stroke-width="3"/>
+<text x="1468" y="128" font-size="24px" text-anchor="middle" fill="#D55E00" font-weight="700">Target task</text>
+<text x="1468" y="171" font-size="22px" text-anchor="middle" fill="#D55E00">suppressed after request</text>
+<rect x="1295" y="245" width="345" height="125" rx="16" fill="#EAF7F2" stroke="#009E73" stroke-width="3"/>
+<text x="1468" y="291" font-size="24px" text-anchor="middle" fill="#009E73" font-weight="700">Retained tasks</text>
+<text x="1468" y="334" font-size="21px" text-anchor="middle" fill="#009E73">remain near pre-request level</text>
+<line x1="1220" y1="170" x2="1282" y2="145" stroke="#D55E00" stroke-width="3" fill="none" marker-end="url(#arrow-orange)"/>
+<line x1="1220" y1="188" x2="1282" y2="286" stroke="#009E73" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<text x="850" y="474" font-size="20px" text-anchor="middle" fill="#69757F">Schematic lifecycle; no post-deletion learning is implied.</text>
+</svg>

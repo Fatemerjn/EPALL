@@ -27,6 +27,7 @@
 #   GROUP 26 (g26_corrected_mia): corrected PALL-Modified MIA, both CIFAR datasets, 3 seeds -- ON DEMAND, resume-safe
 #   GROUP 27 (g27_storage_accounting): matched PALL-Modified/CLPU resident-state accounting, seed 0 -- ON DEMAND, resume-safe
 #   GROUP 28 (g28_standard_seed_extension): extend the complete 11-method standard table to seeds 0--7 -- ON DEMAND, resume-safe
+#   GROUP 30 (g30_standard_reinit_mia): reinit anchor WITH --eval_mia, own tag, for the anchor privacy comparison -- ON DEMAND, resume-safe
 #   GROUP 29 (g29_standard_reinit): eight-seed standard PALL-Modified candidate with explicit reinit anchor -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
@@ -75,7 +76,7 @@ usage () {
         "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
         "g21_standard_unlearning, g22a_tiny_seed2, g22b_mia_anchor_seed2," \
         "g23_adapter_components, g24_retraining_reference, g25_modified_components, g26_corrected_mia," \
-        "g27_storage_accounting, g28_standard_seed_extension, and g29_standard_reinit." \
+        "g27_storage_accounting, g28_standard_seed_extension, g29_standard_reinit, and g30_standard_reinit_mia." \
         "" \
         "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
         "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
@@ -84,7 +85,7 @@ usage () {
         "        g18_probe g20_paper_completion g21_standard_unlearning" \
         "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components" \
         "        g24_retraining_reference g25_modified_components g26_corrected_mia" \
-        "        g27_storage_accounting g28_standard_seed_extension g29_standard_reinit"
+        "        g27_storage_accounting g28_standard_seed_extension g29_standard_reinit g30_standard_reinit_mia"
 }
 
 if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
@@ -105,7 +106,7 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit) ;;
+        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia) ;;
         *)
             echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
@@ -1479,6 +1480,42 @@ group29_standard_reinit () {
     done
 }
 
+group30_standard_reinit_mia () {
+    echo "===== GROUP 29: eight-seed standard PALL-Modified reinit candidate (resume-safe) ====="
+    local seeds="${REINIT_MIA_SEEDS:-0 1 2 3 4 5 6 7}"
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    local PALL_MOD_REINIT="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --protect_anchor reinit --retrain_steps 50"
+    local seed c10 c100
+
+    for seed in $seeds; do
+        case "$seed" in
+            0|1|2|3|4|5|6|7) ;;
+            *)
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: REINIT_MIA_SEEDS must be drawn from 0 1 2 3 4 5 6 7 (got '${seed}')" >&2
+                continue
+                ;;
+        esac
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        if [[ ! -f "$c10" || ! -f "$c100" ]]; then
+            ((FAILED_RUNS += 1))
+            echo "    FAIL: missing seed-${seed} standard schedule(s): ${c10}, ${c100}" >&2
+            continue
+        fi
+
+        launch_resume_safe "std_reinit_mia_c10_pall_modified_s${seed}" \
+            $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+            --method pall_modified $PALL_MOD_REINIT \
+            --eval_mia --experiment_tag cifar10_standard_reinit_mia_v1
+        launch_resume_safe "std_reinit_mia_c100_pall_modified_s${seed}" \
+            $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+            --method pall_modified $PALL_MOD_REINIT \
+            --eval_mia --experiment_tag cifar100_standard_reinit_mia_v1
+    done
+}
+
 case "$WHICH" in
     all) group1; group2; group3 ;;
     g1)  group1 ;;
@@ -1512,6 +1549,7 @@ case "$WHICH" in
     g27_storage_accounting) group27_storage_accounting ;;
     g28_standard_seed_extension) group28_standard_seed_extension ;;
     g29_standard_reinit) group29_standard_reinit ;;
+    g30_standard_reinit_mia) group30_standard_reinit_mia ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -1528,7 +1566,7 @@ echo "===================================================================="
 echo "AGGREGATING TABLES ..."
 AGG_SUFFIX=""
 case "$WHICH" in
-    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit)
+    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia)
         # These completion groups must never overwrite an existing CSV. A
         # timestamped canonical-tool rebuild can be inspected and synced while
         # the paper-facing canonical paths remain unchanged until every gap is

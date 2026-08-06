@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="560" viewBox="0 0 1600 560" role="img" aria-label="Soft-mask subphase drop-budget decomposition">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#263238"/></marker>
+<marker id="arrow-orange" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D55E00"/></marker>
+<pattern id="critical-hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#F8EDF4"/><line x1="0" y1="0" x2="0" y2="9" stroke="#6F3C8F" stroke-width="2"/></pattern>
+<style>
+text{font-family:'Times New Roman','DejaVu Serif',serif;fill:#263238}
+.label{font-size:25px}.small{font-size:20px}.tiny{font-size:17px}
+.panel{font-size:29px;font-weight:700}.math{font-style:italic}
+.card{stroke-width:2;rx:14;ry:14}.link{fill:none;stroke-width:3;marker-end:url(#arrow)}
+</style>
+</defs>
+<rect x="0" y="0" width="1600" height="560" fill="white"/>
+<text x="455" y="55" font-size="28px" text-anchor="middle" fill="#263238" font-weight="700">(a) Unconstrained</text>
+<text x="1055" y="55" font-size="28px" text-anchor="middle" fill="#263238" font-weight="700">(b) Soft mask</text>
+<rect x="330" y="336.0" width="250" height="114.0" rx="0" fill="url(#critical-hatch)" stroke="#6F3C8F" stroke-width="2.5"/>
+<text x="455.0" y="401.0" font-size="21px" text-anchor="middle" fill="#6F3C8F" font-weight="700">H ⊂ S_crit</text>
+<text x="564" y="428.0" font-size="18px" text-anchor="end" fill="#6F3C8F">mᵢ = 1</text>
+<rect x="330" y="245.75" width="250" height="90.25" rx="0" fill="#F8EDF4" stroke="#CC79A7" stroke-width="2.5"/>
+<text x="455.0" y="298.875" font-size="21px" text-anchor="middle" fill="#CC79A7" font-weight="700">S_crit \ H</text>
+<text x="564" y="325.875" font-size="18px" text-anchor="end" fill="#CC79A7">mᵢ = 1</text>
+<rect x="330" y="141.25" width="250" height="104.5" rx="0" fill="#FCEFEA" stroke="#D55E00" stroke-width="2.5"/>
+<text x="455.0" y="201.5" font-size="21px" text-anchor="middle" fill="#D55E00" font-weight="700">F° = S_forget \ S_active</text>
+<text x="564" y="228.5" font-size="18px" text-anchor="end" fill="#D55E00">mᵢ = 1</text>
+<rect x="930" y="336.0" width="250" height="114.0" rx="0" fill="white" stroke="#6F3C8F" stroke-width="2.5" stroke-dasharray="8 6"/>
+<text x="1055.0" y="401.0" font-size="21px" text-anchor="middle" fill="#6F3C8F" font-weight="700">H: mᵢ = 0</text>
+<rect x="930" y="290.875" width="250" height="45.125" rx="0" fill="#F8EDF4" stroke="#CC79A7" stroke-width="2.5"/>
+<text x="1055.0" y="320.4375" font-size="20px" text-anchor="middle" fill="#CC79A7" font-weight="700">S_crit \ H</text>
+<text x="1166" y="326.0" font-size="17px" text-anchor="end" fill="#CC79A7">mᵢ = 1 − p</text>
+<rect x="930" y="186.375" width="250" height="104.5" rx="0" fill="#FCEFEA" stroke="#D55E00" stroke-width="2.5"/>
+<text x="1055.0" y="246.625" font-size="20px" text-anchor="middle" fill="#D55E00" font-weight="700">F° = S_forget \ S_active</text>
+<text x="1166" y="280.875" font-size="17px" text-anchor="end" fill="#D55E00">mᵢ = 1</text>
+<line x1="230" y1="450" x2="1260" y2="450" stroke="#263238" stroke-width="2.5" fill="none"/>
+<line x1="250" y1="141.25" x2="650" y2="141.25" stroke="#263238" stroke-width="2" fill="none" stroke-dasharray="9 6"/>
+<line x1="850" y1="186.375" x2="1250" y2="186.375" stroke="#263238" stroke-width="2" fill="none" stroke-dasharray="9 6"/>
+<text x="690" y="131.25" font-size="26px" text-anchor="middle" fill="#263238" font-style="italic">Δ_t^unc</text>
+<text x="1290" y="176.375" font-size="26px" text-anchor="middle" fill="#263238" font-style="italic">Δ_t^soft</text>
+<line x1="835" y1="245.75" x2="835" y2="290.875" stroke="#CC79A7" stroke-width="3" fill="none"/>
+<line x1="815" y1="245.75" x2="855" y2="245.75" stroke="#CC79A7" stroke-width="3" fill="none"/>
+<line x1="815" y1="290.875" x2="855" y2="290.875" stroke="#CC79A7" stroke-width="3" fill="none"/>
+<text x="800" y="268.3125" font-size="23px" text-anchor="end" fill="#CC79A7" font-weight="700">×(1−p)</text>
+<text x="800" y="525" font-size="20px" text-anchor="middle" fill="#69757F">Schematic subphase only; not a bound on end-to-end WorstDrop.</text>
+</svg>

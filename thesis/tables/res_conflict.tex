@@ -1,0 +1,19 @@
+\begin{table}[H]
+    \centering
+    \small
+    \caption[مطالعه‌ی معیار اهمیت]{مقایسه‌ی دو معیار رتبه‌بندی اهمیت روی دو بذر هم‌تراز؛ توصیفی. بزرگی گرادیان رابطه‌ی \eqref{eq:sensitivity} پیش‌فرض است و انرژی تعارض گزینه‌ی جانشین رابطه‌ی \eqref{eq:conflict}.}
+    \label{tab:res-conflict}
+    \setlength{\tabcolsep}{4pt}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{p{2.1cm} p{2.4cm} p{3.0cm} c c}
+    \toprule
+    \textbf{مجموعه‌داده} & \textbf{روش} & \textbf{معیار اهمیت} & \textbf{دقت نهایی} & \textbf{بیشترین افت} \\ \midrule
+    \multirow{2}{*}{\lr{CIFAR-10}} & \multirow{2}{*}{\lr{PALL-Adapter}} & بزرگی گرادیان & \lr{0.8166 ± 0.0249} & \lr{0.0160 ± 0.0057} \\
+     &  & انرژی تعارض & \lr{0.8259 ± 0.0136} & \lr{0.0063 ± 0.0110} \\
+    \midrule
+    \multirow{2}{*}{\lr{CIFAR-100}} & \multirow{2}{*}{\lr{EPALL}} & بزرگی گرادیان & \lr{0.4933 ± 0.0083} & \lr{0.0060 ± 0.0028} \\
+     &  & انرژی تعارض & \lr{0.5040 ± 0.0085} & \lr{0.0230 ± 0.0099} \\
+    \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+\end{table}

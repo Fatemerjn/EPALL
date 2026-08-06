@@ -44,6 +44,7 @@ except Exception:  # pragma: no cover
         "ytick.labelsize": 7,
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
+        "svg.fonttype": "none",
     }
 
 try:
@@ -98,6 +99,14 @@ def parse_args() -> argparse.Namespace:
         "--paper-figures",
         action="store_true",
         help="Generate the PDF thesis/paper figure set from a group-by-config thesis table.",
+    )
+    parser.add_argument(
+        "--main-metrics-dashboard",
+        action="store_true",
+        help=(
+            "Generate only the 3x3 main-metrics dashboard (PDF and PNG) from a "
+            "group-by-config thesis table and completed run artifacts."
+        ),
     )
     parser.add_argument(
         "--overlap-response",
@@ -345,6 +354,38 @@ REGIME_LABELS = {
     "standard_split": "Standard split",
 }
 CHANCE = {"cifar10": 0.5, "cifar100": 0.2, "tinyimagenet": 0.1}
+
+# The dashboard is a synopsis of the thesis' main comparison tables, not an
+# inventory of every tuning and component-control run.  These tag families are
+# the canonical sources for each dataset/regime block.  Selection below keeps
+# one observed aggregate row per method and never averages configurations.
+CANONICAL_DASHBOARD_TAGS: Dict[Tuple[str, str], Tuple[str, ...]] = {
+    ("cifar10", "from_scratch"): (
+        "cifar10_main",
+        "thesis_c10_main_compare_v1",
+        "cifar10_extra_baselines",
+        "cifar10_baselines_v2",
+    ),
+    ("cifar100", "from_scratch"): (
+        "cifar100_main",
+        "c100_main_compare_v1",
+        "thesis_c100_main_compare_v1",
+        "cifar100_extra_baselines",
+        "cifar100_baselines_v2",
+    ),
+    ("tinyimagenet", "from_scratch"): ("tiny_main",),
+    ("cifar10", "pretrained_frozen"): ("cifar10_pretrained",),
+    ("cifar100", "pretrained_frozen"): ("cifar100_pretrained",),
+    ("tinyimagenet", "pretrained_frozen"): ("tiny_pretrained",),
+    ("cifar10", "standard_split"): (
+        "cifar10_standard",
+        "standard_unlearning_ssd_salun_v1",
+    ),
+    ("cifar100", "standard_split"): (
+        "cifar100_standard",
+        "standard_unlearning_ssd_salun_v1",
+    ),
+}
 METHOD_LABELS = {
     "clpu": "CLPU",
     "derpp": "DER++",
@@ -353,7 +394,7 @@ METHOD_LABELS = {
     "lora": "LoRA",
     "lwf": "LwF",
     "pall_adapter": "PALL-Adapter",
-    "pall_modified": "PALL-Modified",
+    "pall_modified": "EPALL",
     "pall_original": "PALL-Original",
     "salun": "SalUn",
     "ssd": "SSD",
@@ -488,7 +529,19 @@ def load_thesis_table(path: Path) -> Any:
     if pd is None:
         raise RuntimeError("pandas is required for --paper-figures mode")
     df = pd.read_csv(path)
-    non_numeric_columns = {"dataset", "method", "experiment_tag", "protect_importance", "adapter_train_classifier"}
+    non_numeric_columns = {
+        "dataset",
+        "method",
+        "experiment_tag",
+        "protect_importance",
+        "protect_anchor",
+        "adaptive_protect",
+        "modified_component_mode",
+        "adapter_train_classifier",
+        "adapter_component_mode",
+        "adapter_mask_mode",
+        "pretrained_input_norm",
+    }
     for column in df.columns:
         if column not in non_numeric_columns:
             df[column] = pd.to_numeric(df[column], errors="coerce")
@@ -504,7 +557,7 @@ def canonical_group_value(value: Any) -> str:
     if text == "":
         return ""
     lower = text.lower()
-    if lower in {"nan", "none", "na"}:
+    if lower in {"nan", "none", "na", "n/a"}:
         return ""
     if lower in {"true", "false"}:
         return lower.capitalize()
@@ -680,6 +733,7 @@ def save_pdf(fig: plt.Figure, path: Path, dpi: int) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout(pad=1.0, rect=(0.0, 0.055, 1.0, 0.98))
     fig.savefig(path, format="pdf", dpi=dpi, bbox_inches="tight")
+    fig.savefig(path.with_suffix(".svg"), format="svg", dpi=dpi, bbox_inches="tight")
     plt.close(fig)
     return path
 
@@ -750,6 +804,582 @@ def plot_metric_bars(
         extra_handles = [Line2D([0], [0], color="black", linestyle="--", linewidth=1.0, label="dataset chance line")]
     add_global_legend(fig, present_methods(plot_df), extra_handles=extra_handles)
     return save_pdf(fig, out_path, dpi)
+
+
+DASHBOARD_METRICS: Sequence[Tuple[str, str]] = (
+    ("final_avg_acc_mean", "Final average accuracy"),
+    ("WorstDrop_mean", "Signed WorstDrop"),
+    ("Au_mean", r"Forgotten-task accuracy $A_u$"),
+)
+
+
+def _rows_with_run_samples(
+    rows: Any,
+    metric: str,
+    samples_by_key: Dict[Tuple[str, ...], Dict[str, List[float]]],
+) -> Tuple[Any, int]:
+    """Keep only table rows backed by real per-seed samples for ``metric``."""
+    if rows.empty:
+        return rows.copy(), 0
+    keep: List[bool] = []
+    missing = 0
+    for _, row in rows.iterrows():
+        values = samples_by_key.get(aggregate_group_key(row), {}).get(metric, [])
+        valid = any(np.isfinite(float(value)) for value in values)
+        keep.append(valid)
+        if not valid:
+            missing += 1
+    return rows.loc[keep].copy(), missing
+
+
+def select_canonical_dashboard_rows(rows: Any) -> Tuple[Any, Dict[str, Any]]:
+    """
+    Select one real main-table row per dataset/regime/method.
+
+    Component controls, tuning sweeps, and legacy preprocessing variants are
+    valuable elsewhere in the thesis but make the main-metrics synopsis
+    unreadable.  We first restrict each block to its documented canonical tags,
+    then prefer ImageNet normalization, more seeds, and the declared tag order.
+    No observations are combined or synthesized.
+    """
+    selected_parts: List[Any] = []
+    candidate_rows = 0
+    duplicate_rows = 0
+    selected_tags: set[str] = set()
+    for dataset in DATASET_ORDER:
+        for regime in REGIME_ORDER:
+            tags = CANONICAL_DASHBOARD_TAGS.get((dataset, regime), ())
+            if not tags:
+                continue
+            block = rows[
+                (rows["dataset"] == dataset)
+                & (rows["regime"] == regime)
+                & rows["experiment_tag"].isin(tags)
+            ].copy()
+            if block.empty:
+                continue
+            candidate_rows += len(block)
+            tag_rank = {tag: rank for rank, tag in enumerate(tags)}
+            block["_dashboard_norm_rank"] = block["pretrained_input_norm"].apply(
+                lambda value: 0 if clean_text(value).lower() == "imagenet" else 1
+            )
+            block["_dashboard_seed_rank"] = pd.to_numeric(
+                block.get("n_seeds"), errors="coerce"
+            ).fillna(-1)
+            block["_dashboard_tag_rank"] = block["experiment_tag"].map(tag_rank).fillna(len(tags))
+            block["_dashboard_source_order"] = np.arange(len(block))
+            block = block.sort_values(
+                [
+                    "method",
+                    "_dashboard_norm_rank",
+                    "_dashboard_seed_rank",
+                    "_dashboard_tag_rank",
+                    "_dashboard_source_order",
+                ],
+                ascending=[True, True, False, True, True],
+                kind="mergesort",
+            )
+            chosen = block.drop_duplicates(subset=["method"], keep="first").copy()
+            duplicate_rows += len(block) - len(chosen)
+            selected_tags.update(clean_text(value) for value in chosen["experiment_tag"])
+            selected_parts.append(chosen.drop(columns=[column for column in chosen if column.startswith("_dashboard_")]))
+
+    if selected_parts:
+        selected = pd.concat(selected_parts, ignore_index=True)
+    else:
+        selected = rows.iloc[0:0].copy()
+    return selected, {
+        "performance_rows_considered": int(len(rows)),
+        "canonical_tag_candidates": int(candidate_rows),
+        "canonical_rows_selected": int(len(selected)),
+        "noncanonical_rows_excluded": int(len(rows) - candidate_rows),
+        "canonical_duplicates_excluded": int(duplicate_rows),
+        "selected_tags": sorted(tag for tag in selected_tags if tag),
+    }
+
+
+def _dashboard_layout(rows: Any) -> Tuple[List[Dict[str, Any]], List[float], List[str], List[float]]:
+    """
+    Build compact regime/method blocks while retaining every configuration row.
+
+    Multiple configurations of the same method/regime are drawn as parallel thin
+    bars around one method label. They are never averaged together.
+    """
+    blocks: List[Dict[str, Any]] = []
+    tick_positions: List[float] = []
+    tick_labels: List[str] = []
+    separators: List[float] = []
+    cursor = 0.0
+    first_group = True
+    for regime in REGIME_ORDER:
+        regime_rows = sorted_rows(rows[rows["regime"] == regime])
+        if regime_rows.empty:
+            continue
+        if not first_group:
+            separators.append(cursor - 0.20)
+        first_group = False
+        tick_positions.append(cursor)
+        tick_labels.append(regime_label(regime).upper())
+        cursor += 0.62
+        for method in present_methods(regime_rows):
+            method_rows = regime_rows[regime_rows["method"] == method]
+            n_rows = len(method_rows)
+            block_span = min(1.85, max(0.58, 0.095 * n_rows))
+            center = cursor + block_span / 2.0
+            if n_rows == 1:
+                bar_positions = np.asarray([center])
+            else:
+                margin = min(0.08, block_span * 0.08)
+                bar_positions = np.linspace(cursor + margin, cursor + block_span - margin, n_rows)
+            bar_height = min(0.48, max(0.035, 0.72 * block_span / max(1, n_rows)))
+            blocks.append(
+                {
+                    "method": method,
+                    "rows": method_rows,
+                    "positions": bar_positions,
+                    "height": bar_height,
+                }
+            )
+            tick_positions.append(center)
+            tick_labels.append(METHOD_LABELS.get(method, method.replace("_", " ").title()))
+            cursor += block_span + 0.10
+        cursor += 0.22
+    return blocks, tick_positions, tick_labels, separators
+
+
+def plot_main_metrics_3x3(
+    df: Any,
+    outdir: Path,
+    dpi: int,
+    samples_by_key: Dict[Tuple[str, ...], Dict[str, List[float]]],
+    n_bootstrap: int,
+    rng: np.random.Generator,
+    *,
+    input_csv: Path,
+    runs_root: Path,
+) -> Tuple[List[Path], Dict[str, Any]]:
+    """Plot the thesis main metrics as a wide 3x3 data-driven dashboard."""
+    performance_candidates = df[df.apply(is_performance_row, axis=1)].copy()
+    performance_df, selection_audit = select_canonical_dashboard_rows(performance_candidates)
+    # A slightly wider aspect ratio keeps the full dashboard and its thesis
+    # caption on one landscape page without shrinking the typography.
+    fig, axes = plt.subplots(3, 3, figsize=(15.5, 9.2), squeeze=False)
+    audit: Dict[str, Any] = {
+        "panels": [],
+        "omitted_groups": [],
+        "missing_sample_rows": [],
+        "plotted_keys": set(),
+        "selection": selection_audit,
+    }
+    worst_bounds: List[float] = [0.0]
+
+    for row_index, (metric, _metric_label) in enumerate(DASHBOARD_METRICS):
+        for column_index, dataset in enumerate(DATASET_ORDER):
+            ax = axes[row_index, column_index]
+            candidates = performance_df[
+                (performance_df["dataset"] == dataset) & performance_df[metric].notna()
+            ].copy()
+            rows, missing_samples = _rows_with_run_samples(candidates, metric, samples_by_key)
+            if missing_samples:
+                audit["missing_sample_rows"].append(
+                    {"metric": metric, "dataset": dataset, "count": missing_samples}
+                )
+            group_counts: Dict[str, int] = {}
+            for regime in REGIME_ORDER:
+                count = int((rows["regime"] == regime).sum())
+                group_counts[regime] = count
+                if count == 0:
+                    audit["omitted_groups"].append(
+                        {"metric": metric, "dataset": dataset, "regime": regime}
+                    )
+            audit["panels"].append(
+                {
+                    "metric": metric,
+                    "dataset": dataset,
+                    "rows": int(len(rows)),
+                    "groups": group_counts,
+                }
+            )
+
+            blocks, tick_positions, tick_labels, separators = _dashboard_layout(rows)
+            for block in blocks:
+                method = block["method"]
+                block_rows = block["rows"]
+                for y_pos, (_, data_row) in zip(block["positions"], block_rows.iterrows()):
+                    center = float(data_row[metric])
+                    sample_values = samples_for_row(data_row, samples_by_key, metric)
+                    _, ci_low, ci_high = bootstrap_mean_ci(
+                        sample_values,
+                        n_bootstrap=n_bootstrap,
+                        rng=rng,
+                    )
+                    error = ci_error(center, ci_low, ci_high)
+                    ax.barh(
+                        [float(y_pos)],
+                        [center],
+                        xerr=error,
+                        height=float(block["height"]),
+                        color=method_color(method),
+                        edgecolor="white",
+                        linewidth=0.25,
+                        capsize=2.2,
+                        error_kw={"elinewidth": 0.85, "capthick": 0.85},
+                        zorder=3,
+                    )
+                    audit["plotted_keys"].add(aggregate_group_key(data_row))
+                    if metric == "WorstDrop_mean":
+                        worst_bounds.extend(
+                            value
+                            for value in (ci_low, center, ci_high)
+                            if value is not None and np.isfinite(value)
+                        )
+
+            ax.set_yticks(tick_positions)
+            ax.set_yticklabels(tick_labels)
+            for tick, label in zip(ax.get_yticklabels(), tick_labels):
+                if label in {regime_label(regime).upper() for regime in REGIME_ORDER}:
+                    tick.set_fontweight("bold")
+                    tick.set_color("0.30")
+                    tick.set_fontsize(6.4)
+                else:
+                    tick.set_fontsize(7.0)
+            for separator in separators:
+                ax.axhline(separator, color="0.72", linewidth=0.55, zorder=1)
+            if tick_positions:
+                ax.set_ylim(max(tick_positions) + 0.55, -0.42)
+            else:
+                ax.set_ylim(1.0, -0.42)
+                ax.text(
+                    0.5,
+                    0.5,
+                    "No valid observations",
+                    transform=ax.transAxes,
+                    ha="center",
+                    va="center",
+                    color="0.45",
+                    fontsize=7,
+                )
+            ax.grid(True, axis="x", color="0.82", linewidth=0.45, alpha=0.7, zorder=0)
+            ax.grid(False, axis="y")
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            ax.tick_params(axis="x", labelsize=7.0)
+            ax.tick_params(axis="y", length=0, pad=2)
+
+            if metric in {"final_avg_acc_mean", "Au_mean"}:
+                ax.set_xlim(0.0, 1.0)
+                ax.set_xticks(np.linspace(0.0, 1.0, 6))
+            if metric == "Au_mean":
+                ax.axvline(
+                    CHANCE[dataset],
+                    color="black",
+                    linestyle="--",
+                    linewidth=1.0,
+                    zorder=2,
+                )
+            if row_index == 0:
+                ax.set_title(dataset_label(dataset), fontsize=11, fontweight="bold", pad=7)
+
+    worst_low = min(worst_bounds)
+    worst_high = max(worst_bounds)
+    worst_span = max(worst_high - worst_low, 0.01)
+    worst_limits = (worst_low - 0.08 * worst_span, worst_high + 0.08 * worst_span)
+    for ax in axes[1, :]:
+        ax.set_xlim(*worst_limits)
+        ax.axvline(0.0, color="0.15", linewidth=1.0, zorder=2)
+
+    row_centers = (0.79, 0.50, 0.215)
+    for y_pos, (_metric, metric_label) in zip(row_centers, DASHBOARD_METRICS):
+        fig.text(
+            0.012,
+            y_pos,
+            metric_label,
+            rotation=90,
+            va="center",
+            ha="center",
+            fontsize=10.2,
+            fontweight="bold",
+        )
+
+    methods = present_methods(performance_df)
+    legend_handles: List[Any] = [
+        Patch(
+            facecolor=method_color(method),
+            edgecolor="white",
+            linewidth=0.25,
+            label=METHOD_LABELS.get(method, method.replace("_", " ").title()),
+        )
+        for method in methods
+    ]
+    legend_handles.append(
+        Line2D([0], [0], color="black", linestyle="--", linewidth=1.0, label="Dataset chance line")
+    )
+    fig.legend(
+        handles=legend_handles,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.013),
+        ncol=6,
+        frameon=False,
+        fontsize=7.8,
+        handlelength=1.7,
+        columnspacing=1.2,
+    )
+    fig.text(
+        0.5,
+        0.064,
+        "Bars show table means; whiskers are 95% bootstrap CIs from completed per-seed runs.",
+        ha="center",
+        va="center",
+        fontsize=7.6,
+        color="0.28",
+    )
+    fig.subplots_adjust(left=0.082, right=0.992, top=0.955, bottom=0.105, wspace=0.39, hspace=0.25)
+
+    outdir.mkdir(parents=True, exist_ok=True)
+    pdf_path = outdir / "main_metrics_3x3.pdf"
+    png_path = outdir / "main_metrics_3x3.png"
+    svg_path = outdir / "main_metrics_3x3.svg"
+    fig.savefig(pdf_path, format="pdf", dpi=dpi)
+    fig.savefig(png_path, format="png", dpi=dpi)
+    fig.savefig(svg_path, format="svg", dpi=dpi)
+    plt.close(fig)
+
+    audit["input_csv"] = str(input_csv)
+    audit["runs_root"] = str(runs_root)
+    audit["metrics_files_scanned"] = sum(1 for _ in runs_root.rglob("metrics.json"))
+    audit["plotted_aggregate_groups"] = len(audit.pop("plotted_keys"))
+    return [pdf_path, png_path, svg_path], audit
+
+
+def plot_main_metrics_1x3_pages(
+    df: Any,
+    outdir: Path,
+    dpi: int,
+    samples_by_key: Dict[Tuple[str, ...], Dict[str, List[float]]],
+    n_bootstrap: int,
+    rng: np.random.Generator,
+) -> List[Path]:
+    """Split the dense dashboard into three print-readable horizontal figures.
+
+    Each page shows one metric across the three datasets.  Centers remain the
+    canonical aggregate-table means and every whisker is bootstrapped only from
+    matching completed-run samples; the split changes layout, not observations.
+    """
+    performance_candidates = df[df.apply(is_performance_row, axis=1)].copy()
+    performance_df, _selection_audit = select_canonical_dashboard_rows(performance_candidates)
+    outdir.mkdir(parents=True, exist_ok=True)
+    outputs: List[Path] = []
+    metric_stems = {
+        "final_avg_acc_mean": "main_metrics_final_accuracy_1x3",
+        "WorstDrop_mean": "main_metrics_worstdrop_1x3",
+        "Au_mean": "main_metrics_au_1x3",
+    }
+
+    for metric, metric_label in DASHBOARD_METRICS:
+        fig, axes = plt.subplots(1, 3, figsize=(14.0, 7.2), squeeze=False)
+        axes_row = axes[0]
+        worst_bounds: List[float] = [0.0]
+        for column_index, dataset in enumerate(DATASET_ORDER):
+            ax = axes_row[column_index]
+            candidates = performance_df[
+                (performance_df["dataset"] == dataset) & performance_df[metric].notna()
+            ].copy()
+            rows, _missing_samples = _rows_with_run_samples(candidates, metric, samples_by_key)
+            blocks, tick_positions, tick_labels, separators = _dashboard_layout(rows)
+            concise_regimes = {
+                "FROM SCRATCH": "SCRATCH",
+                "PRETRAINED FROZEN": "PRETRAINED",
+                "STANDARD SPLIT": "STANDARD",
+            }
+            tick_labels = [concise_regimes.get(label, label) for label in tick_labels]
+
+            for block in blocks:
+                method = block["method"]
+                for y_pos, (_, data_row) in zip(block["positions"], block["rows"].iterrows()):
+                    center = float(data_row[metric])
+                    sample_values = samples_for_row(data_row, samples_by_key, metric)
+                    _, ci_low, ci_high = bootstrap_mean_ci(
+                        sample_values,
+                        n_bootstrap=n_bootstrap,
+                        rng=rng,
+                    )
+                    ax.barh(
+                        [float(y_pos)],
+                        [center],
+                        xerr=ci_error(center, ci_low, ci_high),
+                        height=float(block["height"]),
+                        color=method_color(method),
+                        edgecolor="white",
+                        linewidth=0.25,
+                        capsize=2.4,
+                        error_kw={"elinewidth": 0.9, "capthick": 0.9},
+                        zorder=3,
+                    )
+                    if metric == "WorstDrop_mean":
+                        worst_bounds.extend(
+                            value
+                            for value in (ci_low, center, ci_high)
+                            if value is not None and np.isfinite(value)
+                        )
+
+            ax.set_yticks(tick_positions)
+            ax.set_yticklabels(tick_labels)
+            for tick, label in zip(ax.get_yticklabels(), tick_labels):
+                if label in set(concise_regimes.values()):
+                    tick.set_fontweight("bold")
+                    tick.set_color("0.30")
+                    tick.set_fontsize(10.8)
+                else:
+                    tick.set_fontsize(11.5)
+            for separator in separators:
+                ax.axhline(separator, color="0.72", linewidth=0.55, zorder=1)
+            if tick_positions:
+                ax.set_ylim(max(tick_positions) + 0.55, -0.42)
+            else:
+                ax.set_ylim(1.0, -0.42)
+                ax.text(
+                    0.5,
+                    0.5,
+                    "No valid observations",
+                    transform=ax.transAxes,
+                    ha="center",
+                    va="center",
+                    color="0.45",
+                    fontsize=11,
+                )
+            ax.grid(True, axis="x", color="0.82", linewidth=0.45, alpha=0.7, zorder=0)
+            ax.grid(False, axis="y")
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            ax.tick_params(axis="x", labelsize=11.0)
+            ax.tick_params(axis="y", length=0, pad=2)
+            ax.set_title(
+                f"({chr(ord('a') + column_index)})  {dataset_label(dataset)}",
+                fontsize=14.0,
+                fontweight="bold",
+                pad=7,
+            )
+
+            if metric in {"final_avg_acc_mean", "Au_mean"}:
+                ax.set_xlim(0.0, 1.0)
+                ax.set_xticks(np.linspace(0.0, 1.0, 6))
+            if metric == "Au_mean":
+                ax.axvline(
+                    CHANCE[dataset],
+                    color="black",
+                    linestyle="--",
+                    linewidth=1.0,
+                    zorder=2,
+                )
+
+        if metric == "WorstDrop_mean":
+            worst_low = min(worst_bounds)
+            worst_high = max(worst_bounds)
+            worst_span = max(worst_high - worst_low, 0.01)
+            worst_limits = (worst_low - 0.08 * worst_span, worst_high + 0.08 * worst_span)
+            for ax in axes_row:
+                ax.set_xlim(*worst_limits)
+                ax.axvline(0.0, color="0.15", linewidth=1.0, zorder=2)
+
+        fig.text(
+            0.018,
+            0.53,
+            metric_label,
+            rotation=90,
+            va="center",
+            ha="center",
+            fontsize=14.0,
+            fontweight="bold",
+        )
+        methods = present_methods(performance_df)
+        legend_handles: List[Any] = [
+            Patch(
+                facecolor=method_color(method),
+                edgecolor="white",
+                linewidth=0.25,
+                label=METHOD_LABELS.get(method, method.replace("_", " ").title()),
+            )
+            for method in methods
+        ]
+        if metric == "Au_mean":
+            legend_handles.append(
+                Line2D(
+                    [0],
+                    [0],
+                    color="black",
+                    linestyle="--",
+                    linewidth=1.0,
+                    label="Dataset chance line",
+                )
+            )
+        fig.legend(
+            handles=legend_handles,
+            loc="lower center",
+            bbox_to_anchor=(0.5, 0.008),
+            ncol=6,
+            frameon=False,
+            fontsize=11.0,
+            handlelength=1.7,
+            columnspacing=1.25,
+        )
+        fig.subplots_adjust(left=0.11, right=0.992, top=0.925, bottom=0.125, wspace=0.42)
+
+        stem = metric_stems[metric]
+        for suffix, file_format in (("pdf", "pdf"), ("png", "png"), ("svg", "svg")):
+            path = outdir / f"{stem}.{suffix}"
+            fig.savefig(path, format=file_format, dpi=dpi)
+            outputs.append(path)
+        plt.close(fig)
+
+    return outputs
+
+
+def print_main_metrics_audit(audit: Dict[str, Any]) -> None:
+    print("[AUDIT] Main metrics 3x3 dashboard")
+    print(f"[AUDIT] Input table: {audit['input_csv']}")
+    print(
+        f"[AUDIT] Run artifacts: {audit['runs_root']}/**/metrics.json "
+        f"({audit['metrics_files_scanned']} files scanned; "
+        f"{audit['plotted_aggregate_groups']} plotted aggregate groups matched)"
+    )
+    selection = audit["selection"]
+    print(
+        "[AUDIT] Canonical-row selection: "
+        f"{selection['canonical_rows_selected']} selected from "
+        f"{selection['performance_rows_considered']} performance rows; "
+        f"{selection['noncanonical_rows_excluded']} tuning/component rows and "
+        f"{selection['canonical_duplicates_excluded']} legacy/duplicate canonical rows excluded"
+    )
+    print(f"[AUDIT] Canonical experiment tags used: {', '.join(selection['selected_tags'])}")
+    for panel in audit["panels"]:
+        group_text = ", ".join(
+            f"{regime_label(regime)}={count}" for regime, count in panel["groups"].items() if count
+        )
+        print(
+            f"[AUDIT] Panel {panel['metric']} | {dataset_label(panel['dataset'])}: "
+            f"{panel['rows']} plotted rows ({group_text or 'no valid groups'})"
+        )
+    omitted = audit["omitted_groups"]
+    if omitted:
+        omitted_text = "; ".join(
+            f"{item['metric']} | {dataset_label(item['dataset'])} | {regime_label(item['regime'])}"
+            for item in omitted
+        )
+        print(f"[AUDIT] Omitted empty dataset/regime groups: {omitted_text}")
+    else:
+        print("[AUDIT] Omitted empty dataset/regime groups: none")
+    if audit["missing_sample_rows"]:
+        missing_text = "; ".join(
+            f"{item['metric']} | {dataset_label(item['dataset'])}: {item['count']}"
+            for item in audit["missing_sample_rows"]
+        )
+        print(f"[AUDIT] Table rows omitted for missing run samples: {missing_text}")
+    else:
+        print("[AUDIT] Table rows omitted for missing run samples: none")
+    print(
+        "[AUDIT] No values were synthesized: confirmed. Every plotted center came from the input table, "
+        "and every confidence interval came from non-empty completed-run samples."
+    )
 
 
 def top_pareto_indices(rows: Any, limit: int = 3) -> set[int]:
@@ -884,50 +1514,71 @@ def plot_bottleneck_ablation(
         ("WorstDrop", "WorstDrop", "#D55E00"),
         ("updated_param_ratio", "Updated parameter ratio", "#009E73"),
     ]
-    fig, axes = plt.subplots(3, 1, figsize=(6.2, 6.9), sharex=True)
-    x_reference: Optional[np.ndarray] = None
-    for ax, (metric, ylabel, color) in zip(axes, metrics):
-        plot_rows: List[Tuple[float, float, float, float]] = []
+    bottleneck_widths = sorted(
+        {float(value) for value in ablation_df["adapter_bottleneck"].dropna().tolist()}
+    )
+    x_positions = np.arange(len(bottleneck_widths), dtype=float)
+    position_by_width = {width: position for width, position in zip(bottleneck_widths, x_positions)}
+    fig, axes = plt.subplots(1, 3, figsize=(10.8, 3.6), sharex=True)
+    panel_labels = ("(a)", "(b)", "(c)")
+    for panel_index, (ax, (metric, ylabel, color)) in enumerate(zip(axes, metrics)):
+        means = np.full(len(bottleneck_widths), np.nan, dtype=float)
+        lows = np.full(len(bottleneck_widths), np.nan, dtype=float)
+        highs = np.full(len(bottleneck_widths), np.nan, dtype=float)
         for bottleneck, group in ablation_df.groupby("adapter_bottleneck"):
             values = [float(value) for value in group[metric].dropna().tolist()]
             mean_value, ci_low, ci_high = bootstrap_mean_ci(values, n_bootstrap=n_bootstrap, rng=rng)
             if mean_value is None:
                 continue
-            plot_rows.append(
-                (
-                    float(bottleneck),
-                    mean_value,
-                    mean_value if ci_low is None else ci_low,
-                    mean_value if ci_high is None else ci_high,
-                )
-            )
-        if not plot_rows:
+            position = int(position_by_width[float(bottleneck)])
+            means[position] = mean_value
+            lows[position] = mean_value if ci_low is None else ci_low
+            highs[position] = mean_value if ci_high is None else ci_high
+        observed = np.isfinite(means)
+        if not observed.any():
             ax.text(0.5, 0.5, "No valid data", ha="center", va="center", transform=ax.transAxes)
             continue
-        plot_rows.sort(key=lambda item: item[0])
-        x_vals = np.asarray([row[0] for row in plot_rows], dtype=float)
-        means = np.asarray([row[1] for row in plot_rows], dtype=float)
-        lows = np.asarray([row[2] for row in plot_rows], dtype=float)
-        highs = np.asarray([row[3] for row in plot_rows], dtype=float)
-        x_reference = x_vals
-        if len(x_vals) > 2:
-            x_dense = np.linspace(float(x_vals.min()), float(x_vals.max()), 240)
-            mean_dense = np.interp(x_dense, x_vals, means)
-            low_dense = np.interp(x_dense, x_vals, lows)
-            high_dense = np.interp(x_dense, x_vals, highs)
-            ax.fill_between(x_dense, low_dense, high_dense, color=color, alpha=0.16, linewidth=0)
-            ax.plot(x_dense, mean_dense, color=color, linewidth=1.3)
-        else:
-            ax.fill_between(x_vals, lows, highs, color=color, alpha=0.16, linewidth=0)
-            ax.plot(x_vals, means, color=color, linewidth=1.3)
-        ax.scatter(x_vals, means, color=color, edgecolor="black", linewidth=0.4, s=26, zorder=3)
+        ax.plot(x_positions, means, color=color, linewidth=1.25, zorder=2)
+        observed_x = x_positions[observed]
+        observed_means = means[observed]
+        observed_lows = lows[observed]
+        observed_highs = highs[observed]
+        ax.errorbar(
+            observed_x,
+            observed_means,
+            yerr=np.vstack((observed_means - observed_lows, observed_highs - observed_means)),
+            fmt="o",
+            linestyle="none",
+            markersize=4.8,
+            markerfacecolor=color,
+            markeredgecolor="black",
+            markeredgewidth=0.45,
+            ecolor=color,
+            elinewidth=0.9,
+            capsize=2.8,
+            capthick=0.9,
+            zorder=3,
+        )
         ax.set_ylabel(ylabel)
-        ax.grid(True)
-    axes[-1].set_xlabel("Adapter bottleneck")
-    axes[0].set_title("PALL-Adapter Bottleneck Ablation (CIFAR-10) | 95% bootstrap CI bands")
-    if x_reference is not None:
-        axes[-1].set_xticks(x_reference)
-        axes[-1].set_xticklabels([f"{int(x)}" for x in x_reference])
+        ax.set_title(panel_labels[panel_index], fontsize=8.5, fontweight="bold", pad=4)
+        ax.set_xticks(x_positions)
+        ax.set_xticklabels([f"{int(width)}" for width in bottleneck_widths])
+        ax.grid(True, linestyle="--", linewidth=0.55, alpha=0.35)
+        ax.set_axisbelow(True)
+        if metric == "WorstDrop":
+            ax.axhline(0.0, color="0.25", linestyle="--", linewidth=0.8, zorder=1)
+    fig.suptitle("PALL-Adapter task-bottleneck ablation — CIFAR-10", fontsize=10, y=0.96)
+    fig.supxlabel("Task bottleneck width", fontsize=8.5, y=0.105)
+    fig.text(
+        0.5,
+        0.035,
+        "Descriptive, two-seed ablation; non-monotone trends",
+        ha="center",
+        va="center",
+        fontsize=7.5,
+        color="0.32",
+    )
+    fig.subplots_adjust(left=0.07, right=0.992, top=0.82, bottom=0.23, wspace=0.34)
     return save_pdf(fig, out_path, dpi)
 
 
@@ -962,11 +1613,15 @@ def plot_shared_bottleneck_ablation(
     rng: np.random.Generator,
 ) -> Optional[Path]:
     rows: List[Dict[str, Optional[float]]] = []
+    matched_run_files: List[Tuple[Path, Path]] = []
     for config_path in runs_root.rglob("config.json"):
         config = load_json(config_path) or {}
         if config.get("experiment_tag") != "shared_bottleneck_ablation_v1":
             continue
-        metrics = load_json(config_path.with_name("metrics.json")) or {}
+        metrics_path = config_path.with_name("metrics.json")
+        metrics = load_json(metrics_path) or {}
+        if not metrics:
+            continue
         final = extract_final_unlearning(metrics)
         rows.append(
             {
@@ -981,66 +1636,132 @@ def plot_shared_bottleneck_ablation(
                 "overlap_shared_critical_ratio": _overlap_critical_ratio(metrics, final),
             }
         )
-    if pd is None or not rows:
-        return None
+        matched_run_files.append((config_path, metrics_path))
+    if pd is None:
+        raise RuntimeError("pandas is required for the shared-bottleneck ablation figure")
+    if not rows:
+        raise RuntimeError(
+            "No completed shared_bottleneck_ablation_v1 runs with metrics.json were found "
+            f"under {runs_root}. Refusing to generate a fallback figure."
+        )
     ablation_df = (
         pd.DataFrame(rows)
         .dropna(subset=["adapter_shared_bottleneck"])
         .sort_values("adapter_shared_bottleneck")
     )
     if ablation_df.empty:
-        return None
+        raise RuntimeError(
+            "Completed shared_bottleneck_ablation_v1 runs were found, but none recorded "
+            "adapter_shared_bottleneck. Refusing to generate a fallback figure."
+        )
     metrics_spec = [
-        ("final_accuracy", "Final average accuracy", "#0072B2"),
+        ("final_accuracy", "Final accuracy", "#0072B2"),
         ("WorstDrop", "WorstDrop", "#D55E00"),
-        ("updated_param_ratio", "Updated parameter ratio", "#009E73"),
-        ("overlap_shared_critical_ratio", "Shared critical-overlap ratio", "#CC79A7"),
+        ("updated_param_ratio", "Updated ratio", "#009E73"),
+        ("overlap_shared_critical_ratio", "Critical-overlap ratio", "#CC79A7"),
     ]
-    fig, axes = plt.subplots(4, 1, figsize=(6.2, 9.0), sharex=True)
-    x_reference: Optional[np.ndarray] = None
-    for ax, (metric, ylabel, color) in zip(axes, metrics_spec):
-        plot_rows: List[Tuple[float, float, float, float]] = []
+    bottleneck_widths = sorted(
+        {float(value) for value in ablation_df["adapter_shared_bottleneck"].dropna().tolist()}
+    )
+    if not bottleneck_widths:
+        raise RuntimeError(
+            "No real shared-adapter bottleneck widths were found. Refusing to generate a fallback figure."
+        )
+
+    x_positions = np.arange(len(bottleneck_widths), dtype=float)
+    position_by_width = {width: position for width, position in zip(bottleneck_widths, x_positions)}
+    fig, axes = plt.subplots(1, 4, figsize=(14.0, 3.6), sharex=True)
+    panel_labels = ("(a)", "(b)", "(c)", "(d)")
+    for panel_index, (ax, (metric, ylabel, color)) in enumerate(zip(axes, metrics_spec)):
+        means = np.full(len(bottleneck_widths), np.nan, dtype=float)
+        lows = np.full(len(bottleneck_widths), np.nan, dtype=float)
+        highs = np.full(len(bottleneck_widths), np.nan, dtype=float)
         for bottleneck, group in ablation_df.groupby("adapter_shared_bottleneck"):
             values = [float(value) for value in group[metric].dropna().tolist()]
             mean_value, ci_low, ci_high = bootstrap_mean_ci(values, n_bootstrap=n_bootstrap, rng=rng)
             if mean_value is None:
                 continue
-            plot_rows.append(
-                (
-                    float(bottleneck),
-                    mean_value,
-                    mean_value if ci_low is None else ci_low,
-                    mean_value if ci_high is None else ci_high,
-                )
+            position = int(position_by_width[float(bottleneck)])
+            means[position] = mean_value
+            lows[position] = mean_value if ci_low is None else ci_low
+            highs[position] = mean_value if ci_high is None else ci_high
+
+        observed = np.isfinite(means)
+        if not observed.any():
+            raise RuntimeError(
+                f"Metric {metric} is absent from all completed shared_bottleneck_ablation_v1 runs. "
+                "Refusing to generate a partial or fabricated panel."
             )
-        if not plot_rows:
-            ax.text(0.5, 0.5, "No valid data", ha="center", va="center", transform=ax.transAxes)
-            continue
-        plot_rows.sort(key=lambda item: item[0])
-        x_vals = np.asarray([row[0] for row in plot_rows], dtype=float)
-        means = np.asarray([row[1] for row in plot_rows], dtype=float)
-        lows = np.asarray([row[2] for row in plot_rows], dtype=float)
-        highs = np.asarray([row[3] for row in plot_rows], dtype=float)
-        x_reference = x_vals
-        if len(x_vals) > 2:
-            x_dense = np.linspace(float(x_vals.min()), float(x_vals.max()), 240)
-            mean_dense = np.interp(x_dense, x_vals, means)
-            low_dense = np.interp(x_dense, x_vals, lows)
-            high_dense = np.interp(x_dense, x_vals, highs)
-            ax.fill_between(x_dense, low_dense, high_dense, color=color, alpha=0.16, linewidth=0)
-            ax.plot(x_dense, mean_dense, color=color, linewidth=1.3)
-        else:
-            ax.fill_between(x_vals, lows, highs, color=color, alpha=0.16, linewidth=0)
-            ax.plot(x_vals, means, color=color, linewidth=1.3)
-        ax.scatter(x_vals, means, color=color, edgecolor="black", linewidth=0.4, s=26, zorder=3)
+        # NaN gaps deliberately break the line: only adjacent observed widths are connected.
+        ax.plot(x_positions, means, color=color, linewidth=1.25, zorder=2)
+        observed_x = x_positions[observed]
+        observed_means = means[observed]
+        observed_lows = lows[observed]
+        observed_highs = highs[observed]
+        ax.errorbar(
+            observed_x,
+            observed_means,
+            yerr=np.vstack((observed_means - observed_lows, observed_highs - observed_means)),
+            fmt="o",
+            linestyle="none",
+            markersize=4.8,
+            markerfacecolor=color,
+            markeredgecolor="black",
+            markeredgewidth=0.45,
+            ecolor=color,
+            elinewidth=0.9,
+            capsize=2.8,
+            capthick=0.9,
+            zorder=3,
+        )
         ax.set_ylabel(ylabel)
-        ax.grid(True)
-    axes[-1].set_xlabel("Shared adapter bottleneck")
-    axes[0].set_title("PALL-Adapter Shared-Bottleneck Ablation (CIFAR-10) | 95% bootstrap CI bands")
-    if x_reference is not None:
-        axes[-1].set_xticks(x_reference)
-        axes[-1].set_xticklabels([f"{int(x)}" for x in x_reference])
-    return save_pdf(fig, out_path, dpi)
+        ax.set_title(panel_labels[panel_index], fontsize=8.5, fontweight="bold", pad=4)
+        ax.set_xticks(x_positions)
+        ax.set_xticklabels([f"{int(width)}" for width in bottleneck_widths])
+        ax.grid(True, linestyle="--", linewidth=0.55, alpha=0.35)
+        ax.set_axisbelow(True)
+        if metric == "WorstDrop":
+            ax.axhline(0.0, color="0.25", linestyle="--", linewidth=0.8, zorder=1)
+            y_low = min(0.0, float(np.nanmin(observed_lows)))
+            y_high = max(0.0, float(np.nanmax(observed_highs)))
+            y_span = max(y_high - y_low, 0.01)
+            ax.set_ylim(y_low - 0.08 * y_span, y_high + 0.08 * y_span)
+
+    fig.suptitle(
+        "PALL-Adapter shared-bottleneck ablation — CIFAR-10",
+        fontsize=10,
+        y=0.96,
+    )
+    fig.supxlabel("Shared bottleneck width", fontsize=8.5, y=0.105)
+    fig.text(
+        0.5,
+        0.035,
+        "Descriptive, two-seed ablation; non-monotone trends",
+        ha="center",
+        va="center",
+        fontsize=7.5,
+        color="0.32",
+    )
+    fig.subplots_adjust(left=0.055, right=0.992, top=0.82, bottom=0.23, wspace=0.34)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    preview_path = out_path.with_name(f"{out_path.stem}_preview.png")
+    svg_path = out_path.with_suffix(".svg")
+    fig.savefig(out_path, format="pdf", dpi=dpi, bbox_inches="tight")
+    fig.savefig(preview_path, format="png", dpi=300, bbox_inches="tight")
+    fig.savefig(svg_path, format="svg", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+
+    print(
+        "[AUDIT] shared-bottleneck widths: "
+        + ", ".join(f"{int(width)}" for width in bottleneck_widths)
+    )
+    for config_path, metrics_path in sorted(matched_run_files):
+        print(f"[AUDIT] shared-bottleneck run: {config_path} | {metrics_path}")
+    print(f"[saved] {out_path}")
+    print(f"[saved] {preview_path}")
+    print(f"[saved] {svg_path}")
+    return out_path
 
 
 def pick_heatmap_run(runs_root: Path) -> Optional[Path]:
@@ -1700,6 +2421,36 @@ def generate_paper_figures(
 
 def main() -> int:
     args = parse_args()
+    if args.main_metrics_dashboard:
+        setup_paper_style()
+        df = load_thesis_table(args.input)
+        samples_by_key = load_run_samples(args.runs_root)
+        outputs, audit = plot_main_metrics_3x3(
+            df,
+            args.outdir,
+            args.dpi,
+            samples_by_key,
+            max(1000, int(args.bootstrap_samples)),
+            np.random.default_rng(args.bootstrap_seed),
+            input_csv=args.input,
+            runs_root=args.runs_root,
+        )
+        outputs.extend(
+            plot_main_metrics_1x3_pages(
+                df,
+                args.outdir,
+                args.dpi,
+                samples_by_key,
+                max(1000, int(args.bootstrap_samples)),
+                np.random.default_rng(args.bootstrap_seed + 1),
+            )
+        )
+        for output_path in outputs:
+            print(f"[INFO] Wrote plot: {output_path}")
+        print_main_metrics_audit(audit)
+        print(f"[INFO] Figures generated: {len(outputs)}")
+        return 0
+
     if args.paper_figures:
         outdir = args.outdir
         if outdir == Path("results/thesis/report_plots"):

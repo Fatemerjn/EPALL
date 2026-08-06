@@ -81,6 +81,11 @@ class Base(nn.Module):
         self._lifecycle_start = time.perf_counter()
 
     def _elapsed_since(self, start_time):
+        # Wall clock without torch.cuda.synchronize(): CUDA work queued but not
+        # yet complete is not counted. Reported request times are therefore an
+        # order-of-magnitude diagnostic, not a compute measurement. Adding a
+        # sync here would change every recorded timing, so it must not be done
+        # without re-running under a fresh experiment tag.
         return time.perf_counter() - start_time
 
     def _format_elapsed(self, seconds):

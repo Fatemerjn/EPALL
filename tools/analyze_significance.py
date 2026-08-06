@@ -48,10 +48,20 @@ def exact_wilcoxon_p(deltas: list[float]) -> float:
     n = len(nonzero)
     if n == 0:
         return 1.0
+    # Midranks: tied |d| values must share the average of the ranks they span.
+    # Assigning distinct integer ranks to ties (the previous behaviour) biases
+    # the statistic whenever two absolute deltas coincide.
     order = sorted(range(n), key=lambda i: abs(nonzero[i]))
     ranks = [0.0] * n
-    for rank, idx in enumerate(order, start=1):
-        ranks[idx] = float(rank)
+    i = 0
+    while i < n:
+        j = i
+        while j + 1 < n and abs(nonzero[order[j + 1]]) == abs(nonzero[order[i]]):
+            j += 1
+        midrank = (i + 1 + j + 1) / 2.0
+        for k in range(i, j + 1):
+            ranks[order[k]] = midrank
+        i = j + 1
     w_plus = sum(ranks[i] for i in range(n) if nonzero[i] > 0)
     count = 0
     for signs in itertools.product([0, 1], repeat=n):
@@ -59,6 +69,23 @@ def exact_wilcoxon_p(deltas: list[float]) -> float:
         if stat >= w_plus:
             count += 1
     return count / (2 ** n)
+
+
+def holm_adjust(pvalues: list[float]) -> list[float]:
+    """Holm-Bonferroni step-down adjusted p-values for a family of tests.
+
+    Sorts ascending, multiplies the k-th smallest by (m - k), then enforces
+    monotonicity and caps at 1.  Returned in the original input order.
+    """
+    m = len(pvalues)
+    order = sorted(range(m), key=lambda i: pvalues[i])
+    adjusted = [0.0] * m
+    running = 0.0
+    for k, idx in enumerate(order):
+        val = (m - k) * pvalues[idx]
+        running = max(running, val)
+        adjusted[idx] = min(1.0, running)
+    return adjusted
 
 
 def cohens_dz(deltas: list[float]) -> float | None:
@@ -110,6 +137,14 @@ def main() -> int:
                 "min_attainable_p": round(1 / (2 ** max(1, n - n_tie)), 6),
             })
 
+    # Holm-Bonferroni over the whole family of Wilcoxon tests (all datasets x
+    # metrics).  Reported alongside the raw p so the manuscript can state which
+    # improvements survive multiplicity correction.
+    raw = [r["wilcoxon_exact_p_onesided"] for r in out_rows]
+    for row, adj in zip(out_rows, holm_adjust(raw)):
+        row["wilcoxon_holm_p"] = round(adj, 6)
+        row["survives_holm_05"] = "yes" if adj <= 0.05 else "no"
+
     csv_path = args.out_prefix.with_suffix(".csv")
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(out_rows[0].keys()))
@@ -125,14 +160,15 @@ def main() -> int:
         "and depends on non-tied pairs. These tests document direction consistency",
         "and effect size; the seed count was fixed independently of the outcome.",
         "",
-        "| Dataset | Metric | Pairs | Favour EPALL | Ties | Mean delta | Cohen's d_z | Wilcoxon p | Sign p | Min attainable p |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Dataset | Metric | Pairs | Favour EPALL | Ties | Mean delta | Cohen's d_z | Wilcoxon p | Holm p | Survives Holm | Sign p | Min attainable p |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|:---:|---:|---:|",
     ]
     for row in out_rows:
         lines.append(
             f"| {row['dataset']} | {row['metric']} | {row['n_pairs']} | "
             f"{row['n_favor_epall']} | {row['n_ties']} | {row['mean_delta']} | "
             f"{row['cohens_dz']} | {row['wilcoxon_exact_p_onesided']} | "
+            f"{row['wilcoxon_holm_p']} | {row['survives_holm_05']} | "
             f"{row['sign_exact_p_onesided']} | {row['min_attainable_p']} |"
         )
     md_path = args.out_prefix.with_suffix(".md")

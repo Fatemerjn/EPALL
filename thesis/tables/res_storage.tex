@@ -1,0 +1,19 @@
+\begin{table}[H]
+    \centering
+    \small
+    \caption[حسابداری حالت تنسوری مقیم]{حسابداری حالت تنسوری مقیم روی دنباله‌های هم‌ترازِ بذر صفر، در بیشترین تعداد وظیفه‌ی فعال (بر حسب مبی‌بایت، $2^{20}$ بایت). این حسابداری پارامترهای مقیم، شبکه‌های جانبی \lr{CLPU}، ماسک‌های زیرشبکه، اندیس و مقدار پشتیبان‌های پراکنده و تصویر و برچسب و لاجیت بازپخش را در بر می‌گیرد. حالت بهینه‌ساز، فعال‌سازی‌ها، سریال‌سازی و سرباره‌ی مفسر را شامل نمی‌شود؛ پس یک مقایسه‌ی حالت پیاده‌سازی است و نه ادعایی درباره‌ی پاک‌شدن دیسک یا حافظه‌ی اوج.}
+    \label{tab:res-storage}
+    \setlength{\tabcolsep}{4pt}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{p{1.9cm} p{1.9cm} c c c c c c}
+    \toprule
+    \textbf{داده} & \textbf{روش} & \textbf{وظیفه‌ی فعال} & \textbf{مدل پایه} & \textbf{شبکه‌ی وظیفه} & \textbf{ماسک و پشتیبان} & \textbf{مجموع} & \textbf{به‌ازای وظیفه} \\ \midrule
+    \multirow{2}{*}{\lr{CIFAR-10}} & \textbf{\lr{EPALL}} & \lr{4} & \lr{85.16} & \lr{0.00} & \lr{45.99} & \textbf{\lr{135.85}} & \textbf{\lr{12.42}} \\
+     & \lr{CLPU} & \lr{4} & \lr{42.59} & \lr{170.35} & \lr{0.00} & \lr{212.94} & \lr{42.59} \\
+    \midrule
+    \multirow{2}{*}{\lr{CIFAR-100}} & \textbf{\lr{EPALL}} & \lr{8} & \lr{162.30} & \lr{0.00} & \lr{169.29} & \textbf{\lr{336.35}} & \textbf{\lr{21.53}} \\
+     & \lr{CLPU} & \lr{8} & \lr{81.20} & \lr{649.58} & \lr{0.00} & \lr{730.78} & \lr{81.20} \\
+    \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+\end{table}

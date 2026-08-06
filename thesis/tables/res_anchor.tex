@@ -1,0 +1,19 @@
+\begin{table}[H]
+    \centering
+    \small
+    \caption[مطالعه‌ی انتخاب لنگر]{مطالعه‌ی جمله‌ی لنگر $\ell_2$ رابطه‌ی \eqref{eq:repair} روی دو بذر هم‌تراز؛ توصیفی. گزینه‌ی \lr{\texttt{old}} به وزن‌های پیش از درخواست لنگر می‌زند و \lr{\texttt{reinit}} به یک نمونه‌ی تازه از مقدارگذاری اولیه. این شاهد در جهت نگه‌داری است و تضمین حریم خصوصی نیست.}
+    \label{tab:res-anchor}
+    \setlength{\tabcolsep}{4pt}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{p{2.1cm} p{1.9cm} c c c}
+    \toprule
+    \textbf{مجموعه‌داده} & \textbf{لنگر} & \textbf{دقت نهایی} & \textbf{بیشترین افت} & \textbf{دقت هدف} \\ \midrule
+    \multirow{2}{*}{\lr{CIFAR-10}} & \lr{\texttt{old}} & \lr{0.9291 ± 0.0104} & \lr{0.0045 ± 0.0021} & \lr{0.5000 ± 0.0000} \\
+     & \lr{\texttt{reinit}} & \lr{0.9316 ± 0.0048} & \lr{0.0037 ± 0.0039} & \lr{0.5000 ± 0.0000} \\
+    \midrule
+    \multirow{2}{*}{\lr{CIFAR-100}} & \lr{\texttt{old}} & \lr{0.4956 ± 0.0160} & \lr{0.0200 ± 0.0113} & \lr{0.2040 ± 0.0057} \\
+     & \lr{\texttt{reinit}} & \lr{0.5029 ± 0.0004} & \lr{0.0100 ± 0.0085} & \lr{0.1960 ± 0.0057} \\
+    \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+\end{table}
