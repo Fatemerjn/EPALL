@@ -132,6 +132,11 @@ MARKDOWN_SOURCES: Dict[str, tuple[Path, tuple[float, ...]]] = {
         # sparsity levels and the seed count are structural, not results
         (0.5, 0.6, 0.7, 0.8, 0.9),
     ),
+    "res_conflict_gamma": (
+        AGGREGATES / "conflict_gamma_summary.md",
+        # gamma levels and the forget-set size are structural, not results
+        (0.25, 0.5, 1.0, 2.0),
+    ),
     "res_persistence": (
         AGGREGATES / "forgetting_persistence" / "PERSISTENCE_AUDIT.md",
         (),
