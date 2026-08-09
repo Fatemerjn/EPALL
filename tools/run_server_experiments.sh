@@ -756,7 +756,45 @@ group15_seed2 () {
 # cifar10_main/cifar100_main, plus the existing CLPU and SalUn baseline configs.
 # `--dump_overlap` is diagnostic-only on the mask-based PALL methods and supplies
 # their measured mask-IoU fallback for the response-curve x axis.
-# It is fixed to seeds 0/1 and intentionally NOT part of `all`. Total: 120 runs.
+# It defaults to seeds 0/1 and intentionally is NOT part of `all`. Override
+# OVERLAP_CURVE_SEEDS for extensions (for example, "2 3 4").
+preflight_group17_schedules () {
+    local seeds="${OVERLAP_CURVE_SEEDS:-0 1}"
+    local -a missing=()
+    local seed grade c10_k c100_k c10 c100
+
+    for seed in $seeds; do
+        case "$seed" in
+            ''|*[!0-9]*)
+                echo "[PREFLIGHT FAIL] OVERLAP_CURVE_SEEDS must contain non-negative integers (got '${seed}')." >&2
+                return 1
+                ;;
+        esac
+        for grade in very_low low medium high very_high; do
+            case "$grade" in
+                very_low)  c10_k=0; c100_k=0 ;;
+                low)       c10_k=1; c100_k=2 ;;
+                medium)    c10_k=2; c100_k=4 ;;
+                high)      c10_k=3; c100_k=7 ;;
+                very_high) c10_k=4; c100_k=9 ;;
+            esac
+            c10="schedules/cifar10_controlled_${grade}_later${c10_k}_seed${seed}.json"
+            c100="schedules/cifar100_controlled_${grade}_later${c100_k}_seed${seed}.json"
+            [[ -f "$c10" ]] || missing+=("$c10")
+            [[ -f "$c100" ]] || missing+=("$c100")
+        done
+    done
+
+    if ((${#missing[@]})); then
+        echo "[PREFLIGHT FAIL] g17_overlap_curve requires every controlled schedule before any run starts." >&2
+        printf '  missing: %s\n' "${missing[@]}" >&2
+        echo "Generate them with tools/generate_controlled_overlap_schedules.py and rerun the group." >&2
+        return 1
+    fi
+
+    echo "[PREFLIGHT PASS] g17_overlap_curve found all required controlled schedules for seeds: ${seeds}"
+}
+
 group17_overlap_curve () {
     echo "===== GROUP 17: five-grade overlap-response curves (six methods) ====="
     local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
@@ -1637,6 +1675,10 @@ group31_conflict_gamma_sweep () {
         done
     done
 }
+
+if [[ "$WHICH" == "g17_overlap_curve" ]] && ! preflight_group17_schedules; then
+    exit 1
+fi
 
 case "$WHICH" in
     all) group1; group2; group3 ;;
