@@ -5,18 +5,18 @@
     \label{tab:res-persistence}
     \setlength{\tabcolsep}{4pt}
     \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{p{1.9cm} p{2.7cm} c c c c c c}
+    \begin{tabular}{p{1.9cm} p{3.0cm} c c c c c c}
     \toprule
     \textbf{مجموعه‌داده} & \textbf{روش} & \textbf{$|A_u-c|$ بی‌درنگ} & \textbf{$|A_u-c|$ نهایی} & \textbf{میانگین بازگشت} & \textbf{بدترین بازگشت} & \textbf{سهم آموزش} & \textbf{سهم حذف} \\ \midrule
     \multirow{5}{*}{\lr{CIFAR-10}} & \lr{PALL} & \lr{0.0011} & \lr{0.0097} & \lr{0.0179} & \lr{0.0490} & \lr{+0.0019} & \lr{+0.0111} \\
      & \textbf{\lr{EPALL}} & \lr{0.0018} & \lr{0.0024} & \lr{0.0136} & \lr{0.0370} & \lr{+0.0063} & \lr{-0.0053} \\
-     & \textbf{\lr{PALL-Adapter}} & \lr{0.0182} & \lr{0.0098} & \lr{0.0024} & \lr{0.0060} & \lr{-0.0150} & \lr{+0.0024} \\
+     & \textbf{\mbox{\lr{PALL-Adapter}}} & \lr{0.0182} & \lr{0.0098} & \lr{0.0024} & \lr{0.0060} & \lr{-0.0150} & \lr{+0.0024} \\
      & \lr{LoRA} & \lr{0.0071} & \lr{0.0071} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} \\
      & \lr{CLPU} & \lr{0.0198} & \lr{0.0198} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} \\
     \midrule
     \multirow{5}{*}{\lr{CIFAR-100}} & \lr{PALL} & \lr{0.0087} & \lr{0.0017} & \lr{0.0030} & \lr{0.0100} & \lr{-0.0090} & \lr{-0.0015} \\
      & \textbf{\lr{EPALL}} & \lr{0.0137} & \lr{0.0040} & \lr{0.0040} & \lr{0.0100} & \lr{-0.0120} & \lr{-0.0025} \\
-     & \textbf{\lr{PALL-Adapter}} & \lr{0.0230} & \lr{0.0260} & \lr{0.0145} & \lr{0.0500} & \lr{+0.0100} & \lr{-0.0055} \\
+     & \textbf{\mbox{\lr{PALL-Adapter}}} & \lr{0.0230} & \lr{0.0260} & \lr{0.0145} & \lr{0.0500} & \lr{+0.0100} & \lr{-0.0055} \\
      & \lr{LoRA} & \lr{0.0053} & \lr{0.0053} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} \\
      & \lr{CLPU} & \lr{0.0140} & \lr{0.0140} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} & \lr{0.0000} \\
     \bottomrule

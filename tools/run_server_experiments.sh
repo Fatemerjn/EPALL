@@ -1628,15 +1628,23 @@ group32_overlap_sparsity () {
 
 group31_conflict_gamma_sweep () {
     echo "===== GROUP 31: continuous conflict-weighted soft mask, gamma sweep (resume-safe) ====="
-    # The discrete Phase-3 mask showed no measurable effect (see the adapter
-    # component controls). This sweep asks whether a *continuous* mask, weighted
-    # by per-coordinate gradient-conflict energy, separates from the full update.
-    # gamma=0 recovers a full update on S_forget and is the in-family control, so
-    # the sweep contains its own null arm and does not lean on any other table.
+    # The discrete Phase-3 mask showed no measurable effect. This sweep asks
+    # whether a *continuous* mask, weighted by per-coordinate gradient-conflict
+    # energy, separates from the full update. gamma=0 recovers a full update on
+    # S_forget and is the in-family control, so the sweep carries its own null
+    # arm and leans on no other table.
+    #
+    # The protocol mirrors group 23, not the standard from-scratch groups:
+    # PALL-Adapter is defined on a frozen pretrained backbone with 3 epochs per
+    # task. An earlier version of this group ran the standard 20-epoch
+    # from-scratch configuration, where the adapter path is degenerate: the
+    # forget gradient came out identically zero, so the conflict energy was zero
+    # at every coordinate and every gamma produced the same mask. Those runs are
+    # not usable.
     local seeds="${CONFLICT_GAMMA_SEEDS:-0 1 2}"
     local gammas="${CONFLICT_GAMMA_VALUES:-0 0.25 0.5 1 2}"
-    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
-    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    local PRE="--pretrained_backbone imagenet_resnet18 --pretrained_weights pretrained/resnet18_imagenet.pth"
+    local C100_PRE="--dataset cifar100 --class_per_task 5 --n_tasks 10 --n_forget 3 --arch resnet18 --sparsity 0.9"
     local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
         --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
@@ -1661,14 +1669,14 @@ group31_conflict_gamma_sweep () {
 
         for gamma in $gammas; do
             # Tag carries gamma so every arm is separable without parsing configs.
-            tag="conflict_gamma_${gamma//./p}_v1"
+            tag="conflict_gamma_${gamma//./p}_v2"
             launch_resume_safe "cgamma_c10_pall_adapter_g${gamma//./p}_s${seed}" \
-                $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+                $C10 $COMMON $PRE --seed "$seed" --request_schedule_file "$c10" \
                 --method pall_adapter $ADAPTER \
                 --adapter_mask_mode continuous --adapter_conflict_gamma "$gamma" \
                 --experiment_tag "cifar10_${tag}"
             launch_resume_safe "cgamma_c100_pall_adapter_g${gamma//./p}_s${seed}" \
-                $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+                $C100_PRE $COMMON $PRE --seed "$seed" --request_schedule_file "$c100" \
                 --method pall_adapter $ADAPTER \
                 --adapter_mask_mode continuous --adapter_conflict_gamma "$gamma" \
                 --experiment_tag "cifar100_${tag}"
