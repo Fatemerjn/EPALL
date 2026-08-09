@@ -470,8 +470,8 @@
     "semantic_hash": "82efb97a359f5c7290bf2513d14686be"
   },
   "README.md": {
-    "mtime": 1784557694.6156359,
-    "ast_hash": "17fa819c4cd653d7ca018938042a7065",
+    "mtime": 1786305457.3985207,
+    "ast_hash": "d597c94c401c0b56ee82867a6ef31a35",
     "semantic_hash": ""
   },
   "configs/README.md": {
@@ -585,8 +585,8 @@
     "semantic_hash": ""
   },
   "tools/check_thesis_numbers.py": {
-    "mtime": 1786300304.1023219,
-    "ast_hash": "dab64d1f4da525b9be1437d485b4ba09",
+    "mtime": 1786306210.1601398,
+    "ast_hash": "4b93e786278fff76b630dfe2f460b35c",
     "semantic_hash": ""
   },
   "scripts/sync_from_server.sh": {
@@ -910,8 +910,8 @@
     "semantic_hash": ""
   },
   "tools/make_aaai_figures.py": {
-    "mtime": 1785884448.4202878,
-    "ast_hash": "71c7f05d35336a2d42701292fe4eb04a",
+    "mtime": 1786306210.072495,
+    "ast_hash": "0536658d55606fef518cc559813581e0",
     "semantic_hash": ""
   },
   "tools/generate_main_standard_table.py": {
@@ -1580,8 +1580,8 @@
     "semantic_hash": ""
   },
   "tools/analyze_overlap_sparsity.py": {
-    "mtime": 1786276035.5075364,
-    "ast_hash": "0c88d92ab3021cfefe0b7b171b9bd355",
+    "mtime": 1786306587.0925953,
+    "ast_hash": "fdd262061b25b2d2359fece7089797b1",
     "semantic_hash": ""
   },
   "thesis/images/literature_taxonomy.png": {
@@ -1642,6 +1642,21 @@
   "thesis/saadati Thesis/images/vit.PNG": {
     "mtime": 1786285609.4703991,
     "ast_hash": "076d5bf849e23a95185d541506fd13d2",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_overlap_response.pdf": {
+    "mtime": 1786306217.6656153,
+    "ast_hash": "52ab3e17e23eea042b064ac223856105",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_overlap_response.png": {
+    "mtime": 1786306217.6922176,
+    "ast_hash": "5591080fdd960fb0940a558ffc7bb38d",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_overlap_response.svg": {
+    "mtime": 1786306217.7044613,
+    "ast_hash": "cbb07913008ef6e8a53419fc7f8fba17",
     "semantic_hash": ""
   }
 }

@@ -27,9 +27,15 @@ import statistics
 from pathlib import Path
 from typing import Dict, List, Optional
 
+try:
+    from aggregate_results import extract_row, find_run_dirs, load_json
+except ImportError:  # pragma: no cover - supports module-style execution
+    from tools.aggregate_results import extract_row, find_run_dirs, load_json
+
 DATASETS = ("cifar10", "cifar100")
 ARMS = ("pall_original", "pall_modified")
 TAG = "{dataset}_overlap_sparsity_{level}_v1"
+REQUIRED_COLUMNS = ("WorstDrop", "final_avg_accuracy", "overlap_s_share")
 
 
 def number(value) -> Optional[float]:
@@ -48,13 +54,53 @@ def levels_present(rows) -> List[str]:
     return sorted(found, key=lambda s: float(s.replace("p", ".")))
 
 
+def metric_complete(row: dict) -> bool:
+    return all(number(row.get(column)) is not None for column in REQUIRED_COLUMNS)
+
+
+def run_recency(row: dict) -> tuple[str, str]:
+    path = Path(str(row.get("run_path", "")))
+    return path.name, str(path)
+
+
 def arm(rows, dataset: str, level: str, method: str) -> Dict[int, dict]:
     tag = TAG.format(dataset=dataset, level=level)
-    return {
-        int(row["seed"]): row
-        for row in rows
-        if row.get("experiment_tag") == tag and row.get("method") == method
-    }
+    selected: Dict[int, dict] = {}
+    for row in rows:
+        if (
+            row.get("experiment_tag") != tag
+            or row.get("method") != method
+            or not metric_complete(row)
+        ):
+            continue
+        seed = int(row["seed"])
+        current = selected.get(seed)
+        if current is None or run_recency(row) > run_recency(current):
+            selected[seed] = row
+    return selected
+
+
+def rows_from_runs(root: Path) -> List[dict]:
+    """Read every metric-bearing retry so selection can prefer complete runs.
+
+    The canonical all-project aggregate keeps the newest timestamp for each
+    configuration.  That is unsafe for this study when a later interrupted
+    retry has a metrics file but lacks final accuracy or measured overlap.
+    Reading raw run directories here lets ``arm`` select the newest retry that
+    is complete for all metrics used by this analysis.
+    """
+
+    rows: List[dict] = []
+    for run_dir in sorted(find_run_dirs(root)):
+        config = load_json(run_dir / "config.json")
+        metrics = load_json(run_dir / "metrics.json")
+        if config is None or metrics is None:
+            continue
+        row = extract_row(run_dir, config, metrics)
+        tag = str(row.get("experiment_tag", ""))
+        if "_overlap_sparsity_" in tag and tag.endswith("_v1"):
+            rows.append(row)
+    return rows
 
 
 def sign_test_p(wins: int, losses: int) -> float:
@@ -113,45 +159,70 @@ def spearman_exact_p(xs, ys):
 
 
 def mean_of(by_seed, seeds, column):
-    """Mean over seeds, skipping runs where the column was not recorded."""
+    """Mean over a metric-complete paired seed set."""
 
     values = [number(by_seed[s].get(column)) for s in seeds]
-    values = [v for v in values if v is not None]
-    return statistics.fmean(values) if values else None
+    if any(v is None for v in values):
+        raise ValueError(f"missing {column} inside validated paired seed set {seeds}")
+    return statistics.fmean(values)
 
 
-def analyze(rows):
+def analyze(rows, expected_seeds=(0, 1, 2, 3, 4)):
     cells: List[dict] = []
     for dataset in DATASETS:
         for level in levels_present(rows):
             original = arm(rows, dataset, level, "pall_original")
             modified = arm(rows, dataset, level, "pall_modified")
-            seeds = sorted(set(original) & set(modified))
-            if not seeds:
-                continue
+            expected = set(expected_seeds)
+            if set(original) != expected or set(modified) != expected:
+                raise ValueError(
+                    f"incomplete arms for {dataset}/{level}: expected seeds "
+                    f"{sorted(expected)}, PALL has {sorted(original)}, EPALL has {sorted(modified)}"
+                )
+            seeds = sorted(expected)
+            incomplete = []
+            for seed in seeds:
+                for method, row in (("PALL", original[seed]), ("EPALL", modified[seed])):
+                    missing = [c for c in REQUIRED_COLUMNS if number(row.get(c)) is None]
+                    if missing:
+                        incomplete.append(f"{method} seed {seed}: {','.join(missing)}")
+            if incomplete:
+                raise ValueError(
+                    f"metric-incomplete runs for {dataset}/{level}: " + "; ".join(incomplete)
+                )
             gaps = []
             for seed in seeds:
                 a, b = original[seed], modified[seed]
                 wd_a, wd_b = number(a["WorstDrop"]), number(b["WorstDrop"])
                 ac_a, ac_b = number(a["final_avg_accuracy"]), number(b["final_avg_accuracy"])
+                share_a = number(a.get("overlap_s_share"))
+                share_b = number(b.get("overlap_s_share"))
                 gaps.append(
                     {
                         "seed": seed,
                         # positive = protection helps
                         "worstdrop_gap": None if None in (wd_a, wd_b) else wd_a - wd_b,
                         "accuracy_gap": None if None in (ac_a, ac_b) else ac_b - ac_a,
-                        "s_share": number(a.get("overlap_s_share")),
+                        # The two independently trained arms share the same
+                        # sparsity and seed, but their learned masks can differ
+                        # by a few coordinates.  Use the pair mean rather than
+                        # silently treating either arm as the manipulation.
+                        "s_share": statistics.fmean((share_a, share_b)),
+                        "s_share_relative_mismatch": abs(share_a - share_b)
+                        / max(share_a, share_b, 1.0),
                     }
                 )
             wd_gaps = [g["worstdrop_gap"] for g in gaps if g["worstdrop_gap"] is not None]
             ac_gaps = [g["accuracy_gap"] for g in gaps if g["accuracy_gap"] is not None]
             shares = [g["s_share"] for g in gaps if g["s_share"] is not None]
+            share_mismatches = [g["s_share_relative_mismatch"] for g in gaps]
             cells.append(
                 {
                     "dataset": dataset,
                     "sparsity": float(level.replace("p", ".")),
                     "n_seeds": len(seeds),
                     "s_share_mean": statistics.fmean(shares) if shares else None,
+                    "s_share_relative_mismatch_max": max(share_mismatches),
                     "worstdrop_original": mean_of(original, seeds, "WorstDrop"),
                     "worstdrop_modified": mean_of(modified, seeds, "WorstDrop"),
                     "worstdrop_gap_mean": statistics.fmean(wd_gaps),
@@ -267,16 +338,35 @@ def write_markdown(path: Path, cells, trend_rows):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--input", type=Path, default=Path("results/aggregates/server_results_final.csv")
+        "--input",
+        type=Path,
+        default=None,
+        help="Optional all-retries CSV. By default raw run directories are read.",
+    )
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path("runs"),
+        help="Raw run root used when --input is omitted.",
     )
     parser.add_argument(
         "--out-prefix", type=Path, default=Path("results/aggregates/overlap_sparsity")
     )
+    parser.add_argument(
+        "--expected-seeds",
+        nargs="+",
+        type=int,
+        default=[0, 1, 2, 3, 4],
+        help="paired seeds required in every dataset/sparsity cell",
+    )
     args = parser.parse_args()
 
-    with args.input.open(encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
-    cells = analyze(rows)
+    if args.input is None:
+        rows = rows_from_runs(args.root)
+    else:
+        with args.input.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+    cells = analyze(rows, expected_seeds=tuple(args.expected_seeds))
     if not cells:
         raise SystemExit("no overlap-sparsity runs found in the input")
     trend_rows = trends(cells)

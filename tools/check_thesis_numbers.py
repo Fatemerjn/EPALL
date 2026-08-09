@@ -25,7 +25,9 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import statistics
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Sequence
 
@@ -237,14 +239,31 @@ CSV_SUBSETS: Dict[str, tuple[Callable[[Dict[str, str]], bool], tuple[float, ...]
 def check_csv_tables(report: Report, rows: Sequence[Dict[str, str]]) -> None:
     for name, (predicate, skip) in CSV_SUBSETS.items():
         source: List[float] = []
-        for row in rows:
-            if not predicate(row):
-                continue
-            for column in CSV_VALUE_COLUMNS:
-                try:
-                    source.append(float(row[column]))
-                except (KeyError, ValueError):
+        if name == "res_overlap_levels":
+            trace_path = ROOT / "paper" / "AuthorKit27" / "generated" / "overlap_response_trace.csv"
+            trace = load_csv(trace_path)
+            grouped: Dict[tuple[str, str, str], List[tuple[str, float]]] = defaultdict(list)
+            for row in trace:
+                grouped[(row["dataset"], row["method"], row["level"])].append(
+                    (row["seed"], float(row["WorstDrop"]))
+                )
+            for key, samples in grouped.items():
+                seeds = {seed for seed, _ in samples}
+                if len(samples) != 5 or seeds != {"0", "1", "2", "3", "4"}:
+                    report.fail(
+                        f"{name}/{key}: expected five unique seeds 0--4, got {sorted(seeds)}"
+                    )
                     continue
+                source.append(statistics.fmean(value for _, value in samples))
+        else:
+            for row in rows:
+                if not predicate(row):
+                    continue
+                for column in CSV_VALUE_COLUMNS:
+                    try:
+                        source.append(float(row[column]))
+                    except (KeyError, ValueError):
+                        continue
         if not source:
             report.fail(f"{name}: no source rows matched the CSV subset")
             continue

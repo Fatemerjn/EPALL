@@ -245,13 +245,15 @@ def fig_overlap_response(outdir: Path) -> None:
         ("clpu", "CLPU", "#009E73", "D", ":"),
     )
     method_keys = {method[0] for method in methods}
+    trace_method_keys = method_keys | {"lora", "pall_adapter"}
     exact_tags = {level: f"overlap_curve_v1_{level}" for level in levels}
     tag_to_level = {tag: level for level, tag in exact_tags.items()}
-    expected_seeds = {"0", "1"}
+    expected_seeds = {"0", "1", "2", "3", "4"}
 
-    # A completed run has a readable metrics.json.  Use the same full-config
-    # extraction and latest completed group+seed selector as the canonical
-    # thesis aggregation instead of treating timestamped retries as samples.
+    # A readable metrics.json is not sufficient evidence of completion: an
+    # interrupted retry can write the file before the first forgetting event.
+    # Keep only rows with a finite signed WorstDrop, then select the latest
+    # completed full-config group+seed rather than treating retries as samples.
     candidates = []
     for metrics_path in sorted((ROOT / "runs").rglob("metrics.json")):
         row = extract_run_row(
@@ -261,7 +263,7 @@ def fig_overlap_response(outdir: Path) -> None:
         )
         if row is None:
             continue
-        if row["dataset"] not in datasets or row["method"] not in method_keys:
+        if row["dataset"] not in datasets or row["method"] not in trace_method_keys:
             continue
 
         config = load_json(metrics_path.with_name("config.json"))
@@ -274,7 +276,7 @@ def fig_overlap_response(outdir: Path) -> None:
             )
         worst_drop = row.get("WorstDrop")
         if worst_drop is None or not np.isfinite(float(worst_drop)):
-            raise ValueError(f"controlled-overlap run has invalid signed WorstDrop: {metrics_path.parent}")
+            continue
         row["WorstDrop"] = float(worst_drop)
         candidates.append(row)
 
@@ -287,7 +289,7 @@ def fig_overlap_response(outdir: Path) -> None:
     expected_cells = {
         (dataset, method, level)
         for dataset in datasets
-        for method in method_keys
+        for method in trace_method_keys
         for level in levels
     }
     unexpected_cells = set(cells) - expected_cells
@@ -296,7 +298,7 @@ def fig_overlap_response(outdir: Path) -> None:
 
     trace_rows = []
     for dataset in datasets:
-        for method, _label, _color, _marker, _linestyle in methods:
+        for method in sorted(trace_method_keys):
             for level in levels:
                 cell = (dataset, method, level)
                 rows = cells.get(cell, [])
@@ -390,7 +392,7 @@ def fig_overlap_response(outdir: Path) -> None:
             ax.margins(x=0.06, y=0.10)
 
         fig.supylabel("WorstDrop ↓", x=0.015, fontsize=9.8)
-        fig.supxlabel("Controlled overlap level", x=0.54, y=0.205, fontsize=9.8)
+        fig.supxlabel("Request-position grade", x=0.54, y=0.205, fontsize=9.8)
         handles, labels = axes[0].get_legend_handles_labels()
         fig.legend(
             handles,
