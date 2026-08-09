@@ -1,0 +1,36 @@
+\begin{landscape}
+\begin{table}[H]
+    \centering
+    \caption[نتیجه‌ی اعمال الگوریتم شناسایی لایه‌ی بهینه در مجموعه داده‌ی \lr{Cifar100}.]{نتایج اعمال الگوریتم شناسایی لایه‌ی بهینه بر روی مجموعه‌داده‌ی \lr{CIFAR100} و مدل مبتنی بر مبدل بینایی. در این مدل، لایه‌ی ۰ متناظر با خروجی لایه‌ی \lr{Patch Embedding} و دوازده لایه‌ی بعدی متناظر با خروجی‌ لایه‌های دوازده \lr{Transformer Encoder} هستند. بر اساس مقادیر امتیاز جرم تقریبی، لایه‌ی چهارم به‌عنوان لایه‌ی بهینه انتخاب می‌شود.}    
+    \label{table:alg2_results}
+    \begin{latin}
+    \begin{tabular}{c c c c c c c c c c c c c c}
+    \toprule
+    Layer Index & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 \\
+    \midrule
+    APMS        & 0.0117 & 0.0148 & 0.0190 & 0.0406 & 0.0508 & 0.0496 & 0.0440 & 0.0368 & 0.0246 & 0.0196 & 0.0039 & 0.0024 & 0.0272 \\
+    \bottomrule
+    \end{tabular}
+    \end{latin}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption[مقایسه‌ی عملکرد در مجموعه داده‌ی \lr{CIFAR100-C} با شناسایی لایه‌ی بهینه.]{مقایسه‌ی عملکرد بر روی مدل ViT در مجموعه داده‌ی \lr{CIFAR100-C} با شناسایی لایه‌ی بهینه‌ی حاصل از الگوریتم۲.}
+    \label{table:t9}
+    \begin{adjustbox}{width=1.5\textwidth}
+    \begin{latin}
+    \begin{tabular}{lccccccccccccccc|cccc}
+    \toprule
+    \multirow{2}{*}{Method} & \multicolumn{3}{c}{Noise} & \multicolumn{4}{c}{Blur} & \multicolumn{3}{c}{Weather} & \multicolumn{5}{c}{Digital} & \multicolumn{4}{c}{Avg} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-8}  \cmidrule(lr){9-11} \cmidrule(lr){12-16} \cmidrule(lr){17-20}
+    & Gauss. & Shot & Impul. & Defoc. & Glass & Motion & Zoom & Snow & Frost & Fog & Brit. & Contr. & Elastic & Pixel & JPEG & Acc (↑) & AUROC (↑) & ECE (↓) &  MCE (↓)  \\
+    \midrule
+    Source & 44.99 & 46.80 & 47.25 & 82.05 & 44.04 & 76.54 & 84.05 & 78.80 & 75.59 & 67.81 & 87.67 & 63.71 & 65.82 & 55.31 & 64.98 & 65.69 & 80.79 & 16.16 & \textbf{37.95} \\
+    TENT(APMS: Layer0) & \textbf{66.34} & \textbf{69.57} & \textbf{71.97} & \textbf{84.72} & \textbf{71.26} & \textbf{83.68} & \textbf{86.75} & \textbf{83.38} & \textbf{83.46} & \textbf{79.89} & \textbf{88.93} & \textbf{85.50} & \textbf{77.99} & \textbf{83.96} & \textbf{73.48} & \textbf{79.39} & \textbf{87.01} & \textbf{13.80} & 38.53 \\
+    TENT(APMS: Layer4) & 65.29 & 19.93 & 70.88 & 84.62 & 68.54 & 82.55 & 86.29 & 82.74 & 82.20 & 78.00 & 88.92 & 84.50 & 77.09 & 83.07 & 72.78 & 75.16 & 83.48 & 18.40 & 42.79 \\
+    \end{tabular}
+    \end{latin}
+    \end{adjustbox}
+\end{table}
+\end{landscape}

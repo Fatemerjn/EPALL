@@ -1,0 +1,39 @@
+% \begin{table}[t]
+% 	\centering
+% 	\caption{خلاصه‌ای از مجموعه‌داده‌های اصلی و مخدوش مورد استفاده در آزمایش‌ها}
+% 	\label{table:datasets}
+% 	\begin{latin}
+% 		\begin{tabular}{lccccc}
+% 			\hline
+% 			\textbf{Dataset} & \textbf{\#Train} & \textbf{\#Test} & \textbf{\#Corr.} & \textbf{\#Severity} & \textbf{\#Classes} \\
+% 			\hline
+% 			CIFAR-10      & 50,000 & 10,000 & 1  & 1 & 10  \\
+% 			CIFAR-100     & 50,000 & 10,000 & 1  & 1 & 100 \\
+% 			CIFAR-10-C    &   --   & 950,000 & 15 & 5 & 10  \\
+% 			CIFAR-100-C   &   --   & 950,000 & 15 & 5 & 100 \\
+% 			\hline
+% 		\end{tabular}
+% 	\end{latin}
+% \end{table}
+\begin{table}[t]
+    \centering
+    \small
+    \caption{\RL{خلاصه‌ای از مجموعه‌داده‌های اصلی و مخدوش مورد استفاده در آزمایش‌ها}}
+    \label{table:datasets}
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{p{4cm} p{2cm} p{2cm} p{2cm} p{2cm} p{2cm}}
+    \toprule
+    \textbf{\RL{مجموعه داده}} & 
+    \textbf{\RL{\#آموزش}} & 
+    \textbf{\RL{\#آزمون}} & 
+    \textbf{\RL{\#تخریب}} & 
+    \textbf{\RL{\#شدت}} & 
+    \textbf{\RL{\#کلاس‌ها}} \\ \midrule
+    \lr{CIFAR-10}      & \lr{50,000} & \lr{10,000} & \lr{1}  & \lr{1} & \lr{10}  \\
+    \lr{CIFAR-100}     & \lr{50,000} & \lr{10,000} & \lr{1}  & \lr{1} & \lr{100} \\
+    \lr{CIFAR-10-C}    & \lr{--}     & \lr{950,000} & \lr{15} & \lr{5} & \lr{10}  \\
+    \lr{CIFAR-100-C}   & \lr{--}     & \lr{950,000} & \lr{15} & \lr{5} & \lr{100} \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+

@@ -1,0 +1,18 @@
+\begin{table}[t]
+    \centering
+    \small
+    \caption[تحلیل پیچیدگی]{تحلیل پیچیدگی روش‌های  پایه‌ای و روش پیشنهادی}
+    \label{table:complexity}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{p{4cm} p{3.5cm} p{3.5cm}}
+    \toprule
+    \textbf{روش} & \textbf{\RL{\#جلورو}} & \textbf{\RL{\#عقب‌رو}}\\ \midrule
+    \lr{TENT}\cite{ftent}         & $m$              & $m$ \\
+    \lr{SAR}\cite{sar}          & $m + |X'_t|$     & $|X'_t| + |X''_t|$ \\
+    \lr{TEA}\cite{tea}         & $(k+1)m$         & $(k+2)m$ \\
+    \lr{TENT (APMS)}  & $m$              & $2 |X'_t|$ \\
+    \lr{SAR (APMS)}   & $m + |X'_t|$     & $|X'_t| + |X''_t| + |X_t|$ \\
+    \lr{TEA (APMS)}   & $m + k|X'_t|$    & $(k+2)|X'_t| + 1$ \\
+    \bottomrule
+    \end{tabular}
+\end{table}

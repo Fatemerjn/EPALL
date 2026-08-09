@@ -1,16 +1,16 @@
 # Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-08-09)
 
 ## Corpus Check
-- 233 files · ~729,361 words
+- 233 files · ~731,516 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1856 nodes · 3838 edges · 162 communities (91 shown, 71 thin omitted)
+- 1856 nodes · 3838 edges · 160 communities (90 shown, 70 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 242 edges (avg confidence: 0.62)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `10e81841`
+- Built from commit: `06f55be2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -76,7 +76,6 @@
 - [[_COMMUNITY_Dataset Constraints|Dataset Constraints]]
 - [[_COMMUNITY_LoRA|LoRA]]
 - [[_COMMUNITY_What You Must Do When Invoked|What You Must Do When Invoked]]
-- [[_COMMUNITY_SalUn|SalUn]]
 - [[_COMMUNITY_LSF|LSF]]
 - [[_COMMUNITY_SSD|SSD]]
 - [[_COMMUNITY_graphify reference extra exports and benchmark|graphify reference: extra exports and benchmark]]
@@ -173,7 +172,6 @@
 - [[_COMMUNITY_overlap_response_slopes|overlap_response_slopes.md]]
 - [[_COMMUNITY_make_epall_mechanism_aaai.py|make_epall_mechanism_aaai.py]]
 - [[_COMMUNITY_LSF|LSF]]
-- [[_COMMUNITY_EWC|EWC]]
 - [[_COMMUNITY_پرامپت‌های اصلاح شکل‌های ۱ تا ۶|پرامپت‌های اصلاح شکل‌های ۱ تا ۶]]
 - [[_COMMUNITY_run_final_queue.sh|run_final_queue.sh]]
 - [[_COMMUNITY_svg_to_pdf.sh|svg_to_pdf.sh]]
@@ -208,11 +206,11 @@
 ## Hyperedges (group relationships)
 - **Besmellah Calligraphic Invocation** — thesis_front_template_images_besmellah_image, thesis_front_template_images_besmellah_bismillah_al_rahman_al_rahim, thesis_front_template_images_besmellah_arabic_calligraphy, thesis_front_template_images_besmellah_islamic_invocation [INFERRED 0.85]
 
-## Communities (162 total, 71 thin omitted)
+## Communities (160 total, 70 thin omitted)
 
 ### Community 0 - "Subnet Mask Layers"
-Cohesion: 0.10
-Nodes (17): _apply_sparse_backup(), _empty_sparse_backup(), _merge_sparse_backup(), Store only selected flat indices and values; newer values win on overlap., SubnetClassifier, SubnetConv2d, SubnetLinear, maskedSequential (+9 more)
+Cohesion: 0.08
+Nodes (20): _apply_sparse_backup(), _empty_sparse_backup(), MaskByScores, _merge_sparse_backup(), Store only selected flat indices and values; newer values win on overlap., SubnetClassifier, SubnetConv2d, SubnetLinear (+12 more)
 
 ### Community 1 - "Training Main Metrics"
 Cohesion: 0.12
@@ -291,8 +289,8 @@ Cohesion: 0.09
 Nodes (48): audit_run(), _beta_ppf(), _betacf(), _betai(), cp_lower(), cp_upper(), eps_hat(), find_score_dirs() (+40 more)
 
 ### Community 22 - "Method Modules"
-Cohesion: 0.14
-Nodes (8): EWC, LSF, LwF, modified_kl_div(), smooth(), VisionTransformer, vit_t_16(), vit_t_8()
+Cohesion: 0.09
+Nodes (18): EWC, LSF, LwF, modified_kl_div(), smooth(), Sequential, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, inputs:                 Q: (batch_size, seq_len1, d_model)                 K: (b (+10 more)
 
 ### Community 23 - "Model Factories"
 Cohesion: 0.21
@@ -405,10 +403,6 @@ Nodes (18): Call, config_matches(), convert_value(), derive_variant(), is_comple
 ### Community 60 - "What You Must Do When Invoked"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
-
-### Community 61 - "SalUn"
-Cohesion: 0.13
-Nodes (12): Sequential, maskedSequentialViT, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, inputs:                 Q: (batch_size, seq_len1, d_model)                 K: (b, subnet_vit_t8(), subnet_vit_t_16(), subnet_vit_t_8(), SubnetEncoderBlock (+4 more)
 
 ### Community 62 - "LSF"
 Cohesion: 0.19
@@ -577,7 +571,7 @@ Nodes (7): CONFLICT_GAMMA_SEEDS, CONFLICT_GAMMA_VALUES, OVERLAP_CURVE_SEEDS, OVE
 ## Knowledge Gaps
 - **261 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `build_epall_mechanism_pdf.sh script` (+256 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **71 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **70 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Work-memory lessons
 
@@ -591,7 +585,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.062) - this node is a cross-community bridge._
 - **Why does `LoRA` connect `Replay Methods` to `Training Main Metrics`, `SSD`?**
   _High betweenness centrality (0.055) - this node is a cross-community bridge._
-- **Why does `RehearsalMemory` connect `SSD` to `PALL Adapter Logic`, `PALL Base Forgetting`, `Regularization Methods`, `Replay Methods`, `Method Modules`, `SalUn`, `SalUn`?**
+- **Why does `RehearsalMemory` connect `SSD` to `PALL Adapter Logic`, `PALL Base Forgetting`, `Regularization Methods`, `Replay Methods`, `Method Modules`, `SalUn`?**
   _High betweenness centrality (0.053) - this node is a cross-community bridge._
 - **Are the 8 inferred relationships involving `PALLBase` (e.g. with `RehearsalMemory` and `.__init__()`) actually correct?**
   _`PALLBase` has 8 INFERRED edges - model-reasoned connections that need verification._

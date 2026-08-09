@@ -1,0 +1,27 @@
+
+% -------------------------------------------------------
+%  English Abstract
+% -------------------------------------------------------
+
+\begin{latin}
+	
+	\begin{center}
+		\textbf{Abstract}
+	\end{center}
+	\baselineskip=.8\baselineskip
+	
+	Online test-time adaptation aims to enhance the generalization capability of pre-trained deep neural networks when facing distribution-shifted or previously unseen data during inference. In this process, models are dynamically adjusted in accordance with the incoming test samples. The main challenges in this setting include the lack of access to the entire test dataset, the absence of ground-truth labels, and the inability to fine-tune hyperparameters for optimal performance. Under such circumstances, if not properly controlled, the adaptation process may lead to error accumulation and catastrophic forgetting problems.
+	
+	To mitigate these issues, existing approaches often rely on confidence-based metrics such as prediction maximum probability or entropy. While these criteria can be effective for in-distribution samples, our observations indicate that their reliability significantly decreases under distribution shift, especially in high-dimensional settings.
+	
+	To address this limitation, we propose a novel approach to online test-time adaptation that tackles the problem from an out-of-distribution (OOD) detection perspective, aiming to achieve robustness while preserving adaptability. Our method is simple, efficient, and parameter-free, making it an ideal candidate for practical applications in online learning. Experimental results further demonstrate its effectiveness and consistent improvements in both standard and continual test-time adaptation scenarios.
+	
+	Specifically, on the CIFAR100-C dataset, experimental results show that the proposed method achieves, on average, about 15\% better performance than the baseline methods. In continuous testing scenarios where the baseline models suffer from collapse, the proposed method does not exhibit this issue and attains 75\% accuracy, which is close to the results achieved under standard test-time adaptation.
+    Moreover, analysis across a range of different hyperparameters indicates that the average performance of the proposed method consistently remains closer to the optimal value, whereas the baseline methods are highly sensitive to hyperparameter selection. For example, the maximum accuracy of the baseline Tent method reaches 70\% under some settings, while the improved version achieves 79\%. On the other hand, the average accuracy of the proposed method is 78\% and remains close to the optimum, whereas the average accuracy of the baseline method drops to 59\%.
+    These findings demonstrate the greater stability and robustness of the proposed method under distribution shifts and across different settings.
+
+	\bigskip\noindent\textbf{Keywords}:
+	
+	Test-time adaptation, Continual learning, Out-of-distribution detection
+	
+\end{latin}

@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1786144258.9322152,
-    "ast_hash": "cc4c2db7e6d65faec2b56fb92b4e079d",
+    "mtime": 1786284799.1811929,
+    "ast_hash": "f849b9cc2bd11c39026d7e9512ffd6d6",
     "semantic_hash": ""
   },
   "tools/run_small_ablation.py": {
@@ -525,23 +525,23 @@
     "semantic_hash": ""
   },
   "thesis/images/pall_adapter_architecture.png": {
-    "mtime": 1785976156.3996942,
-    "ast_hash": "aad0e22b7be382b89ec04b3fc7f1cdd4",
+    "mtime": 1786279857.2103808,
+    "ast_hash": "65317b6e7a88b98934e1b11a521368d3",
     "semantic_hash": ""
   },
   "thesis/images/parameter_overlap_concept.png": {
-    "mtime": 1785975322.386182,
-    "ast_hash": "4a44e93c2a1f1ce321554f24c29951f6",
+    "mtime": 1786279667.1026626,
+    "ast_hash": "f55df525a7b502e95bfb27030d5b133e",
     "semantic_hash": ""
   },
   "thesis/images/selective_forgetting_pipeline.png": {
-    "mtime": 1785976079.7332277,
-    "ast_hash": "88ba74462fa34c598e97d2d8994a56d5",
+    "mtime": 1786279761.0719428,
+    "ast_hash": "c084c121db7125adc14805a12bf17af9",
     "semantic_hash": ""
   },
   "thesis/images/softmask_drop_decomposition.png": {
-    "mtime": 1785976202.1489317,
-    "ast_hash": "aa9d6beb564faf6f866e3f5d738ac019",
+    "mtime": 1786279998.23602,
+    "ast_hash": "7406b84e39b80061982c46f20afadcd1",
     "semantic_hash": ""
   },
   "tools/make_thesis_horizontal_figures.py": {
@@ -585,8 +585,8 @@
     "semantic_hash": ""
   },
   "tools/check_thesis_numbers.py": {
-    "mtime": 1785977530.776637,
-    "ast_hash": "22dbc44a3310155aff2e95af5b08be8b",
+    "mtime": 1786283157.2475426,
+    "ast_hash": "07840669f4a4ac6d4bf50f8079df764e",
     "semantic_hash": ""
   },
   "scripts/sync_from_server.sh": {
@@ -1515,8 +1515,8 @@
     "semantic_hash": ""
   },
   "thesis/images/EPALL_mechanism_compact.png": {
-    "mtime": 1785975846.2841933,
-    "ast_hash": "e6cd87dfe1079b2b68d45e04296f6d82",
+    "mtime": 1786279908.1255393,
+    "ast_hash": "9121199c550c0b4e2e230b5dfb5495cd",
     "semantic_hash": ""
   },
   "thesis/images/tmp/EPALL_mechanism_compact.svg": {

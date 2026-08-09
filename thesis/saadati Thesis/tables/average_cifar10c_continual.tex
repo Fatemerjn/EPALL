@@ -1,0 +1,26 @@
+\begin{table}[H]
+    \centering
+    \caption[مقایسه‌ی میانگین عملکرد در مجموعه داده‌ی \lr{CIFAR10-C} در حالت مستمر]{مقایسه‌ی میانگین عملکرد بر روی مدل ViT در مجموعه داده‌ی \lr{CIFAR10-C} در حالت مستمر}
+    \label{table:t6}
+    \label{table:}
+    \begin{adjustbox}{width=\textwidth}
+    \begin{latin}
+    \begin{tabular}{lccccccccccccccc|cccc}
+    \toprule
+    Time & \multicolumn{15}{l|}{$t \xrightarrow{\hspace*{23cm}}$} & \\ 
+    \midrule
+    \multirow{2}{*}{Method} & \multicolumn{3}{c}{Noise} & \multicolumn{4}{c}{Blur} & \multicolumn{3}{c}{Weather} & \multicolumn{5}{c}{Digital} & \multicolumn{4}{c}{Avg} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-8}  \cmidrule(lr){9-11} \cmidrule(lr){12-16} \cmidrule(lr){17-20}
+    & Gauss. & Shot & Impul. & Defoc. & Glass & Motion & Zoom & Snow & Frost & Fog & Brit. & Contr. & Elastic & Pixel & JPEG & Acc (↑) & AUROC (↑) & ECE (↓) &  MCE (↓)  \\
+    \midrule
+    Source & 76.23 & 77.04 & 74.64 & \textbf{92.84} & \textbf{69.25} & \textbf{90.18} & \textbf{94.00} & \textbf{93.72} & \textbf{92.18} & \textbf{90.21} & \textbf{97.69} & \textbf{92.99} & \textbf{82.88} & 57.22 & \textbf{84.45} & \textbf{84.37} & 80.12 & \textbf{9.52} & \textbf{34.85} \\
+    TENT\cite{tent} & 71.23 & 57.71 & 37.41 & 45.81 & 36.22 & 41.75 & 42.75 & 42.66 & 43.22 & 41.00 & 44.47 & 41.72 & 39.45 & 37.03 & 39.33 & 44.12 & 61.78 & 54.95 & 67.90 \\
+    SAR\cite{sar} & 61.19 & 63.47 & 56.44 & 69.79 & 52.35 & 58.99 & 60.81 & 61.07 & 61.85 & 53.22 & 62.78 & 60.08 & 53.05 & 51.14 & 51.40 & 58.51 & 64.27 & 39.53 & 55.59 \\
+    TEA\cite{tea} & 54.89 & 40.79 & 30.83 & 27.62 & 23.51 & 26.47 & 27.09 & 26.81 & 26.87 & 26.47 & 27.38 & 26.89 & 25.44 & 18.86 & 24.14 & 28.94 & 60.24 & 70.23 & 77.79 \\
+    TENT(APMS) & \textbf{83.93} & \textbf{86.76} & \textbf{81.60} & 76.92 & 67.89 & 74.93 & 77.69 & 76.68 & 77.66 & 75.77 & 79.16 & 77.21 & 71.28 & \textbf{73.14} & 70.09 & 76.71 & \textbf{82.20} & 22.33 & 50.53 \\
+    SAR(APMS) & 76.75 & 72.80 & 70.09 & 82.73 & 63.54 & 71.08 & 73.54 & 73.11 & 72.95 & 71.32 & 75.39 & 73.24 & 67.05 & 55.46 & 66.61 & 71.04 & 69.45 & 25.78 & 46.05 \\
+    TEA(APMS) & 59.48 & 50.31 & 38.82 & 43.14 & 27.31 & 26.53 & 27.02 & 26.70 & 26.74 & 26.40 & 27.22 & 26.67 & 24.99 & 18.25 & 23.58 & 31.54 & 62.18 & 67.50 & 75.20 \\
+    \end{tabular}
+    \end{latin}
+    \end{adjustbox}
+\end{table}
