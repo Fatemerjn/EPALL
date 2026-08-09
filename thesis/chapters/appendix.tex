@@ -12,6 +12,8 @@
 \noindent
 روش اصلی در متن این پایان‌نامه \lr{EPALL} نامیده می‌شود و در کد و برچسب‌های آزمایش با شناسه‌ی \lr{pall\_modified} ثبت شده است؛ این دو نام به یک الگوریتم اشاره می‌کنند. پیکربندی کامل آزمایش‌ها در جدول \ref{tab:res-hyper} آمده است.
 
+\input{tables/res_hyper}
+
 \bigskip
 \noindent
 \textbf{محیط اجرا.} همه‌ی اجراهای گزارش‌شده روی یک \lr{NVIDIA RTX 3070 Ti} با $8$ گیگابایت حافظه‌ی گرافیکی، دو پردازنده‌ی \lr{Xeon E5-2620 v4}، $31$ گیگابایت حافظه‌ی اصلی، \lr{Ubuntu 24.04.4}، \lr{Python 3.12.3} و \lr{PyTorch 2.5.1} انجام شده‌اند. نسخه‌ی مخزن که اعداد این پایان‌نامه از آن تولید شده با برچسب \lr{\texttt{thesis-final}} علامت‌گذاری شده است، و وضعیت پیش از تثبیت لنگر با برچسب \lr{\texttt{thesis-baseline-old-anchor}} نگه داشته شده است. برای بازتولید یک مجموعه نتیجه کافی است مخزن روی برچسب قرار گیرد و گروه متناظر از جدول زیر اجرا شود؛ برای نمونه \lr{\texttt{bash tools/run\_server\_experiments.sh g6\_standard}}. هر گروه پیش از اجرا با سوییچ \lr{\texttt{--dry-run}} فرمان‌های دقیق خود را بدون اجرا چاپ می‌کند.
@@ -27,34 +29,7 @@
 
 \bigskip
 \noindent
-\textbf{فرمان‌های بازتولید.} هر مجموعه نتیجه با یک گروه از اسکریپت \lr{\texttt{tools/run\_server\_experiments.sh}} و یک برچسب آزمایش مستقل تولید می‌شود:
-
-\begin{center}
-\begin{tabular}{l l l}
-\toprule
-\textbf{نتیجه} & \textbf{فرمان} & \textbf{برچسب آزمایش} \\ \midrule
-مقایسه‌ی اصلی (هشت بذر) & \lr{\texttt{g6\_standard}}، \lr{\texttt{g28\_standard\_seed\_extension}} & \lr{\texttt{*\_standard}} \\
-مبناهای حذف استاندارد & \lr{\texttt{g21\_standard\_unlearning}} & \lr{\texttt{standard\_unlearning\_ssd\_salun\_v1}} \\
-پروتکل هم‌پوشانی‌سنگین & \lr{\texttt{g1}}، \lr{\texttt{g2}} & \lr{\texttt{*\_main}}، \lr{\texttt{*\_baselines\_v2}} \\
-پیش‌آموزش‌دیده & \lr{\texttt{g5}} & \lr{\texttt{*\_pretrained}} \\
-ابلیشن لنگر & \lr{\texttt{g10\_anchor}} & \lr{\texttt{anchor\_ablation\_v1}} \\
-لنگر \lr{\texttt{reinit}} (هشت بذر) & \lr{\texttt{g29\_standard\_reinit}} & \lr{\texttt{*\_standard\_reinit\_v1}} \\
-مؤلفه‌های \lr{EPALL} & \lr{\texttt{g25\_modified\_components}} & \lr{\texttt{pall\_modified\_components\_overlapmatched\_v2}} \\
-مؤلفه‌های آداپتر & \lr{\texttt{g23\_adapter\_components}} & \lr{\texttt{adapter\_components\_pretrained\_imagenetnorm\_rngneutral\_v3}} \\
-مرجع بازآموزی & \lr{\texttt{g24\_retraining\_reference}} & \lr{\texttt{pall\_modified\_retraining\_reference\_v1}} \\
-\lr{MIA} تصحیح‌شده & \lr{\texttt{g26\_corrected\_mia}} & \lr{\texttt{pall\_modified\_mia\_corrected\_v2}} \\
-حسابداری حالت مقیم & \lr{\texttt{g27\_storage\_accounting}} & \lr{\texttt{storage\_accounting\_v1}} \\
-منحنی هم‌پوشانی & \lr{\texttt{g17\_overlap\_curve}} & \lr{\texttt{overlap\_curve\_v1\_*}} \\
-ممیزی کاوشگر خطی & \lr{\texttt{g18\_probe}} & \lr{\texttt{probe\_v1}} \\
-معیار اهمیت تعارض & \lr{\texttt{g14\_conflict}} & \lr{\texttt{conflict\_ablation\_v1}} \\
-آزمون میان‌معماری & \lr{\texttt{g11\_vit}} & \lr{\texttt{*\_vit\_v1}} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\bigskip
-\noindent
-\textbf{ممیزی خودکار.} دو ابزار، سازگاری متن و نتایج را بررسی می‌کنند: \lr{\texttt{tools/audit\_seed\_completeness.py}} کامل‌بودن بذرهای هر مجموعه نتیجه را می‌آزماید، و \lr{\texttt{tools/check\_thesis\_numbers.py}} هر عدد چاپ‌شده در جدول‌های \lr{\texttt{thesis/tables/}} را با فایل‌های تجمیع در \lr{\texttt{results/aggregates/}} مقابله می‌کند و اعداد اعشاری متن را نیز با همان منابع می‌سنجد.
+\textbf{بازتولید.} هر مجموعه نتیجه با یک گروه از اسکریپت \lr{\texttt{tools/run\_server\_experiments.sh}} و زیر یک برچسب آزمایش مستقل تولید می‌شود؛ فهرست کامل گروه‌ها، برچسب‌ها و ابزارهای ممیزی خودکار در \lr{\texttt{README}} مخزن آمده است.
 
 \bigskip
 \noindent

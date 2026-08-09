@@ -127,6 +127,11 @@ MARKDOWN_SOURCES: Dict[str, tuple[Path, tuple[float, ...]]] = {
         # totals are checked separately in check_storage_merge.
         (4.0, 8.0, 45.99, 169.29),
     ),
+    "res_overlap_sparsity": (
+        AGGREGATES / "overlap_sparsity_summary.md",
+        # sparsity levels and the seed count are structural, not results
+        (0.5, 0.6, 0.7, 0.8, 0.9),
+    ),
     "res_persistence": (
         AGGREGATES / "forgetting_persistence" / "PERSISTENCE_AUDIT.md",
         (),
