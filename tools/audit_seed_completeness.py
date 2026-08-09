@@ -62,9 +62,7 @@ class ExpectedSpec:
             "protect_importance": "gradient",
             "protect_ratio": "",
             "lambda_protect": 0.0,
-            # Not the argparse default any more (main.py now defaults to "reinit");
-            # every runner group pins --protect_anchor old explicitly, so this is the
-            # value written into the configs of the runs these specs describe.
+            # main.py argparse default, and pinned explicitly by every runner group.
             "protect_anchor": "old",
             "adaptive_protect": False,  # main.py argparse default (store_true), written into every run config
             "adapter_bottleneck": 16,

@@ -357,11 +357,11 @@
       .panel { fill:#fff; stroke:#d8d8d8; stroke-width:3; }
       .sans { font-family:&quot;Helvetica Neue&quot;,Helvetica,Arial,sans-serif; fill:#111; }
       .serif { font-family:&quot;Times New Roman&quot;,&quot;TeX Gyre Termes&quot;,Times,serif; fill:#111; }
-      .title { font-size:68px; font-weight:600; }
-      .section { font-size:62px; font-weight:600; }
-      .body { font-size:43px; }
-      .small { font-size:37px; }
-      .tiny { font-size:31px; }
+      .title { font-size:84px; font-weight:600; }
+      .section { font-size:75px; font-weight:600; }
+      .body { font-size:72px; }
+      .small { font-size:68px; }
+      .tiny { font-size:66px; }
       .math { font-family:&quot;Times New Roman&quot;,&quot;TeX Gyre Termes&quot;,Times,serif; font-style:italic; }
       .red-stroke { fill:none; stroke:#b00020; stroke-width:7; }
       .blue-stroke { fill:none; stroke:#003dcc; stroke-width:7; stroke-dasharray:22 15; }
@@ -802,7 +802,7 @@
            inkscape:transform-center-x="-18.449694"
            inkscape:transform-center-y="-38.436863"
            transform="scale(1.108002,0.90252544)">r<tspan
-   style="font-size:48.614px;baseline-shift:sub;stroke-width:0.91034"
+   style="font-size:52px;baseline-shift:sub;stroke-width:0.91034"
    id="tspan34-1">2</tspan></text><text
            x="95.553642"
            y="1278.0969"
@@ -898,16 +898,16 @@
          class="sans body"
          fill="#b00020"
          id="text49"
-         style="font-size:42.6667px;stroke-width:0.9;stroke-dasharray:none"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:42.6667px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif'"
+         style="font-size:52px;stroke-width:0.9;stroke-dasharray:none"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:52px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif'"
            id="tspan238" /></text><text
          x="845.01532"
          y="1647.2888"
          class="sans body"
          fill="#b00020"
          id="text50"
-         style="font-size:42.6667px;stroke-width:0.9;stroke-dasharray:none"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:42.6667px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif'"
+         style="font-size:52px;stroke-width:0.9;stroke-dasharray:none"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:52px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif'"
            id="tspan239" /></text><path
          d="m 739.6387,1287.2751 h 73.21162"
          stroke="#b00020"
@@ -1718,9 +1718,9 @@
        y="644.604"
        class="sans body"
        id="text158"
-       style="font-size:45.3402px;stroke-width:0.939497"
+       style="font-size:52px;stroke-width:0.939497"
        transform="scale(1.0649537,0.93900799)"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45.3402px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif';stroke-width:0.939497"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:52px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif';stroke-width:0.939497"
          id="tspan254" /></text><text
        x="3218.5879"
        y="341.69302"
@@ -1739,9 +1739,9 @@
          y="1425.0735"
          class="sans body"
          id="text171"
-         style="font-size:48.1154px;stroke-width:9.55232;stroke-dasharray:none"
+         style="font-size:52px;stroke-width:9.55232;stroke-dasharray:none"
          transform="scale(1.0000517,0.99994828)"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:48.1154px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif';stroke-width:9.55232;stroke-dasharray:none"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:52px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif';stroke-width:9.55232;stroke-dasharray:none"
            id="tspan263" /></text><text
          x="3864.9136"
          y="1390.0718"
@@ -1828,8 +1828,8 @@
              y="332.53998"
              class="sans body"
              id="text152"
-             style="font-size:49.5864px;stroke-width:9.84436;stroke-dasharray:none"><tspan
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:49.5864px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif';stroke-width:9.84436;stroke-dasharray:none"
+             style="font-size:52px;stroke-width:9.84436;stroke-dasharray:none"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:52px;font-family:'Times New Roman', 'TeX Gyre Termes', Times, serif;-inkscape-font-specification:'Times New Roman, TeX Gyre Termes, Times, serif';stroke-width:9.84436;stroke-dasharray:none"
                id="tspan251" /></text></g><text
            x="2816.8301"
            y="230.95079"

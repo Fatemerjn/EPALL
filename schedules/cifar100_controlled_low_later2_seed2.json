@@ -1,0 +1,146 @@
+{
+  "n_tasks": 10,
+  "n_forget": 1,
+  "seed": 2,
+  "sequence_length_requested": 11,
+  "sequence_length_actual": 11,
+  "schedule_type": "controlled_overlap_position_proxy",
+  "controlled_overlap_setting": "low",
+  "controlled_overlap_knob": "later_training_tasks",
+  "target_later_training_tasks": 2,
+  "target_later_training_ratio": 0.2222222222222222,
+  "forget_task": 7,
+  "notes": "This schedule controls the request-position overlap proxy: the target knob is the number of training requests after the eventually forgotten task. It does not impose a target on measured parameter overlap; class-level overlap requires a future dataset/task-split extension.",
+  "requests": [
+    {
+      "task_id": 0,
+      "request_type": "T",
+      "active_tasks": [
+        0
+      ]
+    },
+    {
+      "task_id": 1,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1
+      ]
+    },
+    {
+      "task_id": 2,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "task_id": 3,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "task_id": 4,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "task_id": 5,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "task_id": 6,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "task_id": 7,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "task_id": 8,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "task_id": 9,
+      "request_type": "T",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "task_id": 7,
+      "request_type": "F",
+      "active_tasks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9
+      ]
+    }
+  ]
+}

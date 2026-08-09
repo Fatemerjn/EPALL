@@ -131,6 +131,10 @@ MARKDOWN_SOURCES: Dict[str, tuple[Path, tuple[float, ...]]] = {
         AGGREGATES / "forgetting_persistence" / "PERSISTENCE_AUDIT.md",
         (),
     ),
+    # The reinit arm lives under its own experiment tag and is aggregated
+    # separately, so this table is bound to the anchor analysis rather than to
+    # the canonical result CSVs.
+    "res_anchor": (AGGREGATES / "anchor_paired_summary.md", (3.0, 6.0, 7.0, 2.0, 8.0)),
     "res_slopes": (
         ROOT / "results" / "thesis" / "plots_v2" / "overlap_response_slopes.md",
         (11.0, 12.0, 14.0, 86.0, 92.0, 95.0),
@@ -204,7 +208,6 @@ CSV_SUBSETS: Dict[str, tuple[Callable[[Dict[str, str]], bool], tuple[float, ...]
         lambda row: row["experiment_tag"].startswith("overlap_curve_v1_"),
         (),
     ),
-    "res_anchor": (lambda row: row["experiment_tag"] == "anchor_ablation_v1", ()),
     "res_conflict": (
         lambda row: row["experiment_tag"]
         in ("conflict_ablation_v1", "adapter_bottleneck_ablation_v1"),

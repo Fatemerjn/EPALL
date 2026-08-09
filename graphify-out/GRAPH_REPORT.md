@@ -1,16 +1,16 @@
-# Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-07-28)
+# Graph Report - Overlap-Aware-Selective-Forgetting-  (2026-08-05)
 
 ## Corpus Check
-- 194 files · ~343,611 words
+- 199 files · ~606,514 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1692 nodes · 3614 edges · 154 communities (83 shown, 71 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 232 edges (avg confidence: 0.62)
+- 1762 nodes · 3772 edges · 159 communities (85 shown, 74 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 242 edges (avg confidence: 0.62)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6193c5ee`
+- Built from commit: `a057cf3d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -166,9 +166,14 @@
 - [[_COMMUNITY_analyze_paired_main.py|analyze_paired_main.py]]
 - [[_COMMUNITY_analyze_corrected_mia.py|analyze_corrected_mia.py]]
 - [[_COMMUNITY__merge_sparse_backup|_merge_sparse_backup]]
-- [[_COMMUNITY_EWC|EWC]]
+- [[_COMMUNITY_Q رفرنس ها تو پایان نامه چرا نمایش داده نمیشه؟ همینطور فهرست ها ممکنه از کامپالش باشه|Q: رفرنس ها تو پایان نامه چرا نمایش داده نمیشه؟ همینطور فهرست ها ممکنه از کامپالش باشه]]
 - [[_COMMUNITY_analyze_significance.py|analyze_significance.py]]
 - [[_COMMUNITY_build_epall_mechanism_pdf.sh|build_epall_mechanism_pdf.sh]]
+- [[_COMMUNITY_Thesis Template|Thesis Template]]
+- [[_COMMUNITY_overlap_response_slopes|overlap_response_slopes.md]]
+- [[_COMMUNITY_make_epall_mechanism_aaai.py|make_epall_mechanism_aaai.py]]
+- [[_COMMUNITY_LSF|LSF]]
+- [[_COMMUNITY_EWC|EWC]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `PALLBase` - 46 edges
@@ -177,8 +182,8 @@
 4. `PALLAdapter` - 43 edges
 5. `VisionTransformer` - 36 edges
 6. `main()` - 34 edges
-7. `SubnetLinear` - 31 edges
-8. `run_server_experiments.sh script` - 31 edges
+7. `run_server_experiments.sh script` - 32 edges
+8. `SubnetLinear` - 31 edges
 9. `RehearsalMemory` - 26 edges
 10. `SubnetConv2d` - 26 edges
 
@@ -200,7 +205,7 @@
 ## Hyperedges (group relationships)
 - **Besmellah Calligraphic Invocation** — thesis_front_template_images_besmellah_image, thesis_front_template_images_besmellah_bismillah_al_rahman_al_rahim, thesis_front_template_images_besmellah_arabic_calligraphy, thesis_front_template_images_besmellah_islamic_invocation [INFERRED 0.85]
 
-## Communities (154 total, 71 thin omitted)
+## Communities (159 total, 74 thin omitted)
 
 ### Community 0 - "Subnet Mask Layers"
 Cohesion: 0.06
@@ -211,8 +216,8 @@ Cohesion: 0.12
 Nodes (30): acc_list_to_dict(), avg_for_tasks(), build_mia_event(), build_probe_event(), _coerce_float_or_none(), _coerce_int_or_none(), compute_average_forgetting(), compute_model_agreement() (+22 more)
 
 ### Community 2 - "Swift Overlap Plots"
-Cohesion: 0.13
-Nodes (41): Select an execution device with macOS MPS support., resolve_device(), RuntimeError, aggregate_rows(), allowed_tags(), analyze_run(), as_accuracy_map(), config_mismatches() (+33 more)
+Cohesion: 0.12
+Nodes (42): Select an execution device with macOS MPS support., resolve_device(), RuntimeError, accuracy_map(), analyze_run(), main(), parse_args(), plot_curves() (+34 more)
 
 ### Community 3 - "Dataset Loading"
 Cohesion: 0.10
@@ -251,16 +256,16 @@ Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 12 - "Report Plotting"
-Cohesion: 0.10
-Nodes (76): Axes, Figure, add_global_legend(), aggregate_group_key(), bootstrap_mean_ci(), build_forgetting_quality_points(), build_tradeoff_points(), canonical_group_value() (+68 more)
+Cohesion: 0.09
+Nodes (87): Axes, Figure, add_global_legend(), aggregate_group_key(), bootstrap_mean_ci(), build_forgetting_quality_points(), build_tradeoff_points(), canonical_group_value() (+79 more)
 
 ### Community 14 - "Experiment Summaries"
 Cohesion: 0.21
 Nodes (20): build_metric_table(), build_observations(), build_overlap_table(), describe_difference(), fmt_mean_std(), fmt_number(), group_means(), group_results() (+12 more)
 
 ### Community 15 - "Replay Methods"
-Cohesion: 0.07
-Nodes (12): Base, Return explicit resident-state categories used in paper accounting.          Thi, Deterministically reseed NumPy/Python RNGs inside each DataLoader worker.      P, Lazily build a CPU generator seeded from the run seed.          Passing an expli, Penultimate representation feeding this method's classifier head, on the, Run a read-only diagnostic without perturbing subsequent training RNG., _seed_worker(), LoRA (+4 more)
+Cohesion: 0.09
+Nodes (10): Base, Return explicit resident-state categories used in paper accounting.          Thi, Deterministically reseed NumPy/Python RNGs inside each DataLoader worker.      P, Lazily build a CPU generator seeded from the run seed.          Passing an expli, Penultimate representation feeding this method's classifier head, on the, Run a read-only diagnostic without perturbing subsequent training RNG., _seed_worker(), _BackupLayer (+2 more)
 
 ### Community 17 - "Adapter Ablation Summary"
 Cohesion: 0.22
@@ -283,12 +288,12 @@ Cohesion: 0.09
 Nodes (48): audit_run(), _beta_ppf(), _betacf(), _betai(), cp_lower(), cp_upper(), eps_hat(), find_score_dirs() (+40 more)
 
 ### Community 22 - "Method Modules"
-Cohesion: 0.18
-Nodes (9): Sequential, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, subnet_vit_t8(), subnet_vit_t_16(), subnet_vit_t_8(), SubnetVisionTransformer, VisionTransformer, vit_t_16() (+1 more)
+Cohesion: 0.15
+Nodes (12): LwF, modified_kl_div(), smooth(), Sequential, ViT-Tiny/8 sized for 32x32 CIFAR inputs: 16 patches (+1 cls token).      Distinc, subnet_vit_t8(), subnet_vit_t_16(), subnet_vit_t_8() (+4 more)
 
 ### Community 23 - "Model Factories"
-Cohesion: 0.27
-Nodes (8): adapter_resnet18(), adapter_resnet34(), adapter_resnet50(), lora_resnet18(), lora_resnet34(), lora_resnet50(), BasicBlock, Bottleneck
+Cohesion: 0.21
+Nodes (9): adapter_resnet18(), adapter_resnet34(), adapter_resnet50(), TaskBottleneckAdapter, lora_resnet18(), lora_resnet34(), lora_resnet50(), BasicBlock (+1 more)
 
 ### Community 24 - "check_thesis_numbers.py"
 Cohesion: 0.19
@@ -311,7 +316,7 @@ Cohesion: 0.40
 Nodes (12): AblationConfig, build_command(), build_commands(), DatasetPreset, main(), parse_args(), print_command(), Namespace (+4 more)
 
 ### Community 32 - "LoRA Modules"
-Cohesion: 0.21
+Cohesion: 0.23
 Nodes (4): Per-task LoRA module: x + (alpha/r) * B(A x), no nonlinearity.      Mirrors ``Ta, Optional shared LoRA applied to the feature for all tasks., SharedLoRA, TaskLoRA
 
 ### Community 33 - "ResNet Backbone"
@@ -351,8 +356,8 @@ Cohesion: 0.33
 Nodes (9): DataFrame, compute_regression_band(), main(), parse_args(), plot_publication_figure(), Namespace, ndarray, Path (+1 more)
 
 ### Community 42 - "Server Experiment Script"
-Cohesion: 0.17
-Nodes (33): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+25 more)
+Cohesion: 0.16
+Nodes (34): group1(), group10_anchor(), group11_vit(), group12_agreement(), group13_shared_bottleneck(), group14_conflict(), group15_seed2(), group17_overlap_curve() (+26 more)
 
 ### Community 44 - "Baseline Runner"
 Cohesion: 0.53
@@ -398,13 +403,17 @@ Nodes (18): Call, config_matches(), convert_value(), derive_variant(), is_comple
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
+### Community 61 - "SalUn"
+Cohesion: 0.15
+Nodes (3): Derpp, ER, RehearsalMemory
+
 ### Community 62 - "LSF"
 Cohesion: 0.19
 Nodes (21): accuracy_at(), as_float(), bootstrap_mean_ci(), extract_row(), fmt(), load_json(), main(), mean_present() (+13 more)
 
 ### Community 63 - "SSD"
-Cohesion: 0.22
-Nodes (4): LSF, LwF, modified_kl_div(), smooth()
+Cohesion: 0.30
+Nodes (5): PALLModified, PALL-Modified -- the MAIN overlap-aware selective-forgetting method.  Identifies, PALLOriginal, PALL-Original -- the PALL baseline (no overlap protection).  Forgetting resets t, Backward-compatibility shim.  The PALL implementation was split into:   * ``meth
 
 ### Community 64 - "graphify reference: extra exports and benchmark"
 Cohesion: 0.22
@@ -455,8 +464,8 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 106 - "main"
-Cohesion: 0.42
-Nodes (8): accuracy_map(), analyze_run(), main(), parse_args(), plot_curves(), summarize(), write_csv(), write_markdown()
+Cohesion: 0.39
+Nodes (10): build_epall_mechanism_compact(), build_literature_taxonomy(), build_pall_adapter_architecture(), build_parameter_overlap_concept(), build_selective_forgetting_pipeline(), build_softmask_drop_decomposition(), _draw_mask_grid(), main() (+2 more)
 
 ### Community 107 - "generate_main_standard_table.py"
 Cohesion: 0.18
@@ -479,8 +488,8 @@ Cohesion: 0.14
 Nodes (13): get_cifar100_superclass_tasks(), get_dataset_metadata(), get_evaluation_transform(), get_task_datasets(), _load_tinyimagenet_wnids(), make_augmentation_free_evaluation_view(), Clone a task dataset with training augmentation disabled for audits.      Cached, Return the deterministic test-time transform for a supported dataset. (+5 more)
 
 ### Community 131 - "پرامپت‌های پیشنهادی برای بازطراحی شکل‌های مفهومی پایان‌نامه"
-Cohesion: 0.29
-Nodes (6): 1. جریان فراموشی انتخابی آگاه از هم‌پوشانی, 2. هم‌پوشانی پارامتری و ناحیه‌ی بحرانی, 3. معماری افقی PALL-Adapter, 4. تجزیه‌ی افت با ماسک نرم, 5. تصویر خلاصه برای فصل نتایج, پرامپت‌های پیشنهادی برای بازطراحی شکل‌های مفهومی پایان‌نامه
+Cohesion: 0.06
+Nodes (32): تصاویر تازهٔ ۴، ۵، ۶ و ۷ — نمودارهای روش/دیتاست مقایسه‌ای, تصویر تازهٔ ۱ — Shared-bottleneck ablation, تصویر تازهٔ ۲ — Subphase drop-budget decomposition, تصویر تازهٔ ۳ — معماری افقی PALL-Adapter, تصویر تازهٔ ۸ — شبکهٔ هم‌پوشانی و مجموعهٔ بحرانی, تصویر تازهٔ ۹ — خط زمانی یادگیری و حذف, تم منتخب: «مینیمال فنی شریف», خروجی‌های قابل‌ویرایش (+24 more)
 
 ### Community 132 - "audit_seed_completeness.py"
 Cohesion: 0.17
@@ -514,10 +523,6 @@ Nodes (6): build_requests_with_active_tasks(), generate_user_requests(), get_req
 Cohesion: 0.13
 Nodes (31): adapter_config(), audit(), config_label(), expected_specs(), ExpectedSpec, find_partial_dirs(), load_actual_runs(), main() (+23 more)
 
-### Community 147 - ".__init__"
-Cohesion: 0.30
-Nodes (5): PALLModified, PALL-Modified -- the MAIN overlap-aware selective-forgetting method.  Identifies, PALLOriginal, PALL-Original -- the PALL baseline (no overlap protection).  Forgetting resets t, Backward-compatibility shim.  The PALL implementation was split into:   * ``meth
-
 ### Community 148 - "analyze_paired_main.py"
 Cohesion: 0.46
 Nodes (7): bootstrap_ci(), main(), number(), paired_rows(), summaries(), write_csv(), write_markdown()
@@ -530,24 +535,37 @@ Nodes (6): latest_rows(), load(), main(), value(), write_csv(), write_markdown()
 Cohesion: 0.24
 Nodes (11): StorageAnalysisTest, fmt(), linear_slope(), load_json(), main(), mb(), select_runs(), summarize() (+3 more)
 
+### Community 151 - "Q: رفرنس ها تو پایان نامه چرا نمایش داده نمیشه؟ همینطور فهرست ها ممکنه از کامپالش باشه"
+Cohesion: 0.40
+Nodes (4): Answer, Outcome, Q: رفرنس ها تو پایان نامه چرا نمایش داده نمیشه؟ همینطور فهرست ها ممکنه از کامپالش باشه, Source Nodes
+
 ### Community 152 - "analyze_significance.py"
 Cohesion: 0.43
 Nodes (6): cohens_dz(), exact_sign_test_p(), exact_wilcoxon_p(), main(), One-sided exact sign test: P(#positive >= observed | p=0.5), ties dropped., One-sided exact Wilcoxon signed-rank p-value (small n, ties dropped).      Enume
 
+### Community 156 - "make_epall_mechanism_aaai.py"
+Cohesion: 0.57
+Nodes (7): arrow(), build(), panel_a(), panel_b(), panel_c(), rounded(), step_box()
+
 ## Knowledge Gaps
-- **182 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `build_epall_mechanism_pdf.sh script` (+177 more)
+- **210 isolated node(s):** `example_run.sh script`, `reproduce_all.sh script`, `sync_from_server.sh script`, `sync_to_server.sh script`, `build_epall_mechanism_pdf.sh script` (+205 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **71 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **74 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+
+## Work-memory lessons
+
+**Known dead ends** — questions that led nowhere; don't re-derive.
+- "رفرنس ها تو پایان نامه چرا نمایش داده نمیشه؟ همینطور فهرست ها ممکنه از کامپالش باشه" -> `Reference`
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `RehearsalMemory` connect `SalUn` to `PALL Adapter Logic`, `PALL Base Forgetting`, `LoRA`, `Regularization Methods`, `Replay Methods`, `.__init__`, `Method Modules`, `SalUn`?**
-  _High betweenness centrality (0.076) - this node is a cross-community bridge._
-- **Why does `SubnetVisionTransformer` connect `Method Modules` to `Subnet Mask Layers`, `PALL Base Forgetting`, `CLPU Method`, `LoRA`, `Regularization Methods`, `Base Model Params`, `.__init__`, `EWC`, `SalUn`, `SalUn`, `SSD`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
-- **Why does `PALLAdapter` connect `PALL Adapter Logic` to `Training Main Metrics`, `Replay Methods`, `.__init__`, `Method Modules`, `SalUn`?**
-  _High betweenness centrality (0.059) - this node is a cross-community bridge._
+- **Why does `PALLAdapter` connect `PALL Adapter Logic` to `Training Main Metrics`, `Replay Methods`, `Method Modules`, `SalUn`, `SSD`?**
+  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+- **Why does `LoRA` connect `LoRA` to `Training Main Metrics`, `Replay Methods`, `Method Modules`, `SalUn`, `SSD`?**
+  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+- **Why does `RehearsalMemory` connect `SalUn` to `PALL Adapter Logic`, `PALL Base Forgetting`, `LoRA`, `Regularization Methods`, `Method Modules`, `SalUn`, `SSD`?**
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Are the 8 inferred relationships involving `PALLBase` (e.g. with `RehearsalMemory` and `.__init__()`) actually correct?**
   _`PALLBase` has 8 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 8 inferred relationships involving `Base` (e.g. with `.__init__()` and `SalUn`) actually correct?**

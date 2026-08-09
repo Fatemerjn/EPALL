@@ -114,10 +114,21 @@ parser.add_argument(
 parser.add_argument('--lambda_protect', default=0.0, type=float, help='regularization weight for protected params')
 parser.add_argument(
     '--protect_anchor', default='old', choices=['old', 'reinit'],
-    help="pall_modified anchor target for the critical-shared L2 penalty: 'old' "
-         "anchors to pre-forget weights w_old (default); 'reinit' anchors to a "
-         "fresh data-independent reinitialization sample (w_old still encodes "
-         "forget-task information, so 'reinit' removes that leakage)")
+    help="pall_modified anchor target for the critical-shared L2 penalty: "
+         "'old' (default) anchors to the pre-forget weights w_old; 'reinit' "
+         "anchors to a fresh data-independent reinitialization sample. The "
+         "default briefly moved to 'reinit' on the conceptual argument that "
+         "w_old still encodes forget-task information, and on a two-seed "
+         "study. The eight-seed matched comparison "
+         "(tools/analyze_anchor_paired.py) did not replicate that: no metric "
+         "survives Holm correction either way, and the direction of evidence "
+         "favours 'old' on CIFAR-100 retention (F_avg 7/8 pairs, d_z 1.06; "
+         "WorstDrop 6/8, d_z 1.04) while CIFAR-10 is a wash. The anchor acts "
+         "only on S_crit within the shared region, so it is a retention lever, "
+         "not a forgetting lever, and reinit does not buy data independence "
+         "while sparse backups still hold forget-dependent values. The default "
+         "is therefore 'old', which is also what every reported table was run "
+         "with.")
 parser.add_argument(
     '--adaptive_protect', default=False, action='store_true',
     help="scale lambda_protect by the measured critical-overlap ratio "

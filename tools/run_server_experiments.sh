@@ -106,7 +106,7 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia) ;;
+        g15_seed2|g17_overlap_curve|g18_probe|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia|g31_conflict_gamma_sweep|g32_overlap_sparsity) ;;
         *)
             echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
@@ -766,7 +766,11 @@ group17_overlap_curve () {
     local LORA="--lora_rank 8 --lora_alpha 16"
     local SALUN="--salun_mask_ratio 0.1 --salun_target uniform --forget_iters 50"
 
-    for s in 0 1; do
+    # Seed extension keeps the existing experiment tag, as group 28 does: added
+    # seeds append rows to the same table rather than forming a new arm.
+    local seeds="${OVERLAP_CURVE_SEEDS:-0 1}"
+
+    for s in $seeds; do
         for grade in very_low low medium high very_high; do
             local c10_k c100_k
             case "$grade" in
@@ -780,41 +784,41 @@ group17_overlap_curve () {
             local c100="schedules/cifar100_controlled_${grade}_later${c100_k}_seed${s}.json"
             local tag="overlap_curve_v1_${grade}"
 
-            launch "overlap_curve_c10_${grade}_pall_original_s${s}" $C10 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c10_${grade}_pall_original_s${s}" $C10 $COMMON --seed $s \
                    --request_schedule_file $c10 --method pall_original \
                    --retrain_steps 50 --dump_overlap --experiment_tag $tag
-            launch "overlap_curve_c10_${grade}_pall_modified_s${s}" $C10 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c10_${grade}_pall_modified_s${s}" $C10 $COMMON --seed $s \
                    --request_schedule_file $c10 --method pall_modified $PALL_MOD \
                    --dump_overlap --experiment_tag $tag
-            launch "overlap_curve_c10_${grade}_pall_adapter_s${s}" $C10 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c10_${grade}_pall_adapter_s${s}" $C10 $COMMON --seed $s \
                    --request_schedule_file $c10 --method pall_adapter $ADAPTER \
                    --experiment_tag $tag
-            launch "overlap_curve_c10_${grade}_lora_s${s}" $C10 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c10_${grade}_lora_s${s}" $C10 $COMMON --seed $s \
                    --request_schedule_file $c10 --method lora $LORA \
                    --experiment_tag $tag
-            launch "overlap_curve_c10_${grade}_clpu_s${s}" $C10 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c10_${grade}_clpu_s${s}" $C10 $COMMON --seed $s \
                    --request_schedule_file $c10 --method clpu \
                    --experiment_tag $tag
-            launch "overlap_curve_c10_${grade}_salun_s${s}" $C10 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c10_${grade}_salun_s${s}" $C10 $COMMON --seed $s \
                    --request_schedule_file $c10 --method salun $SALUN \
                    --experiment_tag $tag
 
-            launch "overlap_curve_c100_${grade}_pall_original_s${s}" $C100 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c100_${grade}_pall_original_s${s}" $C100 $COMMON --seed $s \
                    --request_schedule_file $c100 --method pall_original \
                    --retrain_steps 50 --dump_overlap --experiment_tag $tag
-            launch "overlap_curve_c100_${grade}_pall_modified_s${s}" $C100 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c100_${grade}_pall_modified_s${s}" $C100 $COMMON --seed $s \
                    --request_schedule_file $c100 --method pall_modified $PALL_MOD \
                    --dump_overlap --experiment_tag $tag
-            launch "overlap_curve_c100_${grade}_pall_adapter_s${s}" $C100 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c100_${grade}_pall_adapter_s${s}" $C100 $COMMON --seed $s \
                    --request_schedule_file $c100 --method pall_adapter $ADAPTER \
                    --experiment_tag $tag
-            launch "overlap_curve_c100_${grade}_lora_s${s}" $C100 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c100_${grade}_lora_s${s}" $C100 $COMMON --seed $s \
                    --request_schedule_file $c100 --method lora $LORA \
                    --experiment_tag $tag
-            launch "overlap_curve_c100_${grade}_clpu_s${s}" $C100 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c100_${grade}_clpu_s${s}" $C100 $COMMON --seed $s \
                    --request_schedule_file $c100 --method clpu \
                    --experiment_tag $tag
-            launch "overlap_curve_c100_${grade}_salun_s${s}" $C100 $COMMON --seed $s \
+            launch_resume_safe "overlap_curve_c100_${grade}_salun_s${s}" $C100 $COMMON --seed $s \
                    --request_schedule_file $c100 --method salun $SALUN \
                    --experiment_tag $tag
         done
@@ -834,39 +838,42 @@ group18_probe () {
         --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
     local LORA="--lora_rank 8 --lora_alpha 16"
 
-    for s in 0 1; do
+    # Seed extension keeps the existing experiment tag, as group 28 does.
+    local seeds="${PROBE_SEEDS:-0 1}"
+
+    for s in $seeds; do
         local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
         local c100="schedules/cifar100_t10_f3_seed${s}.json"
 
-        launch "probe_c10_pall_original_s${s}" $C10 $COMMON --seed $s \
+        launch_resume_safe "probe_c10_pall_original_s${s}" $C10 $COMMON --seed $s \
                --request_schedule_file $c10 --method pall_original \
                --retrain_steps 50 --eval_probe --experiment_tag probe_v1
-        launch "probe_c10_pall_modified_s${s}" $C10 $COMMON --seed $s \
+        launch_resume_safe "probe_c10_pall_modified_s${s}" $C10 $COMMON --seed $s \
                --request_schedule_file $c10 --method pall_modified $PALL_MOD \
                --eval_probe --experiment_tag probe_v1
-        launch "probe_c10_pall_adapter_s${s}" $C10 $COMMON --seed $s \
+        launch_resume_safe "probe_c10_pall_adapter_s${s}" $C10 $COMMON --seed $s \
                --request_schedule_file $c10 --method pall_adapter $ADAPTER \
                --eval_probe --experiment_tag probe_v1
-        launch "probe_c10_lora_s${s}" $C10 $COMMON --seed $s \
+        launch_resume_safe "probe_c10_lora_s${s}" $C10 $COMMON --seed $s \
                --request_schedule_file $c10 --method lora $LORA \
                --eval_probe --experiment_tag probe_v1
-        launch "probe_c10_clpu_s${s}" $C10 $COMMON --seed $s \
+        launch_resume_safe "probe_c10_clpu_s${s}" $C10 $COMMON --seed $s \
                --request_schedule_file $c10 --method clpu \
                --eval_probe --experiment_tag probe_v1
 
-        launch "probe_c100_pall_original_s${s}" $C100 $COMMON --seed $s \
+        launch_resume_safe "probe_c100_pall_original_s${s}" $C100 $COMMON --seed $s \
                --request_schedule_file $c100 --method pall_original \
                --retrain_steps 50 --eval_probe --experiment_tag probe_v1
-        launch "probe_c100_pall_modified_s${s}" $C100 $COMMON --seed $s \
+        launch_resume_safe "probe_c100_pall_modified_s${s}" $C100 $COMMON --seed $s \
                --request_schedule_file $c100 --method pall_modified $PALL_MOD \
                --eval_probe --experiment_tag probe_v1
-        launch "probe_c100_pall_adapter_s${s}" $C100 $COMMON --seed $s \
+        launch_resume_safe "probe_c100_pall_adapter_s${s}" $C100 $COMMON --seed $s \
                --request_schedule_file $c100 --method pall_adapter $ADAPTER \
                --eval_probe --experiment_tag probe_v1
-        launch "probe_c100_lora_s${s}" $C100 $COMMON --seed $s \
+        launch_resume_safe "probe_c100_lora_s${s}" $C100 $COMMON --seed $s \
                --request_schedule_file $c100 --method lora $LORA \
                --eval_probe --experiment_tag probe_v1
-        launch "probe_c100_clpu_s${s}" $C100 $COMMON --seed $s \
+        launch_resume_safe "probe_c100_clpu_s${s}" $C100 $COMMON --seed $s \
                --request_schedule_file $c100 --method clpu \
                --eval_probe --experiment_tag probe_v1
     done
@@ -1481,7 +1488,7 @@ group29_standard_reinit () {
 }
 
 group30_standard_reinit_mia () {
-    echo "===== GROUP 29: eight-seed standard PALL-Modified reinit candidate (resume-safe) ====="
+    echo "===== GROUP 30: eight-seed standard reinit candidate with MIA (resume-safe) ====="
     local seeds="${REINIT_MIA_SEEDS:-0 1 2 3 4 5 6 7}"
     local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
     local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
@@ -1513,6 +1520,121 @@ group30_standard_reinit_mia () {
             $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
             --method pall_modified $PALL_MOD_REINIT \
             --eval_mia --experiment_tag cifar100_standard_reinit_mia_v1
+    done
+}
+
+group32_overlap_sparsity () {
+    echo "===== GROUP 32: direct overlap manipulation via subnet sparsity (resume-safe) ====="
+    # RQ3's weak point is that the five-grade benchmark moves the *request
+    # position*, not the structural overlap itself, and simultaneously shifts the
+    # target task's identity, its age, and how much training follows it. Subnet
+    # sparsity moves |M_f n M_r| directly while the schedule, the target task and
+    # its age are held fixed: measured |S_share| on CIFAR-100 is ~1.37M at
+    # sparsity 0.8 and ~0.95M at 0.9, a 44% swing from this knob alone.
+    #
+    # Both methods run at every level, so the quantity of interest is the
+    # interaction: does WorstDrop rise with overlap for PALL-Original while
+    # EPALL stays flat? That is the thesis hypothesis stated as a testable slope
+    # rather than as a trend across four proxy grades.
+    #
+    # Confound to report, not to hide: sparsity also changes per-task capacity.
+    # Both arms face the same capacity at each level, which is why the
+    # interaction is the claim and the main effect is not.
+    local seeds="${OVERLAP_SPARSITY_SEEDS:-0 1 2}"
+    local sparsities="${OVERLAP_SPARSITY_VALUES:-0.5 0.6 0.7 0.8 0.9}"
+    local PALL_MOD="--protect_importance gradient --protect_ratio 0.2 --lambda_protect 1.0 --retrain_steps 50 --protect_anchor old"
+    local seed sp tag c10 c100
+
+    for seed in $seeds; do
+        case "$seed" in
+            0|1|2|3|4|5|6|7) ;;
+            *)
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: OVERLAP_SPARSITY_SEEDS must be drawn from 0 1 2 3 4 5 6 7 (got '${seed}')" >&2
+                continue
+                ;;
+        esac
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        if [[ ! -f "$c10" || ! -f "$c100" ]]; then
+            ((FAILED_RUNS += 1))
+            echo "    FAIL: missing seed-${seed} standard schedule(s): ${c10}, ${c100}" >&2
+            continue
+        fi
+
+        for sp in $sparsities; do
+            tag="overlap_sparsity_${sp//./p}_v1"
+            launch_resume_safe "ovsp_c10_pall_original_sp${sp//./p}_s${seed}" \
+                --dataset cifar10 --class_per_task 2 --n_tasks 5 --n_forget 3 --arch resnet18 \
+                --sparsity "$sp" $COMMON --seed "$seed" --request_schedule_file "$c10" \
+                --method pall_original --retrain_steps 50 \
+                --experiment_tag "cifar10_${tag}"
+            launch_resume_safe "ovsp_c10_pall_modified_sp${sp//./p}_s${seed}" \
+                --dataset cifar10 --class_per_task 2 --n_tasks 5 --n_forget 3 --arch resnet18 \
+                --sparsity "$sp" $COMMON --seed "$seed" --request_schedule_file "$c10" \
+                --method pall_modified $PALL_MOD \
+                --experiment_tag "cifar10_${tag}"
+            launch_resume_safe "ovsp_c100_pall_original_sp${sp//./p}_s${seed}" \
+                --dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 \
+                --cifar100_split standard --sparsity "$sp" $COMMON --seed "$seed" \
+                --request_schedule_file "$c100" --method pall_original --retrain_steps 50 \
+                --experiment_tag "cifar100_${tag}"
+            launch_resume_safe "ovsp_c100_pall_modified_sp${sp//./p}_s${seed}" \
+                --dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 \
+                --cifar100_split standard --sparsity "$sp" $COMMON --seed "$seed" \
+                --request_schedule_file "$c100" --method pall_modified $PALL_MOD \
+                --experiment_tag "cifar100_${tag}"
+        done
+    done
+}
+
+group31_conflict_gamma_sweep () {
+    echo "===== GROUP 31: continuous conflict-weighted soft mask, gamma sweep (resume-safe) ====="
+    # The discrete Phase-3 mask showed no measurable effect (see the adapter
+    # component controls). This sweep asks whether a *continuous* mask, weighted
+    # by per-coordinate gradient-conflict energy, separates from the full update.
+    # gamma=0 recovers a full update on S_forget and is the in-family control, so
+    # the sweep contains its own null arm and does not lean on any other table.
+    local seeds="${CONFLICT_GAMMA_SEEDS:-0 1 2}"
+    local gammas="${CONFLICT_GAMMA_VALUES:-0 0.25 0.5 1 2}"
+    local COMMON_E20="${COMMON/--n_epochs 3/--n_epochs 20}"
+    local C100_STD="--dataset cifar100 --class_per_task 10 --n_tasks 10 --n_forget 3 --arch resnet34 --sparsity 0.9 --cifar100_split standard"
+    local ADAPTER="--adapter_bottleneck 16 --adapter_shared_bottleneck 16 \
+        --adapter_shared_forget_ratio 0.3 --adapter_shared_protect_ratio 0.2 \
+        --adapter_train_classifier --retrain_steps 50 --adapter_forget_steps 10"
+    local seed gamma tag c10 c100
+
+    for seed in $seeds; do
+        case "$seed" in
+            0|1|2|3|4|5|6|7) ;;
+            *)
+                ((FAILED_RUNS += 1))
+                echo "    FAIL: CONFLICT_GAMMA_SEEDS must be drawn from 0 1 2 3 4 5 6 7 (got '${seed}')" >&2
+                continue
+                ;;
+        esac
+        c10="schedules/cifar10_t5_f3_fixed_seed${seed}.json"
+        c100="schedules/cifar100_t10_f3_seed${seed}.json"
+        if [[ ! -f "$c10" || ! -f "$c100" ]]; then
+            ((FAILED_RUNS += 1))
+            echo "    FAIL: missing seed-${seed} standard schedule(s): ${c10}, ${c100}" >&2
+            continue
+        fi
+
+        for gamma in $gammas; do
+            # Tag carries gamma so every arm is separable without parsing configs.
+            tag="conflict_gamma_${gamma//./p}_v1"
+            launch_resume_safe "cgamma_c10_pall_adapter_g${gamma//./p}_s${seed}" \
+                $C10 $COMMON_E20 --seed "$seed" --request_schedule_file "$c10" \
+                --method pall_adapter $ADAPTER \
+                --adapter_mask_mode continuous --adapter_conflict_gamma "$gamma" \
+                --experiment_tag "cifar10_${tag}"
+            launch_resume_safe "cgamma_c100_pall_adapter_g${gamma//./p}_s${seed}" \
+                $C100_STD $COMMON_E20 --seed "$seed" --request_schedule_file "$c100" \
+                --method pall_adapter $ADAPTER \
+                --adapter_mask_mode continuous --adapter_conflict_gamma "$gamma" \
+                --experiment_tag "cifar100_${tag}"
+        done
     done
 }
 
@@ -1550,6 +1672,8 @@ case "$WHICH" in
     g28_standard_seed_extension) group28_standard_seed_extension ;;
     g29_standard_reinit) group29_standard_reinit ;;
     g30_standard_reinit_mia) group30_standard_reinit_mia ;;
+    g31_conflict_gamma_sweep) group31_conflict_gamma_sweep ;;
+    g32_overlap_sparsity) group32_overlap_sparsity ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -1566,7 +1690,7 @@ echo "===================================================================="
 echo "AGGREGATING TABLES ..."
 AGG_SUFFIX=""
 case "$WHICH" in
-    g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia)
+    g17_overlap_curve|g18_probe|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia|g31_conflict_gamma_sweep|g32_overlap_sparsity)
         # These completion groups must never overwrite an existing CSV. A
         # timestamped canonical-tool rebuild can be inspected and synced while
         # the paper-facing canonical paths remain unchanged until every gap is

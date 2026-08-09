@@ -41,10 +41,10 @@ From the repository root, the complete set is regenerated deterministically
 with:
 
 ```bash
-./.venv/bin/python tools/generate_controlled_overlap_schedules.py --dataset cifar10 --seed 0
-./.venv/bin/python tools/generate_controlled_overlap_schedules.py --dataset cifar10 --seed 1
-./.venv/bin/python tools/generate_controlled_overlap_schedules.py --dataset cifar100 --seed 0
-./.venv/bin/python tools/generate_controlled_overlap_schedules.py --dataset cifar100 --seed 1
+for seed in 0 1 2 3 4; do
+  ./.venv/bin/python tools/generate_controlled_overlap_schedules.py --dataset cifar10 --seed "$seed"
+  ./.venv/bin/python tools/generate_controlled_overlap_schedules.py --dataset cifar100 --seed "$seed"
+done
 ```
 
 The generator constructs the ascending train requests plus the final forget
@@ -52,6 +52,10 @@ request, writes the target knob, normalized target, and forgotten task into the
 JSON metadata, and immediately validates every file through the schedule-loader
 functions extracted from `main.py`.  A nonzero generator exit therefore means
 generation or loader validation failed.
+
+Before launching any g17 run, `tools/run_server_experiments.sh` also preflights
+the complete dataset/grade/seed matrix selected by `OVERLAP_CURVE_SEEDS`.  If
+even one schedule is absent, the group exits nonzero without starting training.
 
 ## Legacy filenames
 

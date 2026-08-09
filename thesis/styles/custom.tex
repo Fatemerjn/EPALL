@@ -19,6 +19,9 @@
 % برای جای‌گذاری دقیق شناور‌ها با [H]
 \usepackage{float}
 \usepackage{booktabs}
+% res_hyper spans more than one page; longtable lets it break instead of
+% being silently clipped by adjustbox.
+\usepackage{longtable}
 
 % ---- جای‌گذاری شناورها ----
 % پیش‌فرض‌های LaTeX با فاصله‌ی خطی ۱.۶ باعث می‌شوند شکل‌های متوسط هم به صفحه‌ی

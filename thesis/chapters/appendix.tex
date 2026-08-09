@@ -14,7 +14,7 @@
 
 \bigskip
 \noindent
-\textbf{محیط اجرا.} همه‌ی اجراهای گزارش‌شده روی یک \lr{NVIDIA RTX 3070 Ti} با $8$ گیگابایت حافظه‌ی گرافیکی، دو پردازنده‌ی \lr{Xeon E5-2620 v4}، $31$ گیگابایت حافظه‌ی اصلی، \lr{Ubuntu 24.04.4}، \lr{Python 3.12.3} و \lr{PyTorch 2.5.1} انجام شده‌اند. نسخه‌ی مخزن که اعداد این پایان‌نامه از آن تولید شده با برچسب \lr{\texttt{thesis-final}} علامت‌گذاری شده است.
+\textbf{محیط اجرا.} همه‌ی اجراهای گزارش‌شده روی یک \lr{NVIDIA RTX 3070 Ti} با $8$ گیگابایت حافظه‌ی گرافیکی، دو پردازنده‌ی \lr{Xeon E5-2620 v4}، $31$ گیگابایت حافظه‌ی اصلی، \lr{Ubuntu 24.04.4}، \lr{Python 3.12.3} و \lr{PyTorch 2.5.1} انجام شده‌اند. نسخه‌ی مخزن که اعداد این پایان‌نامه از آن تولید شده با برچسب \lr{\texttt{thesis-final}} علامت‌گذاری شده است، و وضعیت پیش از تثبیت لنگر با برچسب \lr{\texttt{thesis-baseline-old-anchor}} نگه داشته شده است. برای بازتولید یک مجموعه نتیجه کافی است مخزن روی برچسب قرار گیرد و گروه متناظر از جدول زیر اجرا شود؛ برای نمونه \lr{\texttt{bash tools/run\_server\_experiments.sh g6\_standard}}. هر گروه پیش از اجرا با سوییچ \lr{\texttt{--dry-run}} فرمان‌های دقیق خود را بدون اجرا چاپ می‌کند.
 
 \bigskip
 \noindent
@@ -45,6 +45,8 @@
 \lr{MIA} تصحیح‌شده & \lr{\texttt{g26\_corrected\_mia}} & \lr{\texttt{pall\_modified\_mia\_corrected\_v2}} \\
 حسابداری حالت مقیم & \lr{\texttt{g27\_storage\_accounting}} & \lr{\texttt{storage\_accounting\_v1}} \\
 منحنی هم‌پوشانی & \lr{\texttt{g17\_overlap\_curve}} & \lr{\texttt{overlap\_curve\_v1\_*}} \\
+ممیزی کاوشگر خطی & \lr{\texttt{g18\_probe}} & \lr{\texttt{probe\_v1}} \\
+معیار اهمیت تعارض & \lr{\texttt{g14\_conflict}} & \lr{\texttt{conflict\_ablation\_v1}} \\
 آزمون میان‌معماری & \lr{\texttt{g11\_vit}} & \lr{\texttt{*\_vit\_v1}} \\
 \bottomrule
 \end{tabular}

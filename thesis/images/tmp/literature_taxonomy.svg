@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="560" viewBox="0 0 1800 560" role="img" aria-label="Taxonomy and positioning of the thesis">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#263238"/></marker>
+<marker id="arrow-orange" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D55E00"/></marker>
+<pattern id="critical-hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#F8EDF4"/><line x1="0" y1="0" x2="0" y2="9" stroke="#6F3C8F" stroke-width="2"/></pattern>
+<style>
+text{font-family:'Times New Roman','DejaVu Serif',serif;fill:#263238}
+.label{font-size:25px}.small{font-size:20px}.tiny{font-size:17px}
+.panel{font-size:29px;font-weight:700}.math{font-style:italic}
+.card{stroke-width:2;rx:14;ry:14}.link{fill:none;stroke-width:3;marker-end:url(#arrow)}
+</style>
+</defs>
+<rect x="0" y="0" width="1800" height="560" fill="white"/>
+<rect x="35" y="95" width="290" height="245" rx="18" fill="#EAF4FA" stroke="#0072B2" stroke-width="3"/>
+<text x="63" y="135" font-size="25px" text-anchor="start" fill="#0072B2" font-weight="700">1</text>
+<text x="180" y="185" font-size="24px" text-anchor="middle" fill="#0072B2" font-weight="700">
+<tspan x="180" dy="0">Continual learning</tspan>
+<tspan x="180" dy="34.8">replay · regularization</tspan>
+</text>
+<rect x="77" y="256" width="206" height="29" rx="14" fill="white" stroke="#0072B2" stroke-width="1.5"/>
+<text x="180" y="277" font-size="16px" text-anchor="middle" fill="#0072B2">retain knowledge</text>
+<line x1="325" y1="210" x2="363" y2="210" stroke="#263238" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="375" y="95" width="290" height="245" rx="18" fill="#F5F7F9" stroke="#69757F" stroke-width="3"/>
+<text x="403" y="135" font-size="25px" text-anchor="start" fill="#69757F" font-weight="700">2</text>
+<text x="520" y="185" font-size="24px" text-anchor="middle" fill="#69757F" font-weight="700">
+<tspan x="520" dy="0">Parameter isolation</tspan>
+<tspan x="520" dy="34.8">task subnetworks</tspan>
+</text>
+<rect x="417" y="256" width="206" height="29" rx="14" fill="white" stroke="#69757F" stroke-width="1.5"/>
+<text x="520" y="277" font-size="16px" text-anchor="middle" fill="#69757F">limit interference</text>
+<line x1="665" y1="210" x2="703" y2="210" stroke="#263238" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="715" y="95" width="290" height="245" rx="18" fill="#FCEFEA" stroke="#D55E00" stroke-width="3"/>
+<text x="743" y="135" font-size="25px" text-anchor="start" fill="#D55E00" font-weight="700">3</text>
+<text x="860" y="185" font-size="24px" text-anchor="middle" fill="#D55E00" font-weight="700">
+<tspan x="860" dy="0">Machine unlearning</tspan>
+<tspan x="860" dy="34.8">data/model removal</tspan>
+</text>
+<rect x="757" y="256" width="206" height="29" rx="14" fill="white" stroke="#D55E00" stroke-width="1.5"/>
+<text x="860" y="277" font-size="16px" text-anchor="middle" fill="#D55E00">remove influence</text>
+<line x1="1005" y1="210" x2="1043" y2="210" stroke="#263238" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="1055" y="95" width="290" height="245" rx="18" fill="#F8EDF4" stroke="#6F3C8F" stroke-width="3"/>
+<text x="1083" y="135" font-size="25px" text-anchor="start" fill="#6F3C8F" font-weight="700">4</text>
+<text x="1200" y="185" font-size="24px" text-anchor="middle" fill="#6F3C8F" font-weight="700">
+<tspan x="1200" dy="0">Task-aware forgetting</tspan>
+<tspan x="1200" dy="34.8">PALL</tspan>
+</text>
+<rect x="1097" y="256" width="206" height="29" rx="14" fill="white" stroke="#6F3C8F" stroke-width="1.5"/>
+<text x="1200" y="277" font-size="16px" text-anchor="middle" fill="#6F3C8F">delete one task</text>
+<line x1="1345" y1="210" x2="1383" y2="210" stroke="#263238" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="1395" y="95" width="290" height="245" rx="18" fill="#EAF7F2" stroke="#009E73" stroke-width="3"/>
+<text x="1423" y="135" font-size="25px" text-anchor="start" fill="#009E73" font-weight="700">5</text>
+<text x="1540" y="185" font-size="24px" text-anchor="middle" fill="#009E73" font-weight="700">
+<tspan x="1540" dy="0">Overlap-aware repair</tspan>
+<tspan x="1540" dy="34.8">EPALL · PALL-Adapter</tspan>
+</text>
+<rect x="1437" y="256" width="206" height="29" rx="14" fill="white" stroke="#009E73" stroke-width="1.5"/>
+<text x="1540" y="277" font-size="16px" text-anchor="middle" fill="#009E73">protect shared</text>
+<rect x="1437" y="295" width="206" height="29" rx="14" fill="white" stroke="#009E73" stroke-width="1.5"/>
+<text x="1540" y="316" font-size="16px" text-anchor="middle" fill="#009E73">reduce trainable scope</text>
+<line x1="180" y1="405" x2="1640" y2="405" stroke="#263238" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+<text x="180" y="443" font-size="20px" text-anchor="start" fill="#0072B2">preserve previously learned behavior</text>
+<text x="1640" y="443" font-size="20px" text-anchor="end" fill="#009E73">selectively remove while protecting overlap</text>
+<rect x="1160" y="475" width="570" height="52" rx="12" fill="white" stroke="#009E73" stroke-width="2"/>
+<text x="1445" y="509" font-size="20px" text-anchor="middle" fill="#009E73" font-weight="700">Position of this thesis: overlap-aware, task-level, empirical</text>
+</svg>

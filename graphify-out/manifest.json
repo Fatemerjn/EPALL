@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "main.py": {
-    "mtime": 1784596784.1434488,
-    "ast_hash": "ba5adfa9a1645e6dc9d78fd05a2d1aed",
+    "mtime": 1785842712.9838855,
+    "ast_hash": "ffa01d5ee799c549218970bcc0aa0bf8",
     "semantic_hash": ""
   },
   "methods/__init__.py": {
@@ -270,9 +270,9 @@
     "semantic_hash": "10ba0a31c5528a0662f2664eb98fdfa8"
   },
   "tools/make_paper_figures.py": {
-    "mtime": 1783343938.0874803,
-    "ast_hash": "7cb022114df26e50af15b2e715a642b2",
-    "semantic_hash": "7cb022114df26e50af15b2e715a642b2"
+    "mtime": 1785884448.3170338,
+    "ast_hash": "f93070013a9848a5d77eef5c16792cb0",
+    "semantic_hash": ""
   },
   "tools/make_paper_summary_table.py": {
     "mtime": 1777904937.691067,
@@ -295,8 +295,8 @@
     "semantic_hash": "675135bf06701c74a5a40db87ee76293"
   },
   "tools/plot_report_results.py": {
-    "mtime": 1784555742.412505,
-    "ast_hash": "7d52adb926857e49cd274da8cf0da56e",
+    "mtime": 1785888111.8038168,
+    "ast_hash": "c9b4e9931b330e44be0811f3928d90ec",
     "semantic_hash": ""
   },
   "tools/run_adapter_ablation.py": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "tools/run_server_experiments.sh": {
-    "mtime": 1784923008.2360592,
-    "ast_hash": "45afc0c0dc6aedf86cea5ff205d4486b",
+    "mtime": 1785853392.0917263,
+    "ast_hash": "c06e9169c8deaee67363937039d65b93",
     "semantic_hash": ""
   },
   "tools/run_small_ablation.py": {
@@ -499,11 +499,6 @@
     "ast_hash": "ad4baa80905d5eaca276630ac0c58b54",
     "semantic_hash": ""
   },
-  "thesis/thesis.toc": {
-    "mtime": 1783339941.4395754,
-    "ast_hash": "c01531cdd10b3ef88ed03a52520922e5",
-    "semantic_hash": ""
-  },
   "tools/smoke_extra_baselines.sh": {
     "mtime": 1783343938.0900204,
     "ast_hash": "7e4f6aff8b3d13b893b8f8b0a1e902cf",
@@ -580,8 +575,8 @@
     "semantic_hash": ""
   },
   "thesis/image_prompts.md": {
-    "mtime": 1783509035.253634,
-    "ast_hash": "7f1e8a0b3dfe1b157f4c6e2495bdc89d",
+    "mtime": 1785887459.2009544,
+    "ast_hash": "582263723072f6cc9316d6ff4536a6ce",
     "semantic_hash": ""
   },
   "thesis/images/latest_pall_final_accuracy_horizontal.pdf": {
@@ -600,13 +595,13 @@
     "semantic_hash": ""
   },
   "thesis/images/mia_before_after_by_dataset_regime.pdf": {
-    "mtime": 1785239834.741057,
-    "ast_hash": "7e0fe1f8f44c56111301afc137656120",
+    "mtime": 1785885741.1330304,
+    "ast_hash": "0baae21d3917d371d45879d86a30d5f8",
     "semantic_hash": ""
   },
   "thesis/images/representative_pall_adapter_accuracy_heatmap.pdf": {
-    "mtime": 1785239834.742205,
-    "ast_hash": "a6ec0e25f5d07f9971e7fe0392a5da3d",
+    "mtime": 1785885740.9527934,
+    "ast_hash": "3765a2be1096e6cd622adb5ddca88309",
     "semantic_hash": ""
   },
   "tools/run_selection.py": {
@@ -950,8 +945,8 @@
     "semantic_hash": ""
   },
   "thesis/images/bound_verification.pdf": {
-    "mtime": 1785239834.7427592,
-    "ast_hash": "e1fce7de6d498e41c3d98e1b214d3ea1",
+    "mtime": 1785885741.5707674,
+    "ast_hash": "41dab6894082fffc9dd2ebee21454ce1",
     "semantic_hash": ""
   },
   "tools/find_exact_completed_run.py": {
@@ -960,13 +955,13 @@
     "semantic_hash": ""
   },
   "tools/make_aaai_figures.py": {
-    "mtime": 1785178576.3604345,
-    "ast_hash": "3187c9004b5e43b29bf37d8832ab42e4",
+    "mtime": 1785884448.4202878,
+    "ast_hash": "71c7f05d35336a2d42701292fe4eb04a",
     "semantic_hash": ""
   },
   "tools/generate_main_standard_table.py": {
-    "mtime": 1785244435.1963568,
-    "ast_hash": "920a65fb828451797d591e4bcf44c743",
+    "mtime": 1785267637.971691,
+    "ast_hash": "53eb8db1ee76cc36d12fd9cb90666808",
     "semantic_hash": ""
   },
   "schedules/tinyimagenet_t20_f3_seed2.json": {
@@ -1000,8 +995,8 @@
     "semantic_hash": ""
   },
   "tools/analyze_forgetting_persistence.py": {
-    "mtime": 1784550903.1086357,
-    "ast_hash": "84385b05b9a87c6083dbae9ef43be354",
+    "mtime": 1785884448.520851,
+    "ast_hash": "3a9e9e290e13c55d08214a9f92d370cc",
     "semantic_hash": ""
   },
   "tools/analyze_retraining_reference.py": {
@@ -1130,12 +1125,12 @@
     "semantic_hash": ""
   },
   "paper/AuthorKit27/Figures/EPALL_mechanism_fixed.svg": {
-    "mtime": 1785112586.5489972,
-    "ast_hash": "6772ca9c21f5b37ab0ca665091e95487",
+    "mtime": 1785294419.85614,
+    "ast_hash": "c8e03bcd4d851978327e5398315439d7",
     "semantic_hash": ""
   },
   "paper/AuthorKit27/Figures/EPALL_mechanism_detailed_working.svg": {
-    "mtime": 1785112797.7909393,
+    "mtime": 1785294419.85857,
     "ast_hash": "6a31d46bc9946f4f0b54018ef5b1e40c",
     "semantic_hash": ""
   },
@@ -1145,63 +1140,363 @@
     "semantic_hash": ""
   },
   "thesis/images/aaai_storage.pdf": {
-    "mtime": 1785239834.7348528,
-    "ast_hash": "c1d6e9ef54ed48a6fb7fdddb9a5c4709",
+    "mtime": 1785885793.526991,
+    "ast_hash": "ab8b29bfbdd156613312f7b3a4029ec8",
     "semantic_hash": ""
   },
   "thesis/images/adapter_bottleneck_ablation.pdf": {
-    "mtime": 1785239834.7415228,
-    "ast_hash": "8bf2d91ab3b8c4655c61af090cff0f2c",
+    "mtime": 1785885739.6517613,
+    "ast_hash": "d965205d3b8855635bf813e82ba236d4",
     "semantic_hash": ""
   },
   "thesis/images/au_bars_by_dataset_regime.pdf": {
-    "mtime": 1785239834.739472,
-    "ast_hash": "8d75f370aae3ac3a7ec38f66832956ec",
+    "mtime": 1785885737.9183817,
+    "ast_hash": "72338a34aad6faad938d7da566d58de8",
     "semantic_hash": ""
   },
   "thesis/images/final_accuracy_bars_by_dataset_regime.pdf": {
-    "mtime": 1785239834.738295,
-    "ast_hash": "1a3311f3787bf43a6adbfe03fa0dd98b",
+    "mtime": 1785885736.94664,
+    "ast_hash": "5c8bb567ea561a91d7e77cf48e76d413",
     "semantic_hash": ""
   },
   "thesis/images/overlap_response_cifar10.pdf": {
-    "mtime": 1785239834.7373054,
-    "ast_hash": "2f5867c9402a0932ec59b9bbd516c9ac",
+    "mtime": 1785885742.0668836,
+    "ast_hash": "e78b42020a6b5d469b4919668b063f83",
     "semantic_hash": ""
   },
   "thesis/images/overlap_response_cifar100.pdf": {
-    "mtime": 1785239834.7377627,
-    "ast_hash": "6a70334b6d062da48ad5a35168037003",
+    "mtime": 1785885741.9506824,
+    "ast_hash": "345cf5bb950f1957c5bfa0d57bf91240",
     "semantic_hash": ""
   },
   "thesis/images/shared_bottleneck_ablation.pdf": {
-    "mtime": 1785239834.7418182,
-    "ast_hash": "ece6970f198eabb6f3b282df129f77f0",
+    "mtime": 1785885739.9018705,
+    "ast_hash": "f003091017538051a38e80f1c72240d3",
     "semantic_hash": ""
   },
   "thesis/images/tradeoff_updated_vs_final_accuracy_by_dataset_regime.pdf": {
-    "mtime": 1785239834.7400315,
-    "ast_hash": "33639e8c6dc5ff4478b870f1fb937c4e",
+    "mtime": 1785885739.1736655,
+    "ast_hash": "7f693ac71963363dd355d606374226fe",
     "semantic_hash": ""
   },
   "thesis/images/tradeoff_updated_vs_worstdrop_by_dataset_regime.pdf": {
-    "mtime": 1785239834.7405279,
-    "ast_hash": "9610d175e41a73eb5e2cdf5ec304bb42",
+    "mtime": 1785885738.48173,
+    "ast_hash": "6b7aefea3374e10ff9fac26b71d30ab3",
     "semantic_hash": ""
   },
   "thesis/images/worstdrop_bars_by_dataset_regime.pdf": {
-    "mtime": 1785239834.7388318,
-    "ast_hash": "5feddfcd97fb333da703a70ce1f890b5",
+    "mtime": 1785885737.440715,
+    "ast_hash": "30db06d0585b01f2c9c777d009be5d1f",
     "semantic_hash": ""
   },
   "paper/AuthorKit27/Figures/EPALL_mechanism.svg": {
-    "mtime": 1785239915.859904,
-    "ast_hash": "e7d0fc3d5297daff41b3f2fd5dd192ee",
+    "mtime": 1785297505.336541,
+    "ast_hash": "2e302ca50209a796bbb93fb5a8448bb0",
     "semantic_hash": ""
   },
   "thesis/images/EPALL_mechanism.png": {
     "mtime": 1785239834.7324023,
     "ast_hash": "72c88bedd6c0e4c9f9dc1a47e51c20ca",
+    "semantic_hash": ""
+  },
+  "paper/REFERENCE_LINK_CHECK.md": {
+    "mtime": 1785294419.8622222,
+    "ast_hash": "3b9ceaf5e014e78bac7fb6f1778962b9",
+    "semantic_hash": ""
+  },
+  "thesis/images/forgetting_persistence.pdf": {
+    "mtime": 1785885794.6975863,
+    "ast_hash": "6c9213162f71f9aad32914a29b22799c",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_3x3.pdf": {
+    "mtime": 1785888137.5335054,
+    "ast_hash": "d1f110e651955c1879b1664f3651d7be",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_3x3.png": {
+    "mtime": 1785888137.8859866,
+    "ast_hash": "08405d57a586b6825bdc73baacb85776",
+    "semantic_hash": ""
+  },
+  "thesis/images/shared_bottleneck_ablation_preview.png": {
+    "mtime": 1785885740.0153902,
+    "ast_hash": "07b90ae1b57d2ec1b139f0f4b1f27da1",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260804_172723_\u0631\u0641\u0631\u0646\u0633_\u0647\u0627_\u062a\u0648_\u067e\u0627\u06cc\u0627\u0646_\u0646\u0627\u0645\u0647_\u0686\u0631\u0627_\u0646\u0645\u0627\u06cc\u0634_\u062f\u0627\u062f\u0647_\u0646\u0645\u06cc\u0634\u0647__\u0647\u0645\u06cc\u0646\u0637.md": {
+    "mtime": 1785864443.61768,
+    "ast_hash": "2a773709770a1638d73fca43a745f96c",
+    "semantic_hash": ""
+  },
+  "thesis/template/README.md": {
+    "mtime": 1725178256.0,
+    "ast_hash": "738510d2848d0ef14e2c511a28ede582",
+    "semantic_hash": ""
+  },
+  "thesis/template/figs/readme.txt": {
+    "mtime": 1725178256.0,
+    "ast_hash": "5c701f9b6e8122346ab25cd830711b5b",
+    "semantic_hash": ""
+  },
+  "thesis/template/figs/cover.svg": {
+    "mtime": 1725178256.0,
+    "ast_hash": "7fe02f84694478f25af392e95112260f",
+    "semantic_hash": ""
+  },
+  "thesis/template/front/template/images/besmellah.jpg": {
+    "mtime": 1725178256.0,
+    "ast_hash": "5be842a21719483f48cfb70ce7588ef6",
+    "semantic_hash": ""
+  },
+  "tools/build_thesis_concept_figures.py": {
+    "mtime": 1785884494.318769,
+    "ast_hash": "d4234a78744f3caafd49bdf16dc91b31",
+    "semantic_hash": ""
+  },
+  "thesis/images/PERSISTENCE_AUDIT.md": {
+    "mtime": 1785885794.5855742,
+    "ast_hash": "d98c8b19eae1bcd2e51bb5c7af391045",
+    "semantic_hash": ""
+  },
+  "thesis/images/overlap_response_slopes.md": {
+    "mtime": 1785885742.1020136,
+    "ast_hash": "3269642b705721655bc14f96a03605a8",
+    "semantic_hash": ""
+  },
+  "tmp/pdfs/thesis_extracted.txt": {
+    "mtime": 1785880125.4345868,
+    "ast_hash": "1b3cf2ff9549ddfd846a8241ac0e3baa",
+    "semantic_hash": ""
+  },
+  "thesis/images/EPALL_mechanism_compact.pdf": {
+    "mtime": 1785885735.021246,
+    "ast_hash": "e6f0ba135bbd4f269836c5e3ae23e6ae",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_mia.pdf": {
+    "mtime": 1785885793.4530237,
+    "ast_hash": "3801a226a390cac08b0fdabc1f3bb5e0",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_overlap_response.pdf": {
+    "mtime": 1785885793.7879775,
+    "ast_hash": "36e3620d6bd050acfbd3f483e03df16b",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_tradeoff.pdf": {
+    "mtime": 1785885793.3467069,
+    "ast_hash": "676b9b1017faa7a48de8cf3e4166cdb2",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_worstdrop.pdf": {
+    "mtime": 1785885793.1738088,
+    "ast_hash": "60d321321019325d620ca73b524c908e",
+    "semantic_hash": ""
+  },
+  "thesis/images/literature_taxonomy.pdf": {
+    "mtime": 1785885735.1973023,
+    "ast_hash": "29834e7ab85083be3c8fd91a8ee13f46",
+    "semantic_hash": ""
+  },
+  "thesis/images/pall_adapter_architecture.pdf": {
+    "mtime": 1785885735.095255,
+    "ast_hash": "085002534ae558f10da3fced26194e48",
+    "semantic_hash": ""
+  },
+  "thesis/images/parameter_overlap_concept.pdf": {
+    "mtime": 1785885734.9646862,
+    "ast_hash": "163fcde37ba5f44a651df7efec2905d7",
+    "semantic_hash": ""
+  },
+  "thesis/images/selective_forgetting_pipeline.pdf": {
+    "mtime": 1785885734.9024663,
+    "ast_hash": "997b0139f63f10f4c91d7a4e02beb099",
+    "semantic_hash": ""
+  },
+  "thesis/images/softmask_drop_decomposition.pdf": {
+    "mtime": 1785885735.1495354,
+    "ast_hash": "3e0020380fe91cee6f8b270e4184a7c4",
+    "semantic_hash": ""
+  },
+  "thesis/images/EPALL_mechanism_compact.svg": {
+    "mtime": 1785885734.9666665,
+    "ast_hash": "5da6965abf223b31bf41a1007fd1fc78",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_mia.svg": {
+    "mtime": 1785885793.4699461,
+    "ast_hash": "d9434689ecd381dedc529b11ab21e143",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_overlap_response.png": {
+    "mtime": 1785885793.8105173,
+    "ast_hash": "a7000def207d26c085be50938027296c",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_overlap_response.svg": {
+    "mtime": 1785885793.8213766,
+    "ast_hash": "9bf3763af04837adfdb344359e0a9e70",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_storage.svg": {
+    "mtime": 1785885793.5414693,
+    "ast_hash": "b8262f024b959f50bda0a1fa0bf77335",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_tradeoff.svg": {
+    "mtime": 1785885793.3894541,
+    "ast_hash": "dbfdb6840c633a19a2f0b04d65d804c4",
+    "semantic_hash": ""
+  },
+  "thesis/images/aaai_worstdrop.svg": {
+    "mtime": 1785885793.1855745,
+    "ast_hash": "4014cc87524931c1d9be63611f4522d1",
+    "semantic_hash": ""
+  },
+  "thesis/images/adapter_bottleneck_ablation.svg": {
+    "mtime": 1785885739.7019103,
+    "ast_hash": "b94174449c19088a779695e9bccc751d",
+    "semantic_hash": ""
+  },
+  "thesis/images/au_bars_by_dataset_regime.svg": {
+    "mtime": 1785885738.05917,
+    "ast_hash": "5e14eaac731f81f7289e5629cd882402",
+    "semantic_hash": ""
+  },
+  "thesis/images/bound_verification.svg": {
+    "mtime": 1785885741.646097,
+    "ast_hash": "9f28f2a9950adf0c717ea5d525c855ef",
+    "semantic_hash": ""
+  },
+  "thesis/images/final_accuracy_bars_by_dataset_regime.svg": {
+    "mtime": 1785885737.0897703,
+    "ast_hash": "df435609042a3a91e9b128ce6c97ec54",
+    "semantic_hash": ""
+  },
+  "thesis/images/forgetting_persistence.png": {
+    "mtime": 1785885794.7452059,
+    "ast_hash": "77aa7cde24a400ac96c2a4c40a7a6037",
+    "semantic_hash": ""
+  },
+  "thesis/images/forgetting_persistence.svg": {
+    "mtime": 1785885794.7752767,
+    "ast_hash": "d241af9102645cc318484ecb3f5e0632",
+    "semantic_hash": ""
+  },
+  "thesis/images/literature_taxonomy.svg": {
+    "mtime": 1785885735.1538,
+    "ast_hash": "66f7203fa91160e8b3c192dc6e514454",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_3x3.svg": {
+    "mtime": 1785888138.1021914,
+    "ast_hash": "a663a1dd1e1f9deaec0086fbf8e1749a",
+    "semantic_hash": ""
+  },
+  "thesis/images/mia_before_after_by_dataset_regime.svg": {
+    "mtime": 1785885741.185784,
+    "ast_hash": "95bcce00e71c0ba0bb76b46940bd1dce",
+    "semantic_hash": ""
+  },
+  "thesis/images/overlap_response_cifar10.svg": {
+    "mtime": 1785885742.1015525,
+    "ast_hash": "6fcebca0e905a4b5cf61ccf0b63b2399",
+    "semantic_hash": ""
+  },
+  "thesis/images/overlap_response_cifar100.svg": {
+    "mtime": 1785885741.9789796,
+    "ast_hash": "cd633563b847a8b701843e37e1030ebc",
+    "semantic_hash": ""
+  },
+  "thesis/images/pall_adapter_architecture.svg": {
+    "mtime": 1785885735.022965,
+    "ast_hash": "c0a9074908b4f7a3eb136645457cb860",
+    "semantic_hash": ""
+  },
+  "thesis/images/parameter_overlap_concept.svg": {
+    "mtime": 1785885734.9047058,
+    "ast_hash": "efc200b9ecef023ea11ed449d7e37ece",
+    "semantic_hash": ""
+  },
+  "thesis/images/representative_pall_adapter_accuracy_heatmap.svg": {
+    "mtime": 1785885740.9980807,
+    "ast_hash": "8caee5e69b2cfcc36cbf5d63d6372d63",
+    "semantic_hash": ""
+  },
+  "thesis/images/selective_forgetting_pipeline.svg": {
+    "mtime": 1785885734.8192208,
+    "ast_hash": "a99ec48a7b7c2259e57678f7b1b37273",
+    "semantic_hash": ""
+  },
+  "thesis/images/shared_bottleneck_ablation.svg": {
+    "mtime": 1785885740.0685158,
+    "ast_hash": "84d1df1a0fd77075ff011d54cd860d18",
+    "semantic_hash": ""
+  },
+  "thesis/images/softmask_drop_decomposition.svg": {
+    "mtime": 1785885735.097118,
+    "ast_hash": "e60b039d4ae62686e880cc787164260a",
+    "semantic_hash": ""
+  },
+  "thesis/images/tradeoff_updated_vs_final_accuracy_by_dataset_regime.svg": {
+    "mtime": 1785885739.4036558,
+    "ast_hash": "e39d2f72667bb1357496c12e63d8145a",
+    "semantic_hash": ""
+  },
+  "thesis/images/tradeoff_updated_vs_worstdrop_by_dataset_regime.svg": {
+    "mtime": 1785885738.6938734,
+    "ast_hash": "ce3b3b7801684947b1b5b35aaaf76777",
+    "semantic_hash": ""
+  },
+  "thesis/images/worstdrop_bars_by_dataset_regime.svg": {
+    "mtime": 1785885737.5871556,
+    "ast_hash": "c7b18b83d35b863cc42f665fa4d6651a",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_au_1x3.pdf": {
+    "mtime": 1785888139.5236835,
+    "ast_hash": "dcd33c81beeb3bd2e764515cdf410730",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_final_accuracy_1x3.pdf": {
+    "mtime": 1785888138.4008827,
+    "ast_hash": "67d9aa1f87d6552adfd842f71fe193ce",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_worstdrop_1x3.pdf": {
+    "mtime": 1785888138.9742196,
+    "ast_hash": "4c1a2e78dfe787d5fc1a6837266c1279",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_au_1x3.png": {
+    "mtime": 1785888139.7167559,
+    "ast_hash": "8e19ede590a87d2e8602c28b2e272961",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_au_1x3.svg": {
+    "mtime": 1785888139.8090472,
+    "ast_hash": "3d490cac4ad57c6367b984c99a83c6c0",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_final_accuracy_1x3.png": {
+    "mtime": 1785888138.5784009,
+    "ast_hash": "af2f78664d1975310e43ee651be59367",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_final_accuracy_1x3.svg": {
+    "mtime": 1785888138.6674788,
+    "ast_hash": "52758c8a9ba9a6bbc5be78a6e64009d1",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_worstdrop_1x3.png": {
+    "mtime": 1785888139.1529243,
+    "ast_hash": "510eb082f5c0954ec9f664867799e606",
+    "semantic_hash": ""
+  },
+  "thesis/images/main_metrics_worstdrop_1x3.svg": {
+    "mtime": 1785888139.2456536,
+    "ast_hash": "2bff8078e2e4bdab6fabe2afa8460bc6",
     "semantic_hash": ""
   }
 }

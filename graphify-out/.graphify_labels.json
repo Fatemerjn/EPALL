@@ -150,7 +150,12 @@
   "148": "analyze_paired_main.py",
   "149": "analyze_corrected_mia.py",
   "150": "_merge_sparse_backup",
-  "151": "EWC",
+  "151": "Q: رفرنس ها تو پایان نامه چرا نمایش داده نمیشه؟ همینطور فهرست ها ممکنه از کامپالش باشه",
   "152": "analyze_significance.py",
-  "153": "build_epall_mechanism_pdf.sh"
+  "153": "build_epall_mechanism_pdf.sh",
+  "154": "Thesis Template",
+  "155": "overlap_response_slopes.md",
+  "156": "make_epall_mechanism_aaai.py",
+  "157": "LSF",
+  "158": "EWC"
 }
