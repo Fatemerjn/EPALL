@@ -83,6 +83,11 @@ wheels_linux/
 logs/
 thesis*.zip
 .claude/settings.local.json
+
+# Local defense renders (sources live under thesis/defense/).
+tmp/pdfs/*.html
+tmp/pdfs/**/*.jpg
+
 # experiment outputs
 comparison_*.csv
 comparison_*.md
