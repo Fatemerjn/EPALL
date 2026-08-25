@@ -4,15 +4,17 @@
 # script is the only way to deploy code changes to it.
 #
 # Usage:
-#   bash scripts/sync_to_server.sh                # uses defaults below
-#   SERVER_HOST=1.2.3.4 SERVER_USER=me bash scripts/sync_to_server.sh
-#   bash scripts/sync_to_server.sh --dry-run       # preview only, no transfer
+#   SERVER_USER=me SERVER_HOST=host.example bash scripts/sync_to_server.sh
+#   SERVER_USER=me SERVER_HOST=host.example bash scripts/sync_to_server.sh --dry-run
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-SERVER_USER="${SERVER_USER:-fatemerjn}"
-SERVER_HOST="${SERVER_HOST:-172.27.50.51}"
+# The training server is an internal machine, so its address is not baked into
+# the repository.  Set SERVER_USER and SERVER_HOST in your environment, e.g.
+#   export SERVER_USER=your-user SERVER_HOST=your.server.example
+SERVER_USER="${SERVER_USER:?set SERVER_USER to your account on the training server}"
+SERVER_HOST="${SERVER_HOST:?set SERVER_HOST to the training server address}"
 SERVER_PATH="${SERVER_PATH:-~/Overlap-Aware-Selective-Forgetting-/}"
 
 RSYNC_FLAGS=(-avz --progress)
