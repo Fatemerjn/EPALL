@@ -7,9 +7,10 @@ governing quantity is the distance to chance ``|A_u - c|``: for a forgotten task
 both a rise above chance and a fall below chance are failures of forgetting, so
 raw accuracy is not a monotone objective and is reported only as context.
 
-The MAIN schedules interleave training requests with deletion requests
-(``cifar10_t5_f3``: T T T T F T F F; ``cifar100_t10_f3``: T x7 F T T F T F), so
-each observation gap is attributed to one of two causes:
+The MAIN schedules interleave training requests with deletion requests, and the
+interleaving is *seed dependent* -- seed 0 of ``cifar10_t5_f3`` is
+T T T T F T F F while seed 1 is T T F T F T T F -- so each observation gap is
+attributed to one of two causes:
 
 * ``train`` -- the requests between the previous deletion and the next one, read
   from ``per_task_acc_before`` of the next deletion event;
@@ -365,6 +366,36 @@ def write_markdown(path, summary, selected):
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def usable_offsets(dataset_rows):
+    """Observation indices where every run contributes the same phase.
+
+    Returns the longest prefix of indices for which (a) no index mixes a
+    training observation with a deletion observation, and (b) no run has
+    dropped out. Beyond that point an index-wise mean would compare unlike
+    quantities, so the curve simply stops.
+
+    The completeness test counts every contributing run of the dataset (methods
+    times seeds), which is what makes a dropout detectable. It is not the sample
+    size behind a plotted point: each method's curve averages that method's
+    seeds only.
+    """
+
+    by_index = {}
+    for row in dataset_rows:
+        by_index.setdefault(int(row["observation_index"]), []).append(row)
+    if not by_index:
+        return []
+    full = max(len(rows) for rows in by_index.values())
+    usable = []
+    for index in sorted(by_index):
+        rows = by_index[index]
+        phases = {str(row["observation_phase"]) for row in rows}
+        if len(phases) != 1 or len(rows) != full:
+            break
+        usable.append(index)
+    return usable
+
+
 def plot_curves(path, raw_rows, dpi):
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.75), sharey=False)
     for axis, dataset in zip(axes, ("cifar10", "cifar100")):
@@ -375,7 +406,13 @@ def plot_curves(path, raw_rows, dpi):
             row for row in raw_rows
             if row["dataset"] == dataset and int(row["deleted_event"]) == 1
         ]
-        offsets = sorted({int(row["observation_index"]) for row in dataset_rows})
+        # The MAIN schedules are not identical across seeds: the deletion
+        # requests sit at different positions, so seed 0 and seed 1 can differ
+        # both in how many observations the first-deleted task has and in what
+        # each observation *is*. Averaging index by index is only meaningful
+        # while every contributing run agrees on the phase and all runs are
+        # still present, so the curve is truncated at the last such index.
+        offsets = usable_offsets(dataset_rows)
         for method in METHODS:
             method_rows = [row for row in dataset_rows if row["method"] == method]
             ys = [

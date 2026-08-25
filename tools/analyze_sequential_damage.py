@@ -34,10 +34,12 @@ from run_selection import select_latest_seed_rows
 DATASETS = ("cifar100", "cifar10")
 METHODS = ("pall_original", "pall_modified", "pall_adapter", "lora", "clpu")
 SEEDS = (0, 1)
+# Display names follow the thesis, not the code identifiers: the thesis calls
+# pall_original "PALL" and pall_modified "EPALL", so figures must too.
 METHOD_LABELS = {
-    "pall_original": "PALL Original",
-    "pall_modified": "PALL Modified",
-    "pall_adapter": "PALL Adapter",
+    "pall_original": "PALL",
+    "pall_modified": "EPALL",
+    "pall_adapter": "PALL-Adapter",
     "lora": "LoRA",
     "clpu": "CLPU",
 }

@@ -213,7 +213,7 @@ def fig_storage(outdir: Path) -> None:
     plt.close(fig)
 
 
-def fig_overlap_response(outdir: Path) -> None:
+def fig_overlap_response(outdir: Path, baseline_label: str = "PALL-Original") -> None:
     """Plot the strict, de-duplicated controlled-overlap WorstDrop response."""
     import statistics
 
@@ -239,7 +239,7 @@ def fig_overlap_response(outdir: Path) -> None:
     datasets = ("cifar10", "cifar100")
     dataset_titles = {"cifar10": "CIFAR-10", "cifar100": "CIFAR-100"}
     methods = (
-        ("pall_original", "PALL-Original", "#0072B2", "o", "-"),
+        ("pall_original", baseline_label, "#0072B2", "o", "-"),
         ("pall_modified", "EPALL", "#E69F00", "s", "-"),
         ("salun", "SalUn", "#CC79A7", "^", "--"),
         ("clpu", "CLPU", "#009E73", "D", ":"),
@@ -428,6 +428,11 @@ def main() -> None:
     fig_mia(outdir)
     fig_storage(outdir)
     fig_overlap_response(outdir)
+    # The thesis renames PALL-Original to plain "PALL"; the paper keeps the long
+    # name. Same data, same code path, only the legend label differs.
+    thesis_images = ROOT / "thesis/images"
+    if thesis_images.is_dir():
+        fig_overlap_response(thesis_images, baseline_label="PALL")
     print(f"Wrote aaai_worstdrop.pdf, aaai_tradeoff.pdf, aaai_mia.pdf, aaai_storage.pdf to {outdir}")
 
 

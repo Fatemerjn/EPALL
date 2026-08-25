@@ -96,6 +96,15 @@ def parse_args() -> argparse.Namespace:
         help="Directory for generated plots.",
     )
     parser.add_argument(
+        "--baseline-label",
+        default="PALL-Original",
+        help=(
+            "Display name for pall_original. The paper writes PALL-Original; the "
+            "thesis calls the same method plain PALL. Only the legend/tick text "
+            "changes -- the data and the selection are identical."
+        ),
+    )
+    parser.add_argument(
         "--paper-figures",
         action="store_true",
         help="Generate the PDF thesis/paper figure set from a group-by-config thesis table.",
@@ -2421,6 +2430,8 @@ def generate_paper_figures(
 
 def main() -> int:
     args = parse_args()
+    # Applied before any figure is built so every label lookup sees it.
+    METHOD_LABELS["pall_original"] = args.baseline_label
     if args.main_metrics_dashboard:
         setup_paper_style()
         df = load_thesis_table(args.input)
