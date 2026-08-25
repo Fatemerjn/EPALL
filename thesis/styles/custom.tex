@@ -1,0 +1,55 @@
+
+% -------------------------------------------------------
+%  Custom Definitions
+% -------------------------------------------------------
+
+\newcommand{\rvx}{\bm{x}} 
+\newcommand{\rvy}{\bm{y}}
+\newcommand{\rvtheta}{\bm{\theta}}
+\newcommand{\OPT}{\ensuremath{\mathop{\mathrm{OPT}}}}
+\newcommand{\APX}{\ensuremath{\mathop{\mathrm{APX}}}}
+\newcommand{\ALG}{\ensuremath{\mathop{\mathrm{ALG}}}}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+% مسیر تصویرها: علاوه بر figs/ پوشه‌ی images/ هم جست‌وجو شود
+\graphicspath{{figs/}{images/}}
+
+% برای جای‌گذاری دقیق شناور‌ها با [H]
+\usepackage{float}
+\usepackage{booktabs}
+% res_hyper spans more than one page; longtable lets it break instead of
+% being silently clipped by adjustbox.
+\usepackage{longtable}
+
+% ---- جای‌گذاری شناورها ----
+% پیش‌فرض‌های LaTeX با فاصله‌ی خطی ۱.۶ باعث می‌شوند شکل‌های متوسط هم به صفحه‌ی
+% مستقل رانده شوند. این مقادیر اجازه می‌دهند شکل‌ها در بالا/پایین صفحه‌ی متن
+% بنشینند و صفحه‌ی تمام-شکل تنها وقتی ساخته شود که واقعا پر باشد.
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.75}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.85}
+\renewcommand{\dbltopfraction}{0.92}
+\renewcommand{\dblfloatpagefraction}{0.85}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+% common.tex این را برای \floatbox صفر می‌کند؛ برای شکل‌های معمولی بازگردانده می‌شود.
+\setlength{\intextsep}{10pt plus 3pt minus 3pt}
+\setlength{\floatsep}{10pt plus 3pt minus 3pt}
+\setlength{\textfloatsep}{12pt plus 3pt minus 3pt}
+
+% نمادگذاری یکنواخت پایان‌نامه
+\newcommand{\Mf}{\ensuremath{M_f}}          % ماسک وظیفه‌ی هدف فراموشی
+\newcommand{\Mr}{\ensuremath{M_r}}          % اجتماع ماسک وظایف نگه‌داری‌شده
+\newcommand{\Sshare}{\ensuremath{S_{\mathrm{share}}}}
+\newcommand{\Scrit}{\ensuremath{S_{\mathrm{crit}}}}
+\newcommand{\Sforget}{\ensuremath{S_{\mathrm{forget}}}}
+\newcommand{\Sactive}{\ensuremath{S_{\mathrm{active}}}}
+\newcommand{\Afinal}{\ensuremath{A_{\mathrm{final}}}}
+\newcommand{\Favg}{\ensuremath{F_{\mathrm{avg}}}}
+\newcommand{\Rupd}{\ensuremath{R_{\mathrm{upd}}}}
+\newcommand{\WD}{\lr{WorstDrop}}
+\newcommand{\en}[1]{\LTRfootnote{\lr{#1}}}

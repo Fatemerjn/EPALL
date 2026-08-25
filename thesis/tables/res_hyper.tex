@@ -1,0 +1,75 @@
+% One longtable rather than two hand-split table floats: this configuration
+% listing is longer than a page, and letting longtable break it keeps a single
+% caption, a single label, and no manual maintenance of where the split falls.
+{\small
+\setlength{\tabcolsep}{5pt}
+\begin{longtable}{p{2.4cm} p{4.2cm} p{6.4cm}}
+\caption[پیکربندی کامل آزمایش‌ها]{پیکربندی کامل آزمایش‌ها. مقادیر میان روش‌ها مشترک‌اند مگر آنکه سطری مخصوص یک روش آن‌ها را بازنویسی کند.}
+\label{tab:res-hyper} \\
+\toprule
+\textbf{گروه} & \textbf{تنظیم} & \textbf{مقدار} \\ \midrule
+\endfirsthead
+\multicolumn{3}{r}{\small ادامه‌ی جدول \ref{tab:res-hyper}} \\
+\toprule
+\textbf{گروه} & \textbf{تنظیم} & \textbf{مقدار} \\ \midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\small ادامه در صفحه‌ی بعد} \\
+\endfoot
+\bottomrule
+\endlastfoot
+    \multirow{5}{*}{بهینه‌سازی}
+     & بهینه‌ساز              & \lr{SGD}، تکانه‌ی \lr{0.9} \\
+     & نرخ یادگیری            & \lr{$10^{-2}$} (\lr{LoRA} روی \lr{Split-CIFAR-100}: \lr{$10^{-3}$}) \\
+     & تنظیم وزن              & \lr{$5\times10^{-4}$} \\
+     & اندازه‌ی دسته          & \lr{32} \\
+     & ایپاک هر وظیفه         & \lr{20} (استاندارد)، \lr{3} (هم‌پوشانی‌سنگین و پیش‌آموزش‌دیده) \\
+    \midrule
+    \multirow{4}{*}{محک‌ها}
+     & \lr{CIFAR-10}          & \lr{5} وظیفه $\times$ \lr{2} کلاس، سطح تصادفی \lr{0.5} \\
+     & \lr{CIFAR-100} استاندارد & \lr{10} وظیفه $\times$ \lr{10} کلاس مجزای تصادفی، سطح تصادفی \lr{0.1} \\
+     & \lr{CIFAR-100} هم‌پوشانی & \lr{10} وظیفه $\times$ \lr{5} کلاس، سطح تصادفی \lr{0.2} \\
+     & \lr{TinyImageNet}      & \lr{20} وظیفه $\times$ \lr{10} کلاس، سطح تصادفی \lr{0.1} \\
+    \midrule
+    \multirow{3}{*}{معماری}
+     & \lr{CIFAR-10} / \lr{TinyImageNet} / پیش‌آموزش‌دیده & نسخه‌های \lr{ResNet-18} \\
+     & \lr{CIFAR-100} اصلی    & نسخه‌های \lr{ResNet-34} \\
+     & آزمون میان‌معماری      & \lr{ViT-T/8} \\
+    \midrule
+    \multirow{2}{*}{بازپخش}
+     & بودجه‌ی حافظه          & \lr{500} نمونه \\
+     & تخصیص                  & از پیش افرازشده؛ \emph{بدون} بازتوزیع پس از حذف \\
+    \midrule
+    \multirow{2}{*}{زیرشبکه}
+     & پراکندگی \lr{C10} / \lr{Tiny} & \lr{0.8} \\
+     & پراکندگی \lr{C100}     & \lr{0.9} \\
+    \midrule
+    \multirow{4}{*}{\lr{EPALL}}
+     & نسبت محافظت $\rho$     & \lr{0.2} \\
+     & ضریب لنگر $\lambda$    & \lr{1.0} \\
+     & معیار اهمیت            & بزرگی گرادیان (پیش‌فرض)؛ انرژی تعارض (مطالعه) \\
+     & هدف لنگر               & \lr{\texttt{old}} (پیش‌فرض و همه‌ی اجراهای گزارش‌شده)؛ \lr{\texttt{reinit}} فقط در مطالعه‌ی بخش \ref{subsec:res-anchor} \\
+    \midrule
+    \multirow{5}{*}{\mbox{\lr{PALL-Adapter}}}
+     & گلوگاه وظیفه / مشترک   & \lr{16} / \lr{16} \\
+     & نسبت فراموشی مشترک $\alpha_f$ & \lr{0.3} \\
+     & نسبت محافظت مشترک $\alpha_p$  & \lr{0.2} \\
+     & شدت ماسک نرم $p$       & \lr{$|S_{\mathrm{crit}}|/|S_{\mathrm{forget}}|$} \\
+     & گام فراموشی / ترمیم    & \lr{10} / \lr{50} \\
+    \midrule
+    \lr{LoRA} & رتبه / $\alpha$ & \lr{8} / \lr{16} \\
+    \midrule
+    \multirow{6}{*}{مبناها}
+     & \lr{EWC}               & $\lambda$: \lr{100} \\
+     & \lr{LwF}               & $\alpha$: \lr{1.0}؛ دمای تقطیر $T$: \lr{2.0} \\
+     & \lr{DER++}             & $\alpha$ (\lr{logit}): \lr{0.5}؛ $\beta$ (\lr{CE}): \lr{1.0} \\
+     & \lr{ER}                & فقط بازپخش؛ بدون جمله‌ی اضافی \\
+     & \lr{SSD}               & آستانه‌ی نسبت فیشر \lr{1.0}، شدت میرایی \lr{1.0} \\
+     & \lr{SalUn}             & نسبت ماسک \lr{0.1}، هدف یکنواخت، \lr{50} گام فراموشی \\
+    \midrule
+    \multirow{3}{*}{دنباله‌ها}
+     & درخواست فراموشی هر اجرا & \lr{3} \\
+     & ساختار                 & هر وظیفه حداکثر یک‌بار آموزش؛ بدون معرفی دوباره \\
+     & الگوی درخواست          & \lr{CIFAR-10}: \lr{T T T T F T F F}؛ \lr{CIFAR-100}: \lr{T$\times$7 F T T F T F} \\
+\end{longtable}
+}

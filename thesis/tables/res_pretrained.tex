@@ -1,0 +1,22 @@
+\begin{table}[H]
+    \centering
+    \small
+    \caption[رژیم پیش‌آموزش‌دیده‌ی \lr{PEFT}]{رژیم تصحیح‌شده‌ی بدنه‌ی منجمد پیش‌آموزش‌دیده (سه بذر در همه‌ی سطرها). ورودی \lr{CIFAR} با آماره‌های \lr{ImageNet} نرمال می‌شود و \lr{TinyImageNet} از پیش همان آماره‌ها را دارد. سطح تصادفی دقت هدف به‌ترتیب $0.5$، $0.2$ و $0.1$ است. پرنگ تنها نقطه‌ی پایان بهتر در دقت نهایی و بیشترین افتِ علامت‌دار را نشان می‌دهد؛ دقت هدف با فاصله تا سطح تصادفی خوانده می‌شود. $R_{\mathrm{upd}}$ نسبت اسمی پارامترهای آموزش‌پذیر در ماسک ترمیم است.}
+    \label{tab:res-pretrained}
+    \setlength{\tabcolsep}{4pt}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{p{2.6cm} p{1.7cm} c c c c}
+    \toprule
+    \textbf{مجموعه‌داده} & \textbf{روش} & \textbf{دقت نهایی} & \textbf{بیشترین افت} & \textbf{دقت هدف} & \textbf{$R_{\mathrm{upd}}$} \\ \midrule
+    \multirow{2}{*}{\lr{CIFAR-10}} & \lr{LoRA} & \textbf{\lr{0.9848 ± 0.0154}} & \lr{0.0000 ± 0.0000} & \lr{0.5203 ± 0.0966} & \lr{0.0011} \\
+     & \lr{Adapter} & \lr{0.9841 ± 0.0172} & \textbf{\lr{$-$0.0002 ± 0.0003}} & \lr{0.5190 ± 0.0988} & \lr{0.0030} \\
+    \midrule
+    \multirow{2}{*}{\lr{CIFAR-100}} & \lr{LoRA} & \lr{0.8215 ± 0.0083} & \lr{0.0213 ± 0.0219} & \lr{0.1613 ± 0.0613} & \lr{0.0051} \\
+     & \lr{Adapter} & \textbf{\lr{0.8277 ± 0.0061}} & \textbf{\lr{0.0180 ± 0.0020}} & \lr{0.1907 ± 0.1066} & \lr{0.0103} \\
+    \midrule
+    \multirow{2}{*}{\lr{TinyImageNet}} & \lr{LoRA} & \lr{0.8980 ± 0.0049} & \lr{0.0153 ± 0.0110} & \lr{0.0940 ± 0.0092} & \lr{0.0163} \\
+     & \lr{Adapter} & \textbf{\lr{0.9047 ± 0.0050}} & \textbf{\lr{0.0127 ± 0.0042}} & \lr{0.0940 ± 0.0401} & \lr{0.0273} \\
+    \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+\end{table}

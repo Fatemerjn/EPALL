@@ -1,0 +1,16 @@
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \caption[اختلاف‌های جفتی \lr{EPALL} و \lr{PALL} اصلی]{اختلاف‌های جفتی (\lr{EPALL} منهای \lr{PALL}) روی بذرهای یکسان. مقدار مثبت برای دقت نهایی، فراموشی و بیشترین افت به سود \lr{EPALL} است؛ $\Delta T_f$ منفی یعنی \lr{EPALL} کندتر است. بازه‌های بوت‌استرپ روی هشت بذر هم‌تراز و توصیفی‌اند.}
+    \label{tab:res-paired}
+    \setlength{\tabcolsep}{3pt}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{p{1.9cm} c c c c c}
+    \toprule
+    \textbf{مجموعه‌داده} & \textbf{جفت} & \textbf{$\Delta$ دقت نهایی} & \textbf{$\Delta$ فراموشی} & \textbf{$\Delta$ بیشترین افت} & \textbf{$\Delta T_f$ (ث)} \\ \midrule
+    \lr{CIFAR-10}  & \lr{8} & \lr{0.0087 [0.0034, 0.0151]} & \lr{$-$0.0017 [$-$0.0078, 0.0033]} & \lr{0.0092 [0.0029, 0.0157]} & \lr{$-$2.10} \\
+    \lr{CIFAR-100} & \lr{8} & \lr{0.0147 [0.0062, 0.0229]} & \lr{0.0110 [0.0055, 0.0160]} & \lr{0.0166 [0.0094, 0.0236]} & \lr{$-$12.06} \\
+    \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+\end{table}

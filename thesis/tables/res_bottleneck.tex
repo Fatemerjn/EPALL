@@ -1,0 +1,20 @@
+\begin{table}[H]
+    \centering
+    \small
+    \caption[جاروب عرض گلوگاه آداپتر]{جاروب عرض گلوگاه مخصوص وظیفه روی \lr{CIFAR-10} با دو بذر هم‌تراز؛ توصیفی. گلوگاه مشترک روی $16$ ثابت است. هیچ‌یک از معیارها نسبت به عرض یکنوا نیست، پس $16$ یک پیش‌فرض فشرده است و نه بهینه‌ی ادعاشده.}
+    \label{tab:res-bottleneck}
+    \setlength{\tabcolsep}{5pt}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{p{2.6cm} c c c c}
+    \toprule
+    \textbf{گلوگاه وظیفه} & \textbf{دقت نهایی} & \textbf{بیشترین افت} & \textbf{دقت هدف} & \textbf{$R_{\mathrm{upd}}$} \\ \midrule
+    \lr{4} & \lr{0.8220} & \lr{0.0035} & \lr{0.5215} & \lr{0.0024} \\
+    \lr{8} & \lr{0.8197} & \lr{0.0097} & \lr{0.5425} & \lr{0.0031} \\
+    \lr{16} & \lr{0.8166} & \lr{0.0160} & \lr{0.5247} & \lr{0.0045} \\
+    \lr{32} & \lr{0.8266} & \lr{0.0028} & \lr{0.5058} & \lr{0.0074} \\
+    \lr{64} & \lr{0.8170} & \lr{$-$0.0218} & \lr{0.5085} & \lr{0.0130} \\
+    \lr{128} & \lr{0.8251} & \lr{$-$0.0003} & \lr{0.5000} & \lr{0.0237} \\
+    \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+\end{table}
