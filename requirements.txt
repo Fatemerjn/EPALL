@@ -6,3 +6,10 @@ torchvision==0.24.1
 numpy==2.4.1
 pandas==2.3.3
 matplotlib==3.10.9
+#
+# Optional extras -- every use below is guarded and falls back to a
+# self-contained implementation, so none of these are needed to reproduce the
+# reported numbers:
+#   scipy           faster Clopper-Pearson bounds in tools/audit_privacy.py
+#   scikit-learn    logistic-regression linear probe in main.py (else SGD)
+#   arabic-reshaper, python-bidi   Persian axis labels in tools/make_paper_figures.py
