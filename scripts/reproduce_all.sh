@@ -71,12 +71,19 @@ echo "==> Building reviewer-grade PDF figures"
   --bootstrap-samples "$BOOTSTRAP_SAMPLES" \
   --bootstrap-seed "$BOOTSTRAP_SEED"
 
-echo "==> Building the compact AAAI figures directly from canonical aggregates"
-"$PY" tools/make_aaai_figures.py \
-  --outdir paper/AuthorKit27/Figures
+# The two steps below render the AAAI manuscript assets.  paper/ is a private
+# draft directory that is not part of the published repository, so they are
+# skipped unless it is present.
+if [[ -d paper/AuthorKit27 ]]; then
+  echo "==> Building the compact AAAI figures directly from canonical aggregates"
+  "$PY" tools/make_aaai_figures.py \
+    --outdir paper/AuthorKit27/Figures
 
-echo "==> Building the generated main standard-comparison LaTeX table"
-"$PY" tools/generate_main_standard_table.py
+  echo "==> Building the generated main standard-comparison LaTeX table"
+  "$PY" tools/generate_main_standard_table.py
+else
+  echo "==> Skipping the AAAI manuscript assets (paper/ not present)"
+fi
 
 echo "==> Done"
 echo "Tables:  $AGG_DIR"
