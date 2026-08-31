@@ -1,0 +1,123 @@
+% پریامبل مشترک شکل‌های TikZ پایان‌نامه
+% همه‌ی گیرهای xepersian + TikZ اینجا یک‌بار حل شده‌اند.
+%
+% ساخت هر شکل:
+%   cd thesis && xelatex -output-directory=figures-tikz figures-tikz/<name>.tex
+%
+% قواعد نگارش داخل نودها (مهم):
+%   • متن فارسی  →  \fa{...}     (bidi در جعبه‌های TikZ خودکار کار نمی‌کند)
+%   • ریاضی/لاتین →  \en{...}
+%   • عدد لاتین داخل ریاضی → \num{0.2}
+
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,patterns,positioning,calc,fit,backgrounds,
+                decorations.pathreplacing,shapes.geometric,shapes.misc}
+
+\newcommand{\Sshare}{\ensuremath{S_{\mathrm{share}}}}
+\newcommand{\Scrit}{\ensuremath{S_{\mathrm{crit}}}}
+\newcommand{\Mf}{\ensuremath{M_f}}
+\newcommand{\Mr}{\ensuremath{M_r}}
+
+% آیکون‌ها — برداری، رنگ‌پذیر، سازگار با xepersian.
+% نکته: این پکیج فقط در همین فایل‌های standalone بارگذاری می‌شود؛
+% بیلد پایان‌نامه فقط PDF نهایی را \includegraphics می‌کند، پس اثری روی آن ندارد.
+\usepackage{fontawesome5}
+
+\usepackage{xepersian}
+
+\settextfont[Scale=1.09,Extension=.ttf,Path=styles/fonts/,
+  BoldFont=XB NiloofarBd,ItalicFont=XB NiloofarIt,BoldItalicFont=XB NiloofarBdIt]{XB Niloofar}
+% عمداً \setdigitfont فراخوانی نمی‌شود: در شکل‌ها همه‌ی ارقامِ ریاضی باید لاتین بمانند.
+% اگر جایی رقم فارسی لازم بود، کاراکترش را مستقیم بنویس: ۰ ۱ ۲ ۳ ۴ ۵
+
+% ---- سه ماکرویی که همه‌ی مشکلات bidi را حل می‌کنند ----
+\newcommand{\fa}[1]{\RL{#1}}                 % متن فارسی در نود TikZ
+\newcommand{\en}[1]{\LR{#1}}                 % ریاضی یا لاتین در نود TikZ
+\newcommand{\num}[1]{\text{\lr{#1}}}         % عدد لاتین داخل متن فارسیِ حالت ریاضی
+
+% ---- پالت مشترک ----
+\definecolor{colF}{RGB}{224,124,40}       % وظیفه‌ی هدف / فراموشی
+\definecolor{colR}{RGB}{31,105,170}       % وظایف نگه‌داری‌شده
+\definecolor{colS}{RGB}{212,92,148}       % ناحیه‌ی مشترک
+\definecolor{colOK}{RGB}{34,139,84}       % حفاظت / تأیید
+\definecolor{colCrit}{RGB}{106,27,154}    % زیرمجموعه‌ی بحرانی
+\definecolor{colLine}{RGB}{205,205,212}
+\definecolor{colHead}{RGB}{240,240,243}
+\definecolor{colEmpty}{RGB}{247,247,249}
+\definecolor{colInk}{RGB}{45,45,52}
+\definecolor{p1}{RGB}{240,232,248}
+\definecolor{p2}{RGB}{212,190,235}
+\definecolor{p3}{RGB}{178,142,215}
+\definecolor{p4}{RGB}{143,92,189}
+\definecolor{p5}{RGB}{106,27,154}
+
+% ---- سبک‌های مشترک ----
+\tikzset{
+  panel/.style   = {draw=colLine,line width=0.5pt,rounded corners=2.5pt},
+  chip/.style    = {draw=#1,line width=0.7pt,rounded corners=2pt,
+                    fill=#1!7,inner sep=3.5pt,align=center,font=\scriptsize},
+  chip/.default  = colLine,
+  flow/.style    = {-{Stealth[length=4pt,width=3pt]},line width=0.7pt,colInk},
+  flowdash/.style= {-{Stealth[length=4pt,width=3pt]},line width=0.6pt,dashed,dash pattern=on 2pt off 1.6pt},
+  lead/.style    = {-{Stealth[length=3pt]},line width=0.45pt,colLine},
+  note/.style    = {draw=colLine,line width=0.4pt,rounded corners=2pt,
+                    fill=white,inner sep=3pt,align=center,font=\scriptsize},
+  stepnum/.style = {circle,draw=#1,line width=0.7pt,fill=white,inner sep=0pt,
+                    minimum size=3.6mm,font=\scriptsize\bfseries,text=#1},
+  stepnum/.default = colInk,
+}
+
+% سربرگ پنل: #1 عرض، #2 عنوان فارسی، #3 پایین، #4 بالا
+\newcommand{\panelhead}[4]{%
+  \draw[panel] (-0.35,#3) rectangle (#1,#4);
+  \fill[colHead,rounded corners=2.5pt] (-0.35,{#4-0.74}) rectangle (#1,#4);
+  \node[anchor=north] at ({(#1-0.35)/2},{#4-0.09}) {\small\textbf{\fa{#2}}};}
+
+% آیکون شبکه‌ی عصبی کوچک: #1 مقیاس، #2 رنگ لبه
+\newcommand{\netglyph}[2]{%
+  \begin{scope}[scale=#1]
+    \foreach \l/\n in {0/3,1/4,2/3}{
+      \foreach \k in {1,...,\n}{
+        \node[circle,draw=#2,line width=0.35pt,fill=white,inner sep=0pt,
+              minimum size=1.7mm] (n\l\k) at (0.42*\l,{0.30*\k-0.15*\n}) {};}}
+    \foreach \a in {1,2,3}{\foreach \b in {1,...,4}{
+        \draw[#2,line width=0.15pt,opacity=0.55] (n0\a) -- (n1\b);}}
+    \foreach \a in {1,...,4}{\foreach \b in {1,2,3}{
+        \draw[#2,line width=0.15pt,opacity=0.55] (n1\a) -- (n2\b);}}
+  \end{scope}}
+
+% ---- سبک‌های خودکار‌اندازه (جعبه دور متن بسته می‌شود، نه برعکس) ----
+\tikzset{
+  % جعبه‌ی عملیاتی: عرض از محتوا می‌آید
+  op/.style      = {draw=#1,line width=0.7pt,rounded corners=2.5pt,fill=white,
+                    inner xsep=5pt,inner ysep=3.5pt,font=\scriptsize,align=center},
+  op/.default    = colR,
+  % کارت نرم: پس‌زمینه‌ی کم‌رنگ، پدینگ سخاوتمند
+  card/.style 2 args = {draw=#1,line width=0.6pt,rounded corners=3.5pt,fill=#1!5,
+                    inner xsep=6pt,inner ysep=5pt,align=right,font=\scriptsize,
+                    text width=#2},
+  cardL/.style 2 args = {draw=#1,line width=0.6pt,rounded corners=3.5pt,fill=#1!5,
+                    inner xsep=6pt,inner ysep=5pt,align=center,font=\scriptsize,
+                    text width=#2},
+  % کارت خنثی
+  plain/.style   = {draw=colLine,line width=0.6pt,rounded corners=3.5pt,fill=white,
+                    inner xsep=6pt,inner ysep=5pt,align=right,font=\scriptsize,
+                    text width=#1},
+  plain/.default = 2.4cm,
+  % نشان شماره روی لبه‌ی کارت
+  badge/.style   = {circle,draw=#1,line width=0.8pt,fill=white,inner sep=0pt,
+                    minimum size=4.0mm,font=\scriptsize\bfseries,text=#1},
+  badge/.default = colInk,
+  % عنوان بخش داخل پنل
+  ttl/.style     = {font=\scriptsize\bfseries,text=#1,inner sep=1pt},
+  ttl/.default   = colR,
+  % زیرنویس خاکستری
+  sub/.style     = {font=\scriptsize,text=colInk!62,inner sep=1pt},
+}
+
+% ---- آیکون رنگی با اندازه‌ی کنترل‌شده ----
+% \ico{رنگ}{مقیاس}{\faXxx}
+\newcommand{\ico}[3]{\textcolor{#1}{\scalebox{#2}{#3}}}
+\usepackage{graphicx}

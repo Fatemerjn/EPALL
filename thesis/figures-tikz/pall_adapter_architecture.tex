@@ -1,0 +1,127 @@
+% معماری مسیر PALL-Adapter و عملیات فراموشی
+\documentclass[border=8pt]{standalone}
+\input{figures-tikz/_preamble}
+\begin{document}
+\begin{tikzpicture}[font=\small,x=1cm,y=1cm,node distance=5mm]
+
+% ---- نواحی سه‌گانه‌ی پس‌زمینه (غنای بصری + خوانایی مراحل) ----
+\begin{scope}[on background layer]
+  \fill[colInk!4,rounded corners=4pt]  (2.05,3.30) rectangle (5.75,5.75);
+  \fill[colR!4,rounded corners=4pt]    (5.95,3.30) rectangle (8.20,5.75);
+  \fill[colOK!4,rounded corners=4pt]   (8.80,2.60) rectangle (11.00,5.75);
+  \fill[colF!4,rounded corners=4pt]    (11.30,2.95) rectangle (14.55,5.75);
+\end{scope}
+
+% ================= جریان اصلی (چپ به راست) =================
+% ورودی
+\foreach \d in {0.16,0.08,0}
+  {\draw[colLine,line width=0.5pt,fill=white,rounded corners=1.5pt]
+        (0.30+\d,3.95+\d) rectangle (1.50+\d,4.95+\d);}
+\fill[colOK!35] (0.46,4.05) -- (0.88,4.55) -- (1.18,4.25) -- (1.46,4.55) -- (1.46,4.05) -- cycle;
+\fill[colF!55] (0.63,4.72) circle (0.10);
+\node[anchor=south,font=\scriptsize] at (0.90,5.25) {\fa{ورودی}};
+\node[anchor=north,font=\scriptsize] at (0.90,3.85) {\en{$x\in\mathbb{R}^{(B\times3\times H\times W)}$}};
+
+% بدنه‌ی منجمد
+\node[cardL={colInk}{2.15cm},anchor=west] (base) at (2.20,4.55)
+     {\fa{استخراج‌گر ویژگی}\\[1pt]\en{\textbf{ResNet}} \fa{منجمد}\\[3pt]\en{$\theta_{\mathrm{base}}$}\,\ico{colInk}{0.72}{\faLock}};
+\node[sub,anchor=north] at (base.south) {\fa{بدون تغییر}};
+\draw[flow] (1.72,4.55) -- (base.west);
+
+% بردار ویژگی
+\foreach \k in {0,...,5}{\draw[colLine,line width=0.5pt,fill=white]
+   (5.32,{4.00+0.185*\k}) rectangle ++(0.30,0.185);}
+\node[anchor=north,font=\scriptsize] at (5.47,3.90) {\en{$g(x)\in\mathbb{R}^{512}$}};
+\draw[flow] (base.east) -- (5.28,4.55);
+
+% آداپتر مشترک
+\node[cardL={colR}{1.85cm},anchor=west] (ads) at (6.10,4.55)
+     {\fa{آداپتر مشترک}\\[1pt]\fa{آموزش‌پذیر}\\[3pt]\en{$\phi_s$}};
+\draw[flow] (5.68,4.55) -- (ads.west);
+
+% بانک آداپترهای وظیفه
+\node[anchor=south,ttl=colOK] (bankt) at (9.90,6.05) {\fa{بانک آداپترهای وظیفه}};
+\foreach \i/\lab/\fillc in {0/{$\phi_1$}/{colOK!10}, 1/{$\phi_2$}/{colOK!10},
+                            2/{$\phi_t$}/{colOK!40}, 4/{$\phi_T$}/{colOK!10}}
+  {\node[draw=colOK,line width=0.5pt,rounded corners=2pt,fill=\fillc,
+         minimum width=1.65cm,minimum height=4.2mm,font=\scriptsize] (a\i)
+        at (9.90,{5.40-0.48*\i}) {\en{\lab}};}
+\node[font=\scriptsize,text=colOK] at (9.90,{5.40-0.48*3}) {\en{$\vdots$}};
+\node[draw=colOK,line width=0.5pt,rounded corners=2pt,dashed,
+      dash pattern=on 1.7pt off 1.4pt,minimum width=1.65cm,minimum height=4.2mm,
+      font=\scriptsize] (au) at (9.90,2.98) {\en{$\phi_u$}};
+\begin{scope}[on background layer]
+  \draw[draw=colOK,line width=0.8pt,rounded corners=3.5pt,fill=colOK!4]
+        (8.90,2.70) rectangle (10.90,5.80);
+\end{scope}
+\draw[flow] (ads.east) -- (8.86,4.55);
+
+% طبقه‌بند مشترک
+\node[anchor=south,ttl=colF] at (12.92,6.35) {\fa{طبقه‌بند مشترک}};
+\node[anchor=south,font=\scriptsize] at (12.92,5.92) {\en{$W_{cls}\in\mathbb{R}^{(C\times512)}$}};
+\foreach \r in {0,...,7}{\foreach \c in {0,...,5}{
+   \draw[colF!40,line width=0.4pt,fill=white] ({11.70+0.40*\c},{3.60+0.26*\r})
+        rectangle ++(0.40,0.26);}}
+\foreach \c in {0,...,5}{\foreach \r in {3,4}{
+   \fill[colF!20] ({11.70+0.40*\c},{3.60+0.26*\r}) rectangle ++(0.40,0.26);}}
+\draw[colF,line width=0.8pt] (14.16,4.38) -- ++(0.13,0) -- ++(0,0.52) -- ++(-0.13,0);
+\node[anchor=west,font=\scriptsize,text=colF] at (14.36,4.64) {\en{$C_t$}};
+\draw[colF,line width=0.6pt,dashed,dash pattern=on 1.7pt off 1.4pt]
+      (11.70,3.22) rectangle (14.10,3.54);
+\node[anchor=west,font=\scriptsize,text=colF] at (14.24,3.38) {\en{$C_u$}};
+\node[anchor=east,font=\scriptsize] at (11.62,5.55) {\en{$1$}};
+\node[anchor=east,font=\scriptsize] at (11.62,3.72) {\en{$C$}};
+\draw[flow] (10.94,4.55) -- (11.65,4.55);
+
+% پیش‌بینی
+\node[cardL={colInk}{1.05cm},anchor=west] (pred) at (15.20,4.55)
+     {\fa{پیش‌بینی}\\[2pt]\en{$\hat{y}_t$}};
+\draw[flow] (14.72,4.55) -- (pred.west);
+
+% ================= کادر جزئیات آداپتر (بالا، خودکار‌اندازه) =================
+\node[op,anchor=west] (wd) at (3.85,8.05) {\en{$W_{\mathrm{down}}\!:\,512\to r$}};
+\node[op,right=of wd] (relu) {\en{\textbf{ReLU}}};
+\node[op,right=of relu] (wu) {\en{$W_{\mathrm{up}}\!:\,r\to 512$}};
+\node[circle,draw=colR,line width=0.7pt,fill=white,inner sep=1.2pt,
+      font=\scriptsize,right=of wu] (plus) {\en{$+$}};
+\node[anchor=east,font=\scriptsize] (zin) at ([xshift=-7mm]wd.west) {\en{$z\in\mathbb{R}^{512}$}};
+\draw[flow,colR] ([xshift=-6mm]wd.west) -- (wd.west);
+\draw[flow,colR] (wd) -- (relu);
+\draw[flow,colR] (relu) -- (wu);
+\draw[flow,colR] (wu) -- (plus);
+\draw[flow,colR] (plus) -- ++(0.75,0);
+\draw[colR,line width=0.6pt] ([xshift=-3mm]wd.west) -- ++(0,-0.80)
+      -- ([yshift=-0.80cm]plus.center -| plus.south) -- (plus.south);
+\node[anchor=west,align=left,font=\scriptsize] at ([xshift=15mm]plus.east)
+     {\en{\textbf{output} $\in\mathbb{R}^{512}$}\\[3pt]\en{$d=512,\ \ r=16$ (default)}};
+\begin{scope}[on background layer]
+  \draw[draw=colR,line width=0.8pt,rounded corners=3.5pt,fill=colR!3]
+        (2.42,6.85) rectangle (15.60,9.05);
+\end{scope}
+
+\draw[colR,line width=0.5pt,dashed,dash pattern=on 1.7pt off 1.5pt] (ads.north) -- (7.40,6.82);
+\draw[colR,line width=0.5pt,dashed,dash pattern=on 1.7pt off 1.5pt] (bankt.north) -- (9.60,6.82);
+
+% یادداشت رشد حافظه
+\node[cardL={colOK}{4.4cm},anchor=north] (memo) at (9.90,2.42)
+     {\fa{رشد حافظه: به‌ازای هر وظیفه فقط یک آداپتر کوچک افزوده می‌شود}};
+\draw[colOK,line width=0.5pt,-{Stealth[length=3pt]}] (memo.north) -- (9.90,2.66);
+
+% ================= نوار forget(u) =================
+\draw[colF,line width=0.8pt,dashed,dash pattern=on 2.8pt off 2.2pt,rounded corners=3.5pt]
+      (0.30,0.30) rectangle (16.35,1.30);
+\node[anchor=west,font=\small\bfseries,text=colF] at (0.62,0.80) {\en{$\mathrm{forget}(u)$}};
+\node[font=\scriptsize,text=colF] (f1) at (5.30,0.80)
+      {\fa{به‌روزرسانی نرم‌ماسک‌شده‌ی} \en{$\phi_s$}};
+\node[font=\scriptsize,text=colF] (f2) at (9.90,0.80) {\fa{بازنشانی} \en{$\phi_u$}};
+\node[font=\scriptsize,text=colF] (f3) at (13.40,0.80)
+      {\fa{پاک‌سازی بلوک سطرهای} \en{$C_u$}};
+\draw[colF,line width=0.5pt,dashed,dash pattern=on 1.7pt off 1.4pt,-{Stealth[length=3pt]}]
+      (f1.north) -- (ads.south);
+\draw[colF,line width=0.5pt,dashed,dash pattern=on 1.7pt off 1.4pt,-{Stealth[length=3pt]}]
+      (f2.north) -- (memo.south);
+\draw[colF,line width=0.5pt,dashed,dash pattern=on 1.7pt off 1.4pt,-{Stealth[length=3pt]}]
+      (f3.north) -- (12.90,3.16);
+
+\end{tikzpicture}
+\end{document}

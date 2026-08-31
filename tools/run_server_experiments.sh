@@ -29,6 +29,7 @@
 #   GROUP 28 (g28_standard_seed_extension): extend the complete 11-method standard table to seeds 0--7 -- ON DEMAND, resume-safe
 #   GROUP 30 (g30_standard_reinit_mia): reinit anchor WITH --eval_mia, own tag, for the anchor privacy comparison -- ON DEMAND, resume-safe
 #   GROUP 29 (g29_standard_reinit): eight-seed standard PALL-Modified candidate with explicit reinit anchor -- ON DEMAND, resume-safe
+#   GROUP 33 (g33_pall_original_mia): the four missing MIA-enabled PALL-original runs (privacy baseline) -- ON DEMAND, resume-safe
 #
 # Usage (run on a GPU node, inside tmux):
 #   bash tools/run_server_experiments.sh            # all = g1 + g2 + g3 (g4/g5/g6_standard/g7_tiny/g8_mia/g9_extra_baselines are NOT included)
@@ -58,6 +59,7 @@
 #   bash tools/run_server_experiments.sh g26_corrected_mia --dry-run
 #   STANDARD_EXTRA_SEEDS="3 4 5 6 7" bash tools/run_server_experiments.sh g28_standard_seed_extension --dry-run
 #   REINIT_STANDARD_SEEDS="0 1 2 3 4 5 6 7" bash tools/run_server_experiments.sh g29_standard_reinit --dry-run
+#   bash tools/run_server_experiments.sh g33_pall_original_mia --dry-run
 #   SEEDS="0 1 2" bash tools/run_server_experiments.sh
 #
 # main.py auto-selects CUDA when available (--device auto is the default).
@@ -76,7 +78,8 @@ usage () {
         "The --dry-run option is supported by g15_seed2, g20_paper_completion," \
         "g21_standard_unlearning, g22a_tiny_seed2, g22b_mia_anchor_seed2," \
         "g23_adapter_components, g24_retraining_reference, g25_modified_components, g26_corrected_mia," \
-        "g27_storage_accounting, g28_standard_seed_extension, g29_standard_reinit, and g30_standard_reinit_mia." \
+        "g27_storage_accounting, g28_standard_seed_extension, g29_standard_reinit, g30_standard_reinit_mia," \
+        "and g33_pall_original_mia." \
         "" \
         "Groups: all g1 g2 g3 g4 g5 g6_standard g7_tiny g8_mia" \
         "        g9_extra_baselines g9b_ssd_tune g10_anchor g11_vit" \
@@ -85,7 +88,8 @@ usage () {
         "        g18_probe g20_paper_completion g21_standard_unlearning" \
         "        g22a_tiny_seed2 g22b_mia_anchor_seed2 g23_adapter_components" \
         "        g24_retraining_reference g25_modified_components g26_corrected_mia" \
-        "        g27_storage_accounting g28_standard_seed_extension g29_standard_reinit g30_standard_reinit_mia"
+        "        g27_storage_accounting g28_standard_seed_extension g29_standard_reinit g30_standard_reinit_mia" \
+        "        g31_conflict_gamma_sweep g32_overlap_sparsity g33_pall_original_mia"
 }
 
 if [[ "$WHICH" == "-h" || "$WHICH" == "--help" ]]; then
@@ -106,7 +110,7 @@ if [[ -n "${3:-}" ]]; then
 fi
 if (( DRY_RUN )); then
     case "$WHICH" in
-        g15_seed2|g17_overlap_curve|g18_probe|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia|g31_conflict_gamma_sweep|g32_overlap_sparsity) ;;
+        g15_seed2|g17_overlap_curve|g18_probe|g20_paper_completion|g21_standard_unlearning|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia|g31_conflict_gamma_sweep|g32_overlap_sparsity|g33_pall_original_mia) ;;
         *)
             echo "--dry-run is not supported for ${WHICH}" >&2
             exit 1
@@ -444,6 +448,33 @@ group8_mia () {
                --eval_mia --experiment_tag cifar100_pretrained_mia
         launch "mia_c100_clpu_s${s}" $C100 $COMMON --seed $s \
                --request_schedule_file $c100 --method clpu \
+               --eval_mia --experiment_tag cifar100_mia
+    done
+}
+
+# ------------------------------------------------- GROUP 33 PALL-original MIA
+# The privacy audit (tags cifar10_mia / cifar100_mia) covers pall_modified,
+# pall_adapter, lora and clpu but never included pall_original -- the very
+# baseline every retention claim is measured against. Without it the audit
+# cannot say whether the post-request rise in the threshold-attack
+# distinguishability statistic is specific to EPALL or inherited from PALL.
+# This group adds only the four missing runs, under the existing MIA tags so
+# they aggregate alongside the current rows. Resume-safe: an exact completed
+# config/seed match is skipped, so rerunning costs nothing.
+# Run ON DEMAND (g33_pall_original_mia) -- intentionally NOT part of `all`.
+group33_pall_original_mia () {
+    echo "===== GROUP 33: MIA-enabled PALL-original (missing privacy baseline) ====="
+    # PALL-original == the shared C0 config plus the repair budget; no protect
+    # flags, which is exactly what distinguishes it from pall_modified.
+    local PALL_ORIG="--retrain_steps 50"
+    for s in 0 1; do
+        local c10="schedules/cifar10_t5_f3_fixed_seed${s}.json"
+        local c100="schedules/cifar100_t10_f3_seed${s}.json"
+        launch_resume_safe "mia_c10_pall_original_s${s}" $C10 $COMMON --seed $s \
+               --request_schedule_file $c10 --method pall_original $PALL_ORIG \
+               --eval_mia --experiment_tag cifar10_mia
+        launch_resume_safe "mia_c100_pall_original_s${s}" $C100 $COMMON --seed $s \
+               --request_schedule_file $c100 --method pall_original $PALL_ORIG \
                --eval_mia --experiment_tag cifar100_mia
     done
 }
@@ -1724,6 +1755,7 @@ case "$WHICH" in
     g30_standard_reinit_mia) group30_standard_reinit_mia ;;
     g31_conflict_gamma_sweep) group31_conflict_gamma_sweep ;;
     g32_overlap_sparsity) group32_overlap_sparsity ;;
+    g33_pall_original_mia) group33_pall_original_mia ;;
     *)   echo "unknown arg: $WHICH" >&2; usage >&2; exit 1 ;;
 esac
 
@@ -1740,7 +1772,7 @@ echo "===================================================================="
 echo "AGGREGATING TABLES ..."
 AGG_SUFFIX=""
 case "$WHICH" in
-    g17_overlap_curve|g18_probe|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia|g31_conflict_gamma_sweep|g32_overlap_sparsity)
+    g17_overlap_curve|g18_probe|g22a_tiny_seed2|g22b_mia_anchor_seed2|g23_adapter_components|g24_retraining_reference|g25_modified_components|g26_corrected_mia|g27_storage_accounting|g28_standard_seed_extension|g29_standard_reinit|g30_standard_reinit_mia|g31_conflict_gamma_sweep|g32_overlap_sparsity|g33_pall_original_mia)
         # These completion groups must never overwrite an existing CSV. A
         # timestamped canonical-tool rebuild can be inspected and synced while
         # the paper-facing canonical paths remain unchanged until every gap is

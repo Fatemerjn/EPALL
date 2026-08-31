@@ -1,0 +1,42 @@
+% کران بالای افت زیرفاز در برابر شدت محافظت — شکل شماتیک
+\documentclass[border=8pt]{standalone}
+\input{figures-tikz/_preamble}
+\begin{document}
+\begin{tikzpicture}[font=\small]
+
+\def\W{9.6}\def\H{5.0}
+
+% ---- محورها ----
+\draw[flow] (0,0) -- (\W+0.55,0);
+\draw[flow] (0,0) -- (0,\H+0.5);
+
+% ---- منحنی نزولی محدب ----
+\draw[colCrit,line width=1.5pt,smooth,samples=120,domain=0:\W]
+  plot (\x, {0.42 + 4.05*exp(-0.46*\x)});
+
+% ---- دو نقطه‌ی انتهایی ----
+\fill[colCrit] (0,4.47) circle (2.6pt);
+\fill[colCrit] (\W,{0.42+4.05*exp(-0.46*\W)}) circle (2.6pt);
+
+% ---- برچسب‌ها ----
+\node[anchor=west,font=\small] at (0.45,4.47) {\en{no protection}};
+\node[anchor=east,font=\small] at (\W-0.15,{0.42+4.05*exp(-0.46*\W)+0.52})
+     {\en{$\Scrit$ fully frozen}};
+
+\node[anchor=north,font=\small] at (0,-0.12) {\en{$0$}};
+\node[anchor=north,font=\small] at (\W,-0.12) {\en{$1$}};
+\node[anchor=north,font=\small] at ({\W/2},-0.62) {\en{protection strength $p$}};
+\node[rotate=90,anchor=south,font=\small] at (-0.55,{\H/2})
+     {\en{upper bound on the sub-phase drop $B_t$}};
+
+% ---- کادر فرمول ----
+\node[anchor=north east,draw=colCrit,line width=0.6pt,rounded corners=2.5pt,
+      inner sep=6pt,fill=white,font=\small] at (\W+0.4,\H+0.45)
+  {\en{$\dfrac{dB_t}{dp}=-E_t^{\mathrm{crit}}-\beta\eta^{2}N^{2}G^{2}|S|(1-p)\ \le\ 0$}};
+
+% ---- تذکر ----
+\node[anchor=north west,font=\scriptsize\itshape,text=colInk] at (-0.1,-1.05)
+     {\en{schematic; axes are not calibrated}};
+
+\end{tikzpicture}
+\end{document}

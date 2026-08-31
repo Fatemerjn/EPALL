@@ -1,0 +1,110 @@
+% خط‌لوله‌ی فراموشی انتخابی در یادگیری پیوسته (شکل ۱-۱)
+\documentclass[border=8pt]{standalone}
+\input{figures-tikz/_preamble}
+\begin{document}
+\begin{tikzpicture}[font=\small,x=1cm,y=1cm]
+
+% ================= پنل ۱ (راست): یادگیری پیوسته =================
+\draw[panel,draw=colR] (9.40,0.70) rectangle (19.00,7.05);
+\node[anchor=north,text=colR,font=\small\bfseries] at (14.20,6.95)
+      {\fa{۱. یادگیری پیوسته}};
+
+\foreach \i/\x/\lab/\col in {
+   1/17.60/{\en{$T_1$} \fa{یادگیری}}/colR,
+   2/15.85/{\en{$T_2$} \fa{یادگیری}}/colR,
+   3/14.10/{\en{$T_3$} \fa{یادگیری}}/colR,
+   4/12.35/{\en{$T_2$} \fa{فراموشی}}/colF,
+   5/10.60/{\en{$T_4$} \fa{یادگیری}}/colR}
+{
+  \draw[draw=\col,line width=0.7pt,rounded corners=2.5pt]
+        (\x-0.72,3.55) rectangle (\x+0.72,5.85);
+  \node[anchor=north,font=\scriptsize,text=\col] at (\x,5.78) {\lab};
+  \begin{scope}[shift={(\x-0.42,4.30)}] \netglyph{0.95}{colInk} \end{scope}
+}
+
+% فلش‌های جریان (راست به چپ)
+\foreach \x in {16.90,15.15,13.40,11.35}
+  {\draw[flow,colR] (\x,4.70) -- (\x-0.42,4.70);}
+\draw[flow,colR] (9.85,4.70) -- (9.45,4.70);
+
+% مجموعه‌ی وظایف فعال زیر هر مرحله
+\foreach \x/\set/\col in {
+   17.30/{$\{T_1\}$}/colR, 15.55/{$\{T_1,T_2\}$}/colR,
+   13.80/{$\{T_1,T_2,T_3\}$}/colR, 12.05/{$\{T_1,T_3\}$}/colLine,
+   10.30/{$\{T_1,T_3,T_4\}$}/colOK}
+{
+  \node[draw=\col,line width=0.6pt,rounded corners=2pt,fill=\col!6,
+        inner sep=3pt,font=\scriptsize] (s\x) at (\x,2.85) {\en{\set}};
+  \draw[colR,line width=0.5pt,dashed,dash pattern=on 1.6pt off 1.4pt]
+        (\x,2.55) -- (\x,1.95);
+}
+
+\draw[colR,line width=0.6pt,dashed,dash pattern=on 2.4pt off 1.8pt,rounded corners=2.5pt]
+      (9.75,1.20) rectangle (18.65,1.95);
+\node[font=\scriptsize] at (14.20,1.57)
+      {\ico{colR}{0.8}{\faDatabase}\ \ \fa{مجموعه‌ی وظایف فعال (وظایف ذخیره‌شده در مدل)}};
+
+% ================= پنل ۲ (میانه): درخواست فراموشی =================
+\draw[panel,draw=colF] (6.05,0.70) rectangle (9.15,7.05);
+\node[anchor=north,text=colF,font=\small\bfseries] at (7.60,6.95)
+      {\fa{۲. درخواست فراموشی}};
+
+\node[chip=colF,anchor=north,text width=2.35cm] at (7.60,6.15)
+      {\ico{colF}{0.95}{\faFileExcel}\\[2pt]\fa{درخواست حذف} \en{$T_2$}};
+\draw[flow,colF] (7.60,5.10) -- (7.60,4.75);
+
+\draw[draw=colF,line width=0.8pt,rounded corners=2.5pt] (6.85,2.95) rectangle (8.35,4.70);
+\node[anchor=north,font=\scriptsize,text=colF] at (7.60,4.62) {\en{$T_2$} \fa{فراموشی}};
+\begin{scope}[shift={(7.20,3.55)}] \netglyph{0.95}{colInk} \end{scope}
+
+\node[draw=colF,line width=0.6pt,rounded corners=2pt,fill=colF!6,
+      inner sep=3pt,font=\scriptsize] at (7.60,2.45) {\en{$\{T_1,T_3\}$}};
+
+\draw[colF,line width=0.6pt,dashed,dash pattern=on 2.4pt off 1.8pt,rounded corners=2.5pt]
+      (6.30,1.02) rectangle (8.90,1.98);
+\node[font=\scriptsize,align=center] at (7.60,1.50)
+      {\ico{colF}{0.85}{\faServer}\\[2pt]\fa{مدل مشترک،}\\[-1pt]\fa{همان پارامترها}};
+
+% اتصال پنل ۱ به پنل ۲
+\draw[flow,colF] (9.36,3.85) -- (8.70,3.85);
+
+% ================= پنل ۳ (چپ): دو تعهد همزمان =================
+\draw[panel,draw=colF] (1.95,0.70) rectangle (6.05,7.05);
+\node[anchor=north,text=colF,font=\small\bfseries] at (4.00,6.95)
+      {\fa{۳. دو تعهد همزمان}};
+
+% تعهد الف — سرکوب هدف
+\draw[draw=colF,line width=0.8pt,rounded corners=2.5pt] (2.25,4.45) rectangle (5.80,6.10);
+\node at (2.70,5.62) {\ico{colF}{1.05}{\faBullseye}};
+\node[anchor=north east,align=right,font=\scriptsize,text width=2.5cm] at (5.65,5.98)
+      {\fa{رفتار وظیفه‌ی هدف}\\[-1pt]\fa{سرکوب شود}};
+\node[font=\scriptsize] at (4.00,4.78) {\en{$A_u\;\to\;c$}};
+
+% تعهد ب — حفظ نگه‌داری
+\draw[draw=colOK,line width=0.8pt,rounded corners=2.5pt] (2.25,1.85) rectangle (5.80,3.95);
+\node at (2.70,3.47) {\ico{colOK}{1.05}{\faUserShield}};
+\node[anchor=north east,align=right,font=\scriptsize,text width=2.6cm] at (5.65,3.83)
+      {\fa{دانش وظیفه‌های}\\[-1pt]\fa{باقی‌مانده حفظ شود}};
+\node[font=\scriptsize,align=center] at (4.00,2.42)
+      {\en{$A_{t(\mathrm{after})}\approx A_{t(\mathrm{before})},$}\\[1pt]
+       \en{$t\in\{T_1,T_3,T_4\}$}};
+
+\draw[flow,colF] (6.35,5.25) -- (5.85,5.25);
+\draw[flow,colOK] (6.35,2.90) -- (5.85,2.90);
+
+% ================= خروجی (چپ‌ترین): مدل پس از درخواست =================
+\draw[panel,draw=colInk,line width=0.7pt] (0.05,2.05) rectangle (1.65,5.95);
+\node[anchor=north,align=center,font=\scriptsize] at (0.85,5.85)
+      {\fa{مدل پس از}\\[-1pt]\fa{درخواست}};
+\begin{scope}[shift={(0.45,4.35)}] \netglyph{0.95}{colInk} \end{scope}
+\draw[colLine,line width=0.4pt,dashed,dash pattern=on 1.4pt off 1.2pt] (0.20,3.65) -- (1.50,3.65);
+\node[draw=colF,line width=0.6pt,rounded corners=2pt,fill=colF!8,
+      inner sep=2.5pt,font=\scriptsize] at (0.85,3.25) {\en{$T_2$} \fa{حذف‌شده}};
+\node[draw=colOK,line width=0.6pt,rounded corners=2pt,fill=colOK!8,
+      inner sep=2.5pt,font=\scriptsize] at (0.85,2.55) {\en{$T_1,T_3,T_4$}};
+
+\draw[flow,colF] (1.95,5.25) -- (1.70,5.25);
+\draw[flow,colOK] (1.95,2.90) -- (1.70,2.90);
+
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,185 @@
+% سازوکار EPALL — سه پنل فشرده
+\documentclass[border=8pt]{standalone}
+\input{figures-tikz/_preamble}
+\begin{document}
+\begin{tikzpicture}[font=\small,x=1cm,y=1cm,node distance=3.5mm]
+
+% ================================================================
+% پنل الف (راست): چرا هم‌پوشانی خطرناک است؟
+% ================================================================
+\begin{scope}[shift={(13.80,0)}]
+  \panelhead{6.10}{الف) چرا هم‌پوشانی خطرناک است؟}{-0.35}{8.30}
+
+  % راهنما
+  \draw[colR,line width=1.3pt] (0.00,7.28) -- (0.62,7.28);
+  \node[anchor=west,font=\scriptsize,text=colR] at (0.72,7.28) {\fa{مسیر باقی‌مانده}};
+  \draw[colF,line width=1.3pt] (0.00,6.86) -- (0.62,6.86);
+  \node[anchor=west,font=\scriptsize,text=colF] at (0.72,6.86) {\fa{مسیر فراموش‌شده}};
+  \fill[colS] (3.92,7.28) circle (1.7pt);
+  \node[anchor=west,font=\scriptsize,text=colS] at (4.08,7.28) {\fa{مختصات مشترک}};
+
+  % شبکه
+  \foreach \k in {1,2,3}{\node[circle,draw=colInk!55,line width=0.6pt,fill=white,
+        inner sep=0pt,minimum size=4.4mm] (i\k) at (0.50,{6.28-0.70*\k}) {};}
+  \foreach \k in {1,2}{\node[circle,draw=colR,line width=0.9pt,fill=colR!10,
+        inner sep=0pt,minimum size=4.4mm] (h\k) at (2.00,{6.46-0.88*\k}) {};}
+  \foreach \k in {1,2}{\node[circle,draw=colS,line width=1.1pt,fill=colS!28,
+        inner sep=0pt,minimum size=4.6mm] (s\k) at (3.30,{5.82-0.78*\k}) {};}
+  \foreach \k in {1,2}{\node[circle,draw=colF,line width=0.9pt,fill=colF!10,
+        inner sep=0pt,minimum size=4.4mm] (o\k) at (4.60,{6.46-0.88*\k}) {};}
+  \foreach \k in {1,2,3}{\node[circle,draw=colInk!55,line width=0.6pt,fill=white,
+        inner sep=0pt,minimum size=4.4mm] (e\k) at (5.65,{6.28-0.70*\k}) {};}
+  \node[font=\scriptsize,text=colInk!55] at (2.00,3.78) {\en{$\vdots$}};
+  \node[font=\scriptsize,text=colInk!55] at (4.60,3.78) {\en{$\vdots$}};
+
+  \foreach \a in {1,2,3}{\foreach \b in {1,2}{
+      \draw[colInk!45,line width=0.3pt] (i\a) -- (h\b);}}
+  \foreach \a in {1,2}{\foreach \b in {1,2}{
+      \draw[colR,line width=0.8pt] (h\a) -- (s\b);
+      \draw[colF,line width=0.8pt] (s\a) -- (o\b);}}
+  \foreach \a in {1,2}{\foreach \b in {1,2,3}{
+      \draw[colInk!45,line width=0.3pt] (o\a) -- (e\b);}}
+
+  \draw[colCrit,line width=0.9pt,-{Stealth[length=3.5pt]}] (3.30,6.28) arc (75:-255:0.36);
+  \node[anchor=south,font=\scriptsize,text=colCrit] at (3.30,6.44) {\ico{colCrit}{0.75}{\faSync}\ \fa{بازنشانی بی‌قید}};
+
+  % دو عقربه (RTL: قبل سمت راست)
+  \foreach \x/\ttl/\sub/\ang/\col in {
+     4.55/{قبل از بازنشانی}/{رفتار باقی‌مانده پایدار}/152/colR,
+     1.45/{بعد از بازنشانی}/{رفتار باقی‌مانده منحرف}/34/colF}
+  {
+    \node[anchor=south,font=\scriptsize] at (\x,2.62) {\fa{\ttl}};
+    \draw[colR,line width=2.4pt] ({\x-0.60},1.95) arc (180:120:0.60);
+    \draw[colLine,line width=2.4pt] ({\x-0.30},{1.95+0.520}) arc (120:60:0.60);
+    \draw[colF,line width=2.4pt] ({\x+0.30},{1.95+0.520}) arc (60:0:0.60);
+    \fill[colInk] (\x,1.95) circle (1.4pt);
+    \draw[colInk,line width=0.9pt] (\x,1.95) -- ++({\ang}:0.44);
+    \node[anchor=north,font=\scriptsize,text=\col,align=center,text width=2.0cm]
+         at (\x,1.82) {\fa{\sub}};
+  }
+  \draw[colInk!70,line width=0.6pt,dashed,dash pattern=on 2.2pt off 1.8pt,
+        -{Stealth[length=3.2pt]}] (3.80,2.24) -- (2.20,2.24);
+  \node[anchor=south,font=\scriptsize,align=center,text=colInk!70] at (3.00,2.30)
+       {\fa{انحراف پس از بازنشانی}};
+
+  \node[card={colS}{5.2cm},anchor=north,align=center] at (2.87,0.72)
+       {\fa{بازنشانی بی‌قید مختصات مشترک، رفتار وظایف باقی‌مانده را منحرف می‌کند.}};
+\end{scope}
+
+\draw[flow,line width=1.2pt,colInk!45] (13.42,4.20) -- (13.08,4.20);
+
+% ================================================================
+% پنل ب (میانه): کدام مختصات باید محافظت شوند؟
+% ================================================================
+\begin{scope}[shift={(6.90,0)}]
+  \panelhead{6.10}{ب) کدام مختصات باید محافظت شوند؟}{-0.35}{8.30}
+
+  % ---- گام ۱ ----
+  \node[ttl=colR,anchor=north east] (h1) at (5.55,7.42) {\en{OVERLAP}};
+  \node[badge=colR,anchor=north east] (b1) at (5.90,7.48) {\en{1}};
+  \node[plain=2.25cm,anchor=north east,draw=none,fill=none] (t1) at (5.72,7.02)
+       {\fa{اشتراک ماسک وظیفه‌ی هدف با ماسک وظایف نگه‌داری‌شده}};
+  \foreach \gx/\lab/\cells in {0.60/{$\Mf$}/{0/0,1/2,2/1,0/2},
+                               1.62/{$\Mr$}/{1/0,2/2,1/1,2/0},
+                               2.64/{$\Sshare$}/{1/1,2/1}}
+  {
+    \node[anchor=south,font=\scriptsize] at ({\gx+0.24},6.86) {\en{\lab}};
+    \foreach \c in {0,...,2}{\foreach \r in {0,...,2}{
+       \draw[colLine,line width=0.35pt,fill=colEmpty]
+            ({\gx+0.16*\c},{6.26+0.16*\r}) rectangle ++(0.155,0.155);}}
+    \foreach \c/\r in \cells {\fill[colS!75] ({\gx+0.16*\c},{6.26+0.16*\r}) rectangle ++(0.155,0.155);}
+  }
+  \node[font=\scriptsize] at (1.49,6.49) {\en{$\cap$}};
+  \node[font=\scriptsize] at (2.51,6.49) {\en{$=$}};
+  \node[anchor=north,font=\scriptsize] (e1) at (1.72,6.16) {\en{$\Sshare=\Mf\cap\Mr$}};
+  \coordinate (LL1) at (-0.05,6.60);  \coordinate (RR1) at (5.95,6.60);
+  \begin{scope}[on background layer]
+    \node[panel,fill=white,fit=(LL1)(RR1)(h1)(b1)(t1)(e1),inner sep=5pt] (P1) {};
+  \end{scope}
+
+  % ---- گام ۲ ----
+  \node[ttl=colR,anchor=north east] (h2) at (5.55,5.10) {\en{RANK}};
+  \node[badge=colR,anchor=north east] (b2) at (5.90,5.16) {\en{2}};
+  \node[plain=2.25cm,anchor=north east,draw=none,fill=none] (t2) at (5.72,4.70)
+       {\fa{رتبه‌بندی مختصات مشترک بر پایه‌ی بزرگی گرادیان وظایف باقی‌مانده}};
+  \foreach \i/\h in {0/0.20,1/0.32,2/0.46,3/0.62,4/0.82}
+    {\fill[colR!85] ({0.95+0.28*\i},4.02) rectangle ++(0.19,\h);}
+  \draw[colInk!40,line width=0.4pt] (0.88,4.02) -- (2.45,4.02);
+  \foreach \i/\p in {0/p1,1/p2,2/p2,3/p3,4/p4,5/p5}
+    {\fill[\p,draw=colS!55,line width=0.35pt] ({1.02+0.28*\i},3.62) circle (0.105);}
+  \node[sub,anchor=east] (l2a) at (0.85,3.62) {\fa{کم‌حساس}};
+  \node[sub,anchor=west] (l2b) at (2.55,3.62) {\fa{پرحساس}};
+  \node[anchor=north,font=\scriptsize] (e2) at (1.72,3.40)
+       {\en{$q_i=\bigl|\nabla_i\mathcal{L}_{\mathrm{retain}}\bigr|$}};
+  \coordinate (LL2) at (-0.05,4.30);  \coordinate (RR2) at (5.95,4.30);
+  \begin{scope}[on background layer]
+    \node[panel,fill=white,fit=(LL2)(RR2)(h2)(b2)(t2)(l2a)(l2b)(e2),inner sep=5pt] (P2) {};
+  \end{scope}
+
+  % ---- گام ۳ ----
+  \node[ttl=colCrit,anchor=north east] (h3) at (5.55,2.44) {\en{PROTECT TOP-$\rho$}};
+  \node[badge=colCrit,anchor=north east] (b3) at (5.90,2.50) {\en{3}};
+  \node[plain=2.25cm,anchor=north east,draw=none,fill=none] (t3) at (5.72,2.04)
+       {\fa{انتخاب زیرمجموعه‌ی بحرانی برای حفاظت در گام حذف}};
+  \foreach \i/\p in {0/p1,1/p2,2/p2,3/p3,4/p4,5/p5}
+    {\fill[\p,draw=colS!55,line width=0.35pt] ({1.02+0.28*\i},1.66) circle (0.105);}
+  \foreach \i in {3,4,5}
+    {\draw[colCrit,line width=0.8pt,dashed,dash pattern=on 1.3pt off 1.1pt]
+          ({1.02+0.28*\i},1.66) circle (0.18);}
+  \draw[colCrit,line width=0.6pt,decorate,decoration={brace,amplitude=3pt,mirror}]
+        (1.68,1.36) -- (2.66,1.36);
+  \node[anchor=north,font=\scriptsize,text=colCrit] (l3) at (2.17,1.28) {\en{Top-$\rho$}};
+  \node[anchor=west] (lk3) at (3.10,1.66) {\ico{colCrit}{0.95}{\faLock}};
+  \node[anchor=north,font=\scriptsize] (e3) at (1.72,1.00)
+       {\en{$\Scrit=\mathrm{Top}\text{-}\rho\,(\Sshare;q_i)$}};
+  \coordinate (LL3) at (-0.05,1.60);  \coordinate (RR3) at (5.95,1.60);
+  \begin{scope}[on background layer]
+    \node[panel,fill=white,fit=(LL3)(RR3)(h3)(b3)(t3)(l3)(lk3)(e3),inner sep=5pt] (P3) {};
+  \end{scope}
+
+  \draw[flow] ([xshift=0mm]P1.south) -- ([xshift=0mm]P2.north);
+  \draw[flow] ([xshift=0mm]P2.south) -- ([xshift=0mm]P3.north);
+\end{scope}
+
+\draw[flow,line width=1.2pt,colInk!45] (6.52,4.20) -- (6.18,4.20);
+
+% ================================================================
+% پنل ج (چپ): درخواست فراموشی محافظت‌شده
+% ================================================================
+\begin{scope}[shift={(0,0)}]
+  \panelhead{6.10}{ج) درخواست فراموشی محافظت‌شده}{-0.35}{8.30}
+
+  \node[card={colF}{3.55cm},inner ysep=4pt,anchor=north east] (c0) at (5.80,7.34)
+       {\ico{colF}{0.82}{\faTrash}\\[2pt]\fa{حذف بافر هدف و کش‌کردن ماسک \en{$\Mf$}}};
+  \node[card={colR}{3.55cm},inner ysep=4pt,anchor=north east] (c1) at ([yshift=-2.2mm]c0.south east)
+       {\ico{colR}{0.82}{\faAnchor}\\[2pt]\fa{تشکیل \en{$\Mr$}، اجرای گام‌های پنل (ب) و ذخیره‌ی لنگرها}};
+  \node[card={colF}{3.55cm},inner ysep=4pt,anchor=north east] (c2) at ([yshift=-2.2mm]c1.south east)
+       {\ico{colF}{0.82}{\faCrosshairs}\\[2pt]\fa{بازنشانی شاخه‌محور ناحیه‌ی هدف}};
+  \node[card={colOK}{3.55cm},inner ysep=4pt,anchor=north east] (c3) at ([yshift=-2.2mm]c2.south east)
+       {\ico{colOK}{0.82}{\faTools}\\[2pt]\fa{ترمیم فقط با وظایف باقی‌مانده و لنگرها}};
+  \node[card={colInk}{3.55cm},inner ysep=4pt,anchor=north east] (c4) at ([yshift=-2.2mm]c3.south east)
+       {\ico{colInk}{0.82}{\faClipboardCheck}\\[2pt]\fa{بازسازی ماسک فعال و حذف حالت موقت}};
+  \foreach \i/\num/\col in {0/{1}/colF,1/{2}/colR,2/{3}/colF,3/{4}/colOK,4/{5}/colInk}
+    {\node[badge=\col] at (c\i.west) {\en{\num}};}
+
+  % براکت‌ها بر پایه‌ی مختصات خودِ کارت‌ها
+  \coordinate (fA) at ([xshift=2.2mm]c0.north east);
+  \coordinate (fB) at ([xshift=2.2mm]c2.south east);
+  \draw[colF,line width=1.0pt]
+        ($(fA)+(-1.6mm,0)$) -- (fA) -- (fB) -- ($(fB)+(-1.6mm,0)$);
+  \node[rotate=-90,anchor=south,font=\scriptsize,text=colF]
+        at ($(fA)!0.5!(fB)+(1.4mm,0)$) {\fa{فراموشی}};
+
+  \coordinate (gA) at ([xshift=-2.6mm]c1.north west);
+  \coordinate (gB) at ([xshift=-2.6mm]c4.south west);
+  \draw[colOK,line width=1.0pt]
+        ($(gA)+(1.6mm,0)$) -- (gA) -- (gB) -- ($(gB)+(1.6mm,0)$);
+  \node[rotate=90,anchor=south,font=\scriptsize,text=colOK]
+        at ($(gA)!0.5!(gB)+(-1.4mm,0)$) {\fa{حفاظت}};
+
+  \node[cardL={colInk}{4.6cm},inner ysep=4pt,anchor=south] at (2.87,-0.18)
+       {\en{Empirical --- not certified removal}\ \ \ico{colInk!70}{0.9}{\faUserShield}};
+\end{scope}
+
+\end{tikzpicture}
+\end{document}
