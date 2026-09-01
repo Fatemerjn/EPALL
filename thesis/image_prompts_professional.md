@@ -1,7 +1,7 @@
-# پرامپت‌های حرفه‌ای و دقیق همهٔ شکل‌های پایان‌نامه
+# دستورهای حرفه‌ای و دقیق همه شکل‌های پایان‌نامه
 
-این سند برای ساخت دوبارهٔ شکل‌ها با ChatGPT یا ویرایش شکل قبلی تهیه شده است. هر
-پرامپت مستقل و آمادهٔ کپی است. هدف، یک سبک «علمیِ روایی با جزئیات متوسط» است:
+این سند برای ساخت دوباره شکل‌ها با ChatGPT یا ویرایش شکل قبلی تهیه شده است. هر
+دستور مستقل و آماده کپی است. هدف، یک سبک «علمی روایی با جزئیات متوسط» است:
 گویاتر از نسخه‌های مینیمال فعلی، ولی افقی‌تر، خلوت‌تر و دانشگاهی‌تر از
 اینفوگرافیک‌های عمودی پیوست‌شده.
 
@@ -11,19 +11,19 @@
 - سبک flat-vector دانشگاهی؛ بدون سه‌بعدی، درخشش، بافت، عکس، موکاپ یا کارت‌های
   تزئینی بی‌معنا.
 - استفاده از آیکون خطی فقط وقتی به انتقال مفهوم کمک کند: مدل، وظیفه، حذف، سپر،
-  زیرشبکه، پارامتر، حافظه و طبقه‌بند.
-- مجاز: سایهٔ بسیار ضعیف و یکنواخت یا تغییر ته‌رنگ ۳ تا ۵ درصد برای تفکیک لایه‌ها.
-  ممنوع: گرادیان شدید، سایهٔ حجیم و ظاهر پوستر تبلیغاتی.
+  زیرشبکه، پیراسنجه، حافظه و طبقه‌بند.
+- مجاز: سایه بسیار ضعیف و یکنواخت یا تغییر ته‌رنگ ۳ تا ۵ درصد برای تفکیک لایه‌ها.
+  ممنوع: شیب شدید، سایه حجیم و ظاهر پوستر تبلیغاتی.
 - فارسی: `Vazirmatn` یا `XB Niloofar`؛ لاتین و ریاضی: `Times New Roman`.
-- متن فارسی باید دقیقاً به‌صورت text قابل‌ویرایش باشد، نه مسیر برداری و نه تصویر.
+- متن فارسی باید دقیقا به‌صورت text قابل‌ویرایش باشد، نه مسیر برداری و نه تصویر.
   در SVG برای متن فارسی `direction="rtl"` و تنظیم مناسب bidi استفاده شود.
 - پالت: آبی `#0072B2` مسیر یادگیری/ساختار، سبز `#009E73` نگه‌داری/حفاظت، نارنجی
-  `#D55E00` حذف/هشدار، سرخابی `#CC79A7` هم‌پوشانی، بنفش `#6F3C8F` مجموعهٔ بحرانی،
+  `#D55E00` حذف/هشدار، سرخابی `#CC79A7` هم‌پوشانی، بنفش `#6F3C8F` مجموعه بحرانی،
   خاکستری `#69757F` بخش منجمد، متن `#263238`.
-- کادرهای گروهی با خط نازک، گوشهٔ ۱۰ تا ۱۴ پیکسل و فاصله‌گذاری منظم. مسیر اصلی
+- کادرهای گروهی با خط نازک، گوشه ۱۰ تا ۱۴ پیکسل و فاصله‌گذاری منظم. مسیر اصلی
   ضخامت ۲٫۵ تا ۳ پیکسل؛ مسیر فرعی ۱٫۵ تا ۲ پیکسل.
 - عنوان کلی داخل تصویر تکرار نشود؛ کپشن زیر تصویر در LaTeX قرار می‌گیرد.
-- حداقل اندازهٔ متن پس از درج در A4 برابر ۹ پوینت باشد.
+- حداقل اندازه متن پس از درج در A4 برابر ۹ پوینت باشد.
 - خروجی اصلی SVG واقعی با viewBox دقیق، متن زنده و گروه‌بندی منطقی لایه‌ها باشد؛
   PDF و PNG سیصد DPI نیز صادر شود.
 
@@ -31,9 +31,9 @@
 
 ## الف) شکل‌های مفهومی — قابل ساخت یا ویرایش با GPT
 
-### ۱) چرخهٔ عملیاتی فراموشی انتخابی — `selective_forgetting_pipeline`
+### ۱) چرخه عملیاتی فراموشی انتخابی — `selective_forgetting_pipeline`
 
-#### پرامپت ساخت از صفر
+#### دستور ساخت از صفر
 
 ```text
 Create a professional, medium-detail scientific vector diagram for a Persian PhD/MSc
@@ -53,12 +53,12 @@ models.
 Stage 2 — deletion request, orange group titled exactly «۲. درخواست فراموشی». Show a
 request document with a delete badge entering one card labelled «فراموشی T2». Directly
 below it show the resulting active set exactly «{T1,T3}». Do not show a new learning
-event after this request. Include a small label «مدل مشترک، همان پارامترها» to clarify
+event after this request. Include a small label «مدل مشترک، همان پیراسنجه‌ها» to clarify
 that the request acts on the deployed shared model.
 
 Stage 3 — two simultaneous obligations, split into two parallel outcome lanes emerging
 from the same forget-request card. The orange upper lane has a target/task icon and the
-labels «رفتار وظیفهٔ هدف سرکوب شود» and “A_u → c” where c is the task chance level.
+labels «رفتار وظیفه هدف سرکوب شود» and “A_u → c” where c is the task chance level.
 The green lower lane has a shield over retained-task icons and the labels «دانش
 وظیفه‌های باقی‌مانده حفظ شود» and “A_t(after) ≈ A_t(before),  t∈{T1,T3}”. Merge both
 lanes into one final deployed-model card labelled «مدل پس از درخواست» with two status
@@ -78,7 +78,7 @@ photorealism. Do not add a title inside the artwork. Deliver editable SVG, PDF, 
 300-DPI PNG.
 ```
 
-#### پرامپت ویرایش تصویر قبلی
+#### دستور ویرایش تصویر قبلی
 
 ```text
 Edit the attached selective-forgetting figure, but do not merely recolor or translate
@@ -87,7 +87,7 @@ the scientifically correct sequence Learn T1 → Learn T2 → Learn T3 → Forge
 exact active sets {T1}, {T1,T2}, {T1,T2,T3}, {T1,T3}. Replace the current over-simple
 four-card timeline with three visually grouped stages: «۱. یادگیری پیوسته», «۲. درخواست
 فراموشی», and «۳. ارزیابی دو هدف هم‌زمان». From Forget T2 create two clearly separate
-lanes: orange «رفتار وظیفهٔ هدف سرکوب شود، A_u→c» and green «دانش وظیفه‌های باقی‌مانده
+lanes: orange «رفتار وظیفه هدف سرکوب شود، A_u→c» and green «دانش وظیفه‌های باقی‌مانده
 حفظ شود، A_t(after)≈A_t(before)». Merge them into «مدل پس از درخواست» with chips «T2
 حذف‌شده» and «T1,T3 فعال». Add meaningful line icons and a visible shared-model rail,
 but keep the figure academic and uncluttered. Do not show any learning after deletion
@@ -96,9 +96,9 @@ Persian SVG text, the thesis palette, subtle tinted fills, no strong gradients o
 and export SVG/PDF/300-DPI PNG.
 ```
 
-### ۲) هم‌پوشانی پارامتری و زیرمجموعهٔ بحرانی — `parameter_overlap_concept`
+### ۲) هم‌پوشانی پیراسنجه‌ها و زیرمجموعه بحرانی — `parameter_overlap_concept`
 
-#### پرامپت ساخت از صفر
+#### دستور ساخت از صفر
 
 ```text
 Create a professional horizontal three-panel scientific SVG (1800×720) explaining how
@@ -108,15 +108,15 @@ between panels so the transformation is read as a pipeline, not three unrelated 
 
 Panel (الف), title «هم‌پوشانی ساختاری»: show forgotten-task mask M_f in orange,
 retained-task union M_r in blue, and their true intersection S_share=M_f∩M_r in
-magenta. Include a compact legend and a short callout «مختصات مشترک؛ محل بالقوهٔ
+magenta. Include a compact legend and a short callout «مختصات مشترک؛ محل بالقوه
 تداخل». Do not use a Venn diagram.
 
 Panel (ب), title «حساسیت نگه‌داری»: keep the identical grid; fade all non-overlap cells
 to 20% opacity. Color only S_share cells from light to dark purple according to
 q_i=|∇_i L_retain|. Add a five-step color key «حساسیت کم» to «حساسیت زیاد» and a small
-retained-buffer icon with the note «محاسبه فقط با دادهٔ وظایف باقی‌مانده».
+retained-buffer icon with the note «محاسبه فقط با داده وظایف باقی‌مانده».
 
-Panel (ج), title «انتخاب مجموعهٔ بحرانی»: again keep the identical grid and hatch
+Panel (ج), title «انتخاب مجموعه بحرانی»: again keep the identical grid and hatch
 exactly the top 20% of S_share cells as S_crit=Top-ρ(S_share;q_i), ρ=0.2. Use a purple
 outline and hatch for critical cells so the panel remains readable in grayscale. Add a
 shield callout «مختصات بحرانی در گام حذف محافظت می‌شوند» and the exact relation
@@ -128,44 +128,44 @@ palette. No invented grid movement, no additional cells, no decorative heatmap v
 no empirical claim. Deliver editable SVG/PDF/300-DPI PNG.
 ```
 
-#### پرامپت ویرایش تصویر قبلی
+#### دستور ویرایش تصویر قبلی
 
 ```text
 Edit the attached three-grid figure into a more explanatory but still horizontal
 thesis-quality SVG. Preserve every cell coordinate across all panels. Add a visible
 left-to-right transformation flow, Persian titles «هم‌پوشانی ساختاری»، «حساسیت
-نگه‌داری»، «انتخاب مجموعهٔ بحرانی», a clear M_f/M_r/S_share legend, a q_i sensitivity
+نگه‌داری»، «انتخاب مجموعه بحرانی», a clear M_f/M_r/S_share legend, a q_i sensitivity
 scale, and a shield callout for S_crit. Keep exactly ρ=0.2 and hatch only cells that are
 already in S_share. Do not redraw the grids with different coordinates, do not convert
 it to a Venn diagram, and do not imply measured experimental data. Use editable Persian
 text and export SVG/PDF/PNG.
 ```
 
-### ۳) نقشهٔ مفهومی ادبیات — `literature_taxonomy`
+### ۳) نقشه مفهومی ادبیات — `literature_taxonomy`
 
-#### پرامپت ساخت از صفر
+#### دستور ساخت از صفر
 
 ```text
 Create a polished horizontal conceptual map (1800×700 SVG) showing how this thesis sits
 between continual learning and machine unlearning. Use two subtle horizontal lanes
 rather than five isolated empty cards. The upper lane is «حفظ دانش» and contains
-«یادگیری پیوسته» with replay/regularization icons and «جداسازی پارامتری» with task
+«یادگیری پیوسته» with replay/regularization icons and «جداسازی پیراسنجه‌ها» with task
 subnetwork icons. The lower lane is «حذف هدفمند» and contains «یادگیری‌زدایی ماشین»
 with data/model removal icons and «فراموشی آگاه از وظیفه — PALL» with a target-task
 delete icon. At the right, merge both lanes into a highlighted green-purple thesis
 position card: «ترمیم آگاه از هم‌پوشانی — EPALL و PALL-Adapter».
 
 Inside the final card show three concise contributions as icon chips: «تشخیص هم‌پوشانی»،
-«حفاظت رتبه‌بندی‌شده»، «کاهش دامنهٔ به‌روزرسانی». Draw one conceptual tension axis
+«حفاظت رتبه‌بندی‌شده»، «کاهش دامنه به‌روزرسانی». Draw one conceptual tension axis
 under the lanes from «حفظ رفتار آموخته‌شده» to «حذف انتخابی با حفاظت از دانش مشترک».
-Add a small disclaimer «رده‌بندی مفهومی؛ نه ترتیب تاریخی و نه نتیجهٔ تجربی».
+Add a small disclaimer «رده‌بندی مفهومی؛ نه ترتیب تاریخی و نه نتیجه تجربی».
 
 Use Persian editable labels, restrained academic icons, clear merge arrows, no citation
 claims, no ranking of prior work, and no visual suggestion that all fields form a
 strict chronological sequence. White background, fixed thesis palette, SVG/PDF/PNG.
 ```
 
-#### پرامپت ویرایش تصویر قبلی
+#### دستور ویرایش تصویر قبلی
 
 ```text
 Edit the attached literature taxonomy. Replace the simple row of five boxes with two
@@ -179,7 +179,7 @@ editable SVG text and a professional horizontal layout.
 
 ### ۴) سازوکار EPALL — `EPALL_mechanism_compact`
 
-#### پرامپت ساخت از صفر
+#### دستور ساخت از صفر
 
 ```text
 Create a medium-detail, thesis-quality three-panel SVG (1900×780) explaining EPALL as a
@@ -188,7 +188,7 @@ causal narrative. Persian labels are primary; variables remain Latin/math.
 Panel (الف) «چرا هم‌پوشانی خطرناک است؟»: draw a small neural/subnetwork graph with one
 orange forgotten path and one blue retained path. Highlight their shared coordinates
 in magenta. Show a naive reset symbol on one shared coordinate and a small before/after
-retained-output gauge drifting in orange. Add the exact conclusion «بازنشانی بی‌قیدِ
+retained-output gauge drifting in orange. Add the exact conclusion «بازنشانی بی‌قید
 مختصات مشترک، رفتار وظایف باقی‌مانده را منحرف می‌کند.»
 
 Panel (ب) «کدام مختصات باید محافظت شوند؟»: show a three-step funnel with meaningful
@@ -199,8 +199,8 @@ selected subset.
 
 Panel (ج) «درخواست فراموشی محافظت‌شده»: show five numbered operational steps connected
 vertically inside one compact request container: «حذف بافر هدف و بازنشسته‌کردن M_f»،
-«تشکیل M_r و ذخیرهٔ لنگرهای نگه‌داری»، «بازنشانی هدف وابسته به شاخه»، «ترمیم فقط با
-وظایف باقی‌مانده و لنگرها»، «بازسازی ماسک فعال و حذف حالت موقت». Add separate orange
+«تشکیل M_r و ذخیره لنگرهای نگه‌داری»، «بازنشانی هدف وابسته به شاخه»، «ترمیم فقط با
+وظایف باقی‌مانده و لنگرها»، «بازسازی نقاب فعال و حذف حالت موقت». Add separate orange
 forget and green repair rails along the steps. End with a neutral badge «حذف تجربی؛ نه
 گواهی‌شده».
 
@@ -209,7 +209,7 @@ text, fixed palette, meaningful network/mask/shield/anchor icons, no claims of c
 deletion, no extra algorithmic step, SVG/PDF/PNG.
 ```
 
-#### پرامپت ویرایش تصویر قبلی
+#### دستور ویرایش تصویر قبلی
 
 ```text
 Edit the attached EPALL figure without changing its algorithm. Keep three panels but
@@ -223,7 +223,7 @@ operations. Deliver editable horizontal SVG.
 
 ### ۵) معماری PALL-Adapter — `pall_adapter_architecture`
 
-#### پرامپت ساخت از صفر
+#### دستور ساخت از صفر
 
 ```text
 Create a technically exact, professional horizontal system-architecture SVG
@@ -237,13 +237,13 @@ backbone, a blue shared bottleneck module, a green task-adapter bank with inacti
 adapters faded and φ_t active, and an orange classifier matrix with multiple class rows
 and C_t highlighted. The classifier must not be drawn as one row per task or as T×K.
 
-Add a top zoomed inset connected to both φ_s and φ_t, labelled «ساختار یکسان آداپتر
+Add a top zoomed inset connected to both φ_s and φ_t, labelled «ساختار یکسان لایه‌ی تطبیق
 باقیمانده»: z → W_down:512→r → ReLU → W_up:r→512 → plus skip connection. Include
 «W_down: Kaiming initialization», «W_up=0 ⇒ identity at initialization», d→r→d,
 d=512, and «r=16 پیش‌فرض ثابت و فشرده؛ نه مقدار بهینه».
 
 Add a bottom dashed request lane labelled forget(u) with exact arrows to affected
-components: «به‌روزرسانی نرم‌ماسک‌شدهٔ φ_s»، «بازنشانی φ_u»، «پاک‌سازی بلوک سطرهای
+components: «به‌روزرسانی با نقاب نرم φ_s»، «بازنشانی φ_u»، «پاک‌سازی بلوک سطرهای
 C_u». Place a gray lock note under θ_base: «θ_base بدون تغییر». Make clear that storage
 grows by one small task adapter per task, not one backbone per task.
 
@@ -252,7 +252,7 @@ background, fixed palette, consistent arrow routing, no decorative perspective, 
 incorrect tensor dimensions, SVG/PDF/300-DPI PNG.
 ```
 
-#### پرامپت ویرایش تصویر قبلی
+#### دستور ویرایش تصویر قبلی
 
 ```text
 Technically correct and professionally restyle the attached PALL-Adapter architecture.
@@ -265,9 +265,9 @@ but keep mathematical symbols Latin. Do not depict a T×K task-row classifier an
 show the backbone as trainable.
 ```
 
-### ۶) تجزیهٔ بودجهٔ افت در زیرمرحلهٔ ماسک نرم — `softmask_drop_decomposition`
+### ۶) تجزیه بودجه افت در زیرمرحله نقاب نرم — `softmask_drop_decomposition`
 
-#### پرامپت ساخت از صفر
+#### دستور ساخت از صفر
 
 ```text
 Create a rigorous but visually explanatory horizontal two-panel schematic SVG
@@ -279,23 +279,23 @@ Panel (الف) «بدون محدودیت»: one stacked bar with exactly three s
 hatched segment H⊂S_crit with m_i=1; middle magenta segment S_crit\H with m_i=1; top
 orange segment F°=S_forget\S_active with m_i=1. Add a dashed total level Δ_t^unc.
 
-Panel (ب) «ماسک نرم»: preserve the top F° segment unchanged. Contract only the
+Panel (ب) «نقاب نرم»: preserve the top F° segment unchanged. Contract only the
 S_crit\H segment to exactly (1−p) of its height in panel (الف), and show the contraction
 with a dimension bracket labelled «ضریب انقباض ×(1−p)». Show H as an empty outlined
 zero-update slot at the bottom with m_i=0. Add dashed total level Δ_t^soft. Use thin
 guide lines between corresponding segments so the viewer sees what changed and what
 did not.
 
-Add three compact explanatory chips: orange «خارج از مجموعهٔ فعال: بدون تغییر»،
+Add three compact explanatory chips: orange «خارج از مجموعه فعال: بدون تغییر»،
 magenta «مختصات غیرمحافظت‌شده: مقیاس 1−p»، purple «مختصات بحرانی H: به‌روزرسانی
-صفر». Footer exactly: «فقط شماتیکِ زیرمرحله؛ کرانی برای WorstDrop انتهابه‌انتها نیست.»
+صفر». Footer exactly: «فقط شماتیک زیرمرحله؛ کرانی برای WorstDrop آغاز تا پایان نیست.»
 
 Do not draw an empirical y-axis scale, do not claim a measured bound, and do not change
 the F° height. Persian editable SVG text, Times New Roman equations, fixed thesis
 palette, SVG/PDF/PNG.
 ```
 
-#### پرامپت ویرایش تصویر قبلی
+#### دستور ویرایش تصویر قبلی
 
 ```text
 Edit the attached decomposition figure while preserving its mathematical meaning.
@@ -318,9 +318,9 @@ clear message that no replacement image should be produced.
 
 ---
 
-## ب) نمودارهای تجربی — پرامپت برای ChatGPT/Codex کدنویس، نه مدل تصویر
+## ب) نمودارهای تجربی — دستور برای ChatGPT/Codex کدنویس، نه مدل تصویر
 
-> در این بخش هر پرامپت باید همراه پروژه اجرا شود. دادن نمودار به مدل تصویر برای
+> در این بخش هر دستور باید همراه پروژه اجرا شود. دادن نمودار به مدل تصویر برای
 > «زیباترکردن» مجاز نیست، چون ممکن است ارتفاع میله، خطا یا عدد تغییر کند.
 
 ### ۸) دقت نهایی اصلی — `main_metrics_final_accuracy_1x3`
@@ -351,14 +351,14 @@ Do not clip at zero, convert signs, rank methods, invent missing methods, or add
 significance marks. Export audited PDF/SVG/300-DPI PNG and fail on missing samples.
 ```
 
-### ۱۰) دقت وظیفهٔ حذف‌شده — `main_metrics_au_1x3`
+### ۱۰) دقت وظیفه حذف‌شده — `main_metrics_au_1x3`
 
 ```text
 Act as a coding agent; do not use image generation. Rebuild the real forgotten-task
 accuracy A_u figure in a horizontal 1×3 layout for CIFAR-10, CIFAR-100, TinyImageNet.
 Preserve canonical rows, real means, and completed-run bootstrap CIs. Draw the correct
 dataset-specific chance line in every panel and label it «سطح تصادفی». Persian axis
-label: «دقت وظیفهٔ حذف‌شده A_u». Do not visually imply that lower is always better;
+label: «دقت وظیفه حذف‌شده A_u». Do not visually imply that lower is always better;
 the meaningful quantity is proximity to the task chance level. Export audited
 PDF/editable SVG/300-DPI PNG; never fabricate missing samples.
 ```
@@ -387,12 +387,12 @@ the same metric-compatibility warning. Do not smooth, rescale, or select attract
 subsets. Export audited PDF, editable SVG, and PNG.
 ```
 
-### ۱۳) مصالحهٔ دامنهٔ به‌روزرسانی و دقت — `tradeoff_updated_vs_final_accuracy_by_dataset_regime`
+### ۱۳) بده‌بستان دامنه به‌روزرسانی و دقت — `tradeoff_updated_vs_final_accuracy_by_dataset_regime`
 
 ```text
 As a coding agent, rebuild this trade-off plot only from real aggregate rows and
 matching run artifacts. Preserve every point and dataset/regime panel. x-axis must be
-labelled «نسبت اسمی دامنهٔ به‌روزرسانی» and y-axis «دقت نهایی میانگین». Use method
+labelled «نسبت اسمی دامنه به‌روزرسانی» and y-axis «دقت نهایی میانگین». Use method
 colors plus distinct markers with black edges. Annotate only points that are truly on
 the computed Pareto frontier, using collision-free labels. Include a small note that
 the x quantity is not wall time, FLOPs, peak memory, or the number of coordinates that
@@ -400,18 +400,18 @@ actually changed. No interpolated frontier curve and no missing configuration fi
 Export audited PDF/SVG/PNG.
 ```
 
-### ۱۴) مصالحهٔ دامنهٔ به‌روزرسانی و بیشترین افت — `tradeoff_updated_vs_worstdrop_by_dataset_regime`
+### ۱۴) بده‌بستان دامنه به‌روزرسانی و بیشترین افت — `tradeoff_updated_vs_worstdrop_by_dataset_regime`
 
 ```text
 Rebuild from real rows only. Keep the exact dataset/regime panels, observed update
 ratios, signed WorstDrop values, negative values, and zero reference line. x-axis:
-«نسبت اسمی دامنهٔ به‌روزرسانی»; y-axis: «بیشترین افت علامت‌دار». Compute and label
+«نسبت اسمی دامنه به‌روزرسانی»; y-axis: «بیشترین افت علامت‌دار». Compute and label
 only the real non-dominated points; do not draw a smoothed frontier or treat the x-axis
 as an end-to-end efficiency metric. Match the colors/markers of the accuracy trade-off
 figure. Export audited PDF/editable SVG/PNG.
 ```
 
-### ۱۵) حسابداری حالت مقیم — `aaai_storage`
+### ۱۵) محاسبه حالت مقیم — `aaai_storage`
 
 ```text
 Rebuild only from results/aggregates/storage_accounting_summary.csv. Make a professional
@@ -430,7 +430,7 @@ Rebuild the membership-inference AUC chart from completed real runs only. Preser
 before/after means, paired identity where available, bootstrap CIs, dataset/regime
 panels, and the 0.5 chance line. Use matched before/after encodings (solid versus hatch
 or connected paired markers) plus method colors. Persian labels: «پیش از درخواست»،
-«پس از درخواست»، «AUC حملهٔ عضویت»، «سطح تصادفی ۰٫۵». Keep the y scale honest. Do not
+«پس از درخواست»، «AUC حمله عضویت»، «سطح تصادفی ۰٫۵». Keep the y scale honest. Do not
 write “privacy proven” or “certified deletion”; proximity to 0.5 is only a null result
 for this attack. Export audited PDF/SVG/PNG.
 ```
@@ -442,21 +442,21 @@ Run tools/analyze_forgetting_persistence.py and restyle only its deterministic r
 trajectories. Preserve the exact first-deleted-task selection rule, request offsets,
 observed accuracies, and dataset chance levels. Use one horizontal row of dataset
 panels, method colors plus marker/line redundancy, and a shared legend. Persian x-axis:
-«درخواست‌های حذف بعدی»; y-axis: «دقت وظیفهٔ حذف‌شده». Clearly mark request offset 0 as
+«درخواست‌های حذف بعدی»; y-axis: «دقت وظیفه حذف‌شده». Clearly mark request offset 0 as
 the deletion point. Do not show or imply fresh learning after deletion and do not
 interpolate missing request offsets. Export audited PDF/SVG/PNG and the source CSV.
 ```
 
-### ۱۸) جاروب گلوگاه آداپتر وظیفه — `adapter_bottleneck_ablation`
+### ۱۸) جاروب گلوگاه لایه‌ی تطبیق وظیفه — `adapter_bottleneck_ablation`
 
 ```text
 Modify only plotting code and use completed adapter_bottleneck_ablation_v1 runs. Build
 a horizontal 1×3 figure with categorical observed widths in their true order. Panels:
-«دقت نهایی»، «بیشترین افت علامت‌دار»، «نسبت پارامترهای به‌روزشده». Preserve observed
+«دقت نهایی»، «بیشترین افت علامت‌دار»، «نسبت پیراسنجه‌های به‌روزشده». Preserve observed
 means and real 95% bootstrap CIs. Use circular observations with thin black edges and
 connect only adjacent observed widths using straight segments. Add the WorstDrop zero
 line. No spline, dense numeric x scale, implied intermediate measurement, or optimality
-claim. Footer: «مطالعهٔ توصیفی دو بذری؛ روندها الزاماً یکنوا نیستند». Export audited
+claim. Footer: «مطالعه توصیفی دو بذری؛ روندها الزاما یکنوا نیستند». Export audited
 PDF/editable SVG/300-DPI PNG; fail if matching real runs are absent.
 ```
 
@@ -466,17 +466,17 @@ PDF/editable SVG/300-DPI PNG; fail if matching real runs are absent.
 Modify only plotting code and read completed shared_bottleneck_ablation_v1 runs. Use a
 professional horizontal 1×4 layout, approximately 14.0×3.8 inches, with exact
 categorical widths 4, 8, 16, 32 only if those widths are confirmed by real configs.
-Panel order: «دقت نهایی»، «بیشترین افت علامت‌دار»، «نسبت پارامترهای به‌روزشده»،
+Panel order: «دقت نهایی»، «بیشترین افت علامت‌دار»، «نسبت پیراسنجه‌های به‌روزشده»،
 «نسبت هم‌پوشانی بحرانی/مشترک». Preserve every observed mean and real two-seed 95%
 bootstrap CI. Use colors #0072B2, #D55E00, #009E73, #CC79A7, circular markers with
 black edges, and straight segments only between adjacent observed categories. Include
 the WorstDrop zero line and shared x label «عرض گلوگاه مشترک». Footer exactly:
-«مطالعهٔ توصیفی دو بذری؛ روندهای غیر یکنوا». Never claim width 16 is optimal; state
+«مطالعه توصیفی دو بذری؛ روندهای غیر یکنوا». Never claim width 16 is optimal; state
 only that it is a compact fixed default. Export PDF/SVG/300-DPI PNG and print every
 config.json and metrics.json path used. Fail rather than fabricate.
 ```
 
-### ۲۰) نقشهٔ حرارتی دقت آداپتر — `representative_pall_adapter_accuracy_heatmap`
+### ۲۰) نقشه حرارتی دقت لایه‌ی تطبیق — `representative_pall_adapter_accuracy_heatmap`
 
 ```text
 Use the existing deterministic run-selection function and rebuild the exact real
@@ -493,7 +493,7 @@ selected run path.
 
 ---
 
-## ج) پرامپت مستقل برای هر یک از ۹ تصویر پیوست‌شده
+## ج) دستور مستقل برای هر یک از ۹ تصویر پیوست‌شده
 
 ### تصویر پیوست ۱ — نمودار shared-bottleneck
 
@@ -503,11 +503,11 @@ completed shared_bottleneck_ablation_v1 configs and metrics. Preserve exact widt
 means, signed WorstDrop, and real two-seed bootstrap intervals. Keep a horizontal 1×4
 layout, larger Persian axis labels, black-edged circular points, straight adjacent
 segments, zero line, shared x label «عرض گلوگاه مشترک», and the four thesis colors.
-Footer: «مطالعهٔ توصیفی دو بذری؛ روندهای غیر یکنوا». Do not claim width 16 is optimal.
+Footer: «مطالعه توصیفی دو بذری؛ روندهای غیر یکنوا». Do not claim width 16 is optimal.
 Export audited PDF/SVG/300-DPI PNG and list all run files. Do not image-edit the raster.
 ```
 
-### تصویر پیوست ۲ — تجزیهٔ بودجهٔ افت
+### تصویر پیوست ۲ — تجزیه بودجه افت
 
 ```text
 Edit the attached conceptual figure into a horizontal thesis-quality SVG. Preserve the
@@ -515,7 +515,7 @@ meaning of the three unconstrained segments. In the soft-mask panel, keep F° un
 scale only S_crit\H to exactly 1−p of its original height, and show H as an outlined
 zero-update slot with m_i=0. Add correspondence guides, a true contraction bracket,
 Persian labels, and three explanatory chips for unchanged, contracted, and protected
-coordinates. Footer: «فقط شماتیکِ زیرمرحله؛ کرانی برای WorstDrop انتهابه‌انتها نیست.»
+coordinates. Footer: «فقط شماتیک زیرمرحله؛ کرانی برای WorstDrop آغاز تا پایان نیست.»
 Do not imply measured data or an end-to-end theorem. Editable SVG/PDF/PNG.
 ```
 
@@ -557,7 +557,7 @@ method/value in the reference is absent, omit it and report the omission. Export
 audited PDF/editable SVG/PNG; never infer or visually copy unverified values.
 ```
 
-### تصویر پیوست ۶ — شبکهٔ ۳×۳ Split-CIFAR-10/100/CUB-200
+### تصویر پیوست ۶ — شبکه ۳×۳ Split-CIFAR-10/100/CUB-200
 
 ```text
 Treat the attached image as an unverified design reference only. Search the repository
@@ -569,7 +569,7 @@ labels become smaller than 9 pt; prefer three full-width horizontal figures. Exp
 audit and PDF/SVG/PNG. Fail instead of filling missing cells.
 ```
 
-### تصویر پیوست ۷ — شبکهٔ ۳×۳ CIFAR-10/CIFAR-100/Split-CIFAR
+### تصویر پیوست ۷ — شبکه ۳×۳ CIFAR-10/CIFAR-100/Split-CIFAR
 
 ```text
 Do not image-edit the attached chart. Audit the exact meaning of CIFAR-10, CIFAR-100,
@@ -581,13 +581,13 @@ overcrowded 3×3 page. Do not copy the reference numbers or chance levels. Expor
 audited PDF/editable SVG/PNG and list all omitted unsupported combinations.
 ```
 
-### تصویر پیوست ۸ — شبکهٔ هم‌پوشانی و مجموعهٔ بحرانی
+### تصویر پیوست ۸ — شبکه هم‌پوشانی و مجموعه بحرانی
 
 ```text
 Edit the attached three-panel grid into a professional scientific SVG while keeping
 the same grid coordinates across every panel. Panel «هم‌پوشانی ساختاری» must show
 M_f, M_r and S_share=M_f∩M_r. Panel «حساسیت نگه‌داری» must fade non-overlap and rank
-only S_share using q_i=|∇_iL_retain|. Panel «مجموعهٔ بحرانی» must hatch exactly the
+only S_share using q_i=|∇_iL_retain|. Panel «مجموعه بحرانی» must hatch exactly the
 top ρ=0.2 subset and enforce S_crit⊂S_share. Add transformation arrows, a clear legend,
 sensitivity scale, shield callout and Persian editable labels. Do not move cells,
 invent values, or treat the grid as empirical data. Export SVG/PDF/PNG.
@@ -606,9 +606,9 @@ meaningful line icons, medium detail, horizontal SVG, and a footer that no
 post-deletion learning is implied.
 ```
 
-## نکتهٔ اجرایی برای GPT
+## نکته اجرایی برای GPT
 
-برای شکل مفهومی، تصویر قبلی را همراه «پرامپت ویرایش» بارگذاری کنید. اگر نتیجه هنوز
+برای شکل مفهومی، تصویر قبلی را همراه «دستور ویرایش» بارگذاری کنید. اگر نتیجه هنوز
 شبیه پوستر یا تصویر رستری بود، در پیام بعدی فقط بنویسید:
 
 ```text
@@ -617,5 +617,5 @@ editable <text>, group each semantic stage with <g id="...">, and do not rasteri
 icon or text.
 ```
 
-برای نمودار تجربی، کل پوشهٔ پروژه یا دسترسی Codex لازم است؛ تصویر به‌تنهایی منبع
+برای نمودار تجربی، کل پوشه پروژه یا دسترسی Codex لازم است؛ تصویر به‌تنهایی منبع
 معتبر داده نیست.

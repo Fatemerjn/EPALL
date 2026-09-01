@@ -4,7 +4,7 @@
 \begin{document}
 \begin{tikzpicture}[font=\small,x=1cm,y=1cm]
 
-% ================= پنل ۱ (راست): یادگیری پیوسته =================
+% ================= بخش ۱ (راست): یادگیری پیوسته =================
 \draw[panel,draw=colR] (9.40,0.70) rectangle (19.00,7.05);
 \node[anchor=north,text=colR,font=\small\bfseries] at (14.20,6.95)
       {\fa{۱. یادگیری پیوسته}};
@@ -44,7 +44,7 @@
 \node[font=\scriptsize] at (14.20,1.57)
       {\ico{colR}{0.8}{\faDatabase}\ \ \fa{مجموعه‌ی وظایف فعال (وظایف ذخیره‌شده در مدل)}};
 
-% ================= پنل ۲ (میانه): درخواست فراموشی =================
+% ================= بخش ۲ (میانه): درخواست فراموشی =================
 \draw[panel,draw=colF] (6.05,0.70) rectangle (9.15,7.05);
 \node[anchor=north,text=colF,font=\small\bfseries] at (7.60,6.95)
       {\fa{۲. درخواست فراموشی}};
@@ -63,12 +63,12 @@
 \draw[colF,line width=0.6pt,dashed,dash pattern=on 2.4pt off 1.8pt,rounded corners=2.5pt]
       (6.30,1.02) rectangle (8.90,1.98);
 \node[font=\scriptsize,align=center] at (7.60,1.50)
-      {\ico{colF}{0.85}{\faServer}\\[2pt]\fa{مدل مشترک،}\\[-1pt]\fa{همان پارامترها}};
+      {\ico{colF}{0.85}{\faServer}\\[2pt]\fa{مدل مشترک،}\\[-1pt]\fa{همان پیراسنجه‌ها}};
 
-% اتصال پنل ۱ به پنل ۲
+% اتصال بخش ۱ به بخش ۲
 \draw[flow,colF] (9.36,3.85) -- (8.70,3.85);
 
-% ================= پنل ۳ (چپ): دو تعهد همزمان =================
+% ================= بخش ۳ (چپ): دو تعهد همزمان =================
 \draw[panel,draw=colF] (1.95,0.70) rectangle (6.05,7.05);
 \node[anchor=north,text=colF,font=\small\bfseries] at (4.00,6.95)
       {\fa{۳. دو تعهد همزمان}};

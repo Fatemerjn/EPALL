@@ -34,13 +34,13 @@
 \node[anchor=north,font=\scriptsize] at (5.47,3.90) {\en{$g(x)\in\mathbb{R}^{512}$}};
 \draw[flow] (base.east) -- (5.28,4.55);
 
-% آداپتر مشترک
+% لایه‌ی تطبیق مشترک
 \node[cardL={colR}{1.85cm},anchor=west] (ads) at (6.10,4.55)
-     {\fa{آداپتر مشترک}\\[1pt]\fa{آموزش‌پذیر}\\[3pt]\en{$\phi_s$}};
+     {\fa{لایه‌ی تطبیق مشترک}\\[1pt]\fa{آموزش‌پذیر}\\[3pt]\en{$\phi_s$}};
 \draw[flow] (5.68,4.55) -- (ads.west);
 
-% بانک آداپترهای وظیفه
-\node[anchor=south,ttl=colOK] (bankt) at (9.90,6.05) {\fa{بانک آداپترهای وظیفه}};
+% بانک لایه‌های تطبیق وظیفه
+\node[anchor=south,ttl=colOK] (bankt) at (9.90,6.05) {\fa{بانک لایه‌های تطبیق وظیفه}};
 \foreach \i/\lab/\fillc in {0/{$\phi_1$}/{colOK!10}, 1/{$\phi_2$}/{colOK!10},
                             2/{$\phi_t$}/{colOK!40}, 4/{$\phi_T$}/{colOK!10}}
   {\node[draw=colOK,line width=0.5pt,rounded corners=2pt,fill=\fillc,
@@ -78,7 +78,7 @@
      {\fa{پیش‌بینی}\\[2pt]\en{$\hat{y}_t$}};
 \draw[flow] (14.72,4.55) -- (pred.west);
 
-% ================= کادر جزئیات آداپتر (بالا، خودکار‌اندازه) =================
+% ================= کادر جزئیات لایه‌ی تطبیق (بالا، خودکار‌اندازه) =================
 \node[op,anchor=west] (wd) at (3.85,8.05) {\en{$W_{\mathrm{down}}\!:\,512\to r$}};
 \node[op,right=of wd] (relu) {\en{\textbf{ReLU}}};
 \node[op,right=of relu] (wu) {\en{$W_{\mathrm{up}}\!:\,r\to 512$}};
@@ -104,7 +104,7 @@
 
 % یادداشت رشد حافظه
 \node[cardL={colOK}{4.4cm},anchor=north] (memo) at (9.90,2.42)
-     {\fa{رشد حافظه: به‌ازای هر وظیفه فقط یک آداپتر کوچک افزوده می‌شود}};
+     {\fa{رشد حافظه: به‌ازای هر وظیفه فقط یک لایه‌ی تطبیق کوچک افزوده می‌شود}};
 \draw[colOK,line width=0.5pt,-{Stealth[length=3pt]}] (memo.north) -- (9.90,2.66);
 
 % ================= نوار forget(u) =================
@@ -112,7 +112,7 @@
       (0.30,0.30) rectangle (16.35,1.30);
 \node[anchor=west,font=\small\bfseries,text=colF] at (0.62,0.80) {\en{$\mathrm{forget}(u)$}};
 \node[font=\scriptsize,text=colF] (f1) at (5.30,0.80)
-      {\fa{به‌روزرسانی نرم‌ماسک‌شده‌ی} \en{$\phi_s$}};
+      {\fa{به‌روزرسانی با نقاب نرم} \en{$\phi_s$}};
 \node[font=\scriptsize,text=colF] (f2) at (9.90,0.80) {\fa{بازنشانی} \en{$\phi_u$}};
 \node[font=\scriptsize,text=colF] (f3) at (13.40,0.80)
       {\fa{پاک‌سازی بلوک سطرهای} \en{$C_u$}};

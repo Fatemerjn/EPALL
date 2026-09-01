@@ -524,7 +524,7 @@ def plot_drop_decomposition(outdir, L, protect_strength, csv_path):
     fig, ax = plt.subplots(figsize=(COL_WIDTH, 2.7))
     ax.bar(x - width / 2, unc, width, label=L("Unconstrained ($m_i=1$)", "بدون قید ($m_i=1$)"),
            color="0.55", edgecolor="black", linewidth=0.5)
-    ax.bar(x + width / 2, soft, width, label=L("Soft-masked (ours)", "ماسک نرم (ما)"),
+    ax.bar(x + width / 2, soft, width, label=L("Soft-masked (ours)", "نقاب نرم (ما)"),
            color=METHOD_STYLE["PALL-Adapter"]["color"], edgecolor="black", linewidth=0.5)
     wd_unc, wd_soft = sum(unc), sum(soft)
     ax.axhline(wd_unc, color="0.55", linestyle="--", linewidth=0.9, zorder=0)

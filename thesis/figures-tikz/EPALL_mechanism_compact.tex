@@ -1,11 +1,11 @@
-% سازوکار EPALL — سه پنل فشرده
+% سازوکار EPALL — سه بخش فشرده
 \documentclass[border=8pt]{standalone}
 \input{figures-tikz/_preamble}
 \begin{document}
 \begin{tikzpicture}[font=\small,x=1cm,y=1cm,node distance=3.5mm]
 
 % ================================================================
-% پنل الف (راست): چرا هم‌پوشانی خطرناک است؟
+% بخش الف (راست): چرا هم‌پوشانی خطرناک است؟
 % ================================================================
 \begin{scope}[shift={(13.80,0)}]
   \panelhead{6.10}{الف) چرا هم‌پوشانی خطرناک است؟}{-0.35}{8.30}
@@ -69,7 +69,7 @@
 \draw[flow,line width=1.2pt,colInk!45] (13.42,4.20) -- (13.08,4.20);
 
 % ================================================================
-% پنل ب (میانه): کدام مختصات باید محافظت شوند؟
+% بخش ب (میانه): کدام مختصات باید محافظت شوند؟
 % ================================================================
 \begin{scope}[shift={(6.90,0)}]
   \panelhead{6.10}{ب) کدام مختصات باید محافظت شوند؟}{-0.35}{8.30}
@@ -78,7 +78,7 @@
   \node[ttl=colR,anchor=north east] (h1) at (5.55,7.42) {\en{OVERLAP}};
   \node[badge=colR,anchor=north east] (b1) at (5.90,7.48) {\en{1}};
   \node[plain=2.25cm,anchor=north east,draw=none,fill=none] (t1) at (5.72,7.02)
-       {\fa{اشتراک ماسک وظیفه‌ی هدف با ماسک وظایف نگه‌داری‌شده}};
+       {\fa{اشتراک نقاب وظیفه‌ی هدف با نقاب وظایف نگه‌داری‌شده}};
   \foreach \gx/\lab/\cells in {0.60/{$\Mf$}/{0/0,1/2,2/1,0/2},
                                1.62/{$\Mr$}/{1/0,2/2,1/1,2/0},
                                2.64/{$\Sshare$}/{1/1,2/1}}
@@ -101,14 +101,14 @@
   \node[ttl=colR,anchor=north east] (h2) at (5.55,5.10) {\en{RANK}};
   \node[badge=colR,anchor=north east] (b2) at (5.90,5.16) {\en{2}};
   \node[plain=2.25cm,anchor=north east,draw=none,fill=none] (t2) at (5.72,4.70)
-       {\fa{رتبه‌بندی مختصات مشترک بر پایه‌ی بزرگی گرادیان وظایف باقی‌مانده}};
+       {\fa{رتبه‌بندی مختصات مشترک بر پایه‌ی بزرگی شیب وظایف باقی‌مانده}};
   \foreach \i/\h in {0/0.20,1/0.32,2/0.46,3/0.62,4/0.82}
     {\fill[colR!85] ({0.95+0.28*\i},4.02) rectangle ++(0.19,\h);}
   \draw[colInk!40,line width=0.4pt] (0.88,4.02) -- (2.45,4.02);
   \foreach \i/\p in {0/p1,1/p2,2/p2,3/p3,4/p4,5/p5}
     {\fill[\p,draw=colS!55,line width=0.35pt] ({1.02+0.28*\i},3.62) circle (0.105);}
-  \node[sub,anchor=east] (l2a) at (0.85,3.62) {\fa{کم‌حساس}};
-  \node[sub,anchor=west] (l2b) at (2.55,3.62) {\fa{پرحساس}};
+  \node[sub,anchor=east] (l2a) at (0.85,3.62) {\fa{حساسیت کم}};
+  \node[sub,anchor=west] (l2b) at (2.55,3.62) {\fa{حساسیت زیاد}};
   \node[anchor=north,font=\scriptsize] (e2) at (1.72,3.40)
        {\en{$q_i=\bigl|\nabla_i\mathcal{L}_{\mathrm{retain}}\bigr|$}};
   \coordinate (LL2) at (-0.05,4.30);  \coordinate (RR2) at (5.95,4.30);
@@ -144,25 +144,25 @@
 \draw[flow,line width=1.2pt,colInk!45] (6.52,4.20) -- (6.18,4.20);
 
 % ================================================================
-% پنل ج (چپ): درخواست فراموشی محافظت‌شده
+% بخش ج (چپ): درخواست فراموشی محافظت‌شده
 % ================================================================
 \begin{scope}[shift={(0,0)}]
   \panelhead{6.10}{ج) درخواست فراموشی محافظت‌شده}{-0.35}{8.30}
 
   \node[card={colF}{3.55cm},inner ysep=4pt,anchor=north east] (c0) at (5.80,7.34)
-       {\ico{colF}{0.82}{\faTrash}\\[2pt]\fa{حذف بافر هدف و کش‌کردن ماسک \en{$\Mf$}}};
+       {\ico{colF}{0.82}{\faTrash}\\[2pt]\fa{حذف حافظه‌ی هدف و نگه‌داشتن موقت نقاب \en{$\Mf$}}};
   \node[card={colR}{3.55cm},inner ysep=4pt,anchor=north east] (c1) at ([yshift=-2.2mm]c0.south east)
-       {\ico{colR}{0.82}{\faAnchor}\\[2pt]\fa{تشکیل \en{$\Mr$}، اجرای گام‌های پنل (ب) و ذخیره‌ی لنگرها}};
+       {\ico{colR}{0.82}{\faAnchor}\\[2pt]\fa{تشکیل \en{$\Mr$}، اجرای گام‌های بخش (ب) و ذخیره‌ی لنگرها}};
   \node[card={colF}{3.55cm},inner ysep=4pt,anchor=north east] (c2) at ([yshift=-2.2mm]c1.south east)
        {\ico{colF}{0.82}{\faCrosshairs}\\[2pt]\fa{بازنشانی شاخه‌محور ناحیه‌ی هدف}};
   \node[card={colOK}{3.55cm},inner ysep=4pt,anchor=north east] (c3) at ([yshift=-2.2mm]c2.south east)
        {\ico{colOK}{0.82}{\faTools}\\[2pt]\fa{ترمیم فقط با وظایف باقی‌مانده و لنگرها}};
   \node[card={colInk}{3.55cm},inner ysep=4pt,anchor=north east] (c4) at ([yshift=-2.2mm]c3.south east)
-       {\ico{colInk}{0.82}{\faClipboardCheck}\\[2pt]\fa{بازسازی ماسک فعال و حذف حالت موقت}};
+       {\ico{colInk}{0.82}{\faClipboardCheck}\\[2pt]\fa{بازسازی نقاب فعال و حذف حالت موقت}};
   \foreach \i/\num/\col in {0/{1}/colF,1/{2}/colR,2/{3}/colF,3/{4}/colOK,4/{5}/colInk}
     {\node[badge=\col] at (c\i.west) {\en{\num}};}
 
-  % براکت‌ها بر پایه‌ی مختصات خودِ کارت‌ها
+  % براکت‌ها بر پایه‌ی مختصات خود کارت‌ها
   \coordinate (fA) at ([xshift=2.2mm]c0.north east);
   \coordinate (fB) at ([xshift=2.2mm]c2.south east);
   \draw[colF,line width=1.0pt]

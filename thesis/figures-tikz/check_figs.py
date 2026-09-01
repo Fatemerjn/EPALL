@@ -5,8 +5,8 @@
 """
 import sys, fitz
 
-# مثبت‌های کاذبِ راستی‌آزمایی‌شده: متریک قلم کادر متن را بزرگ‌تر از واقع می‌دهد.
-# هر دو با بزرگ‌نمایی ۳۶۰dpi بررسی و تأیید شدند که کاملاً داخل کادرشان‌اند.
+# مثبت‌های کاذب راستی‌آزمایی‌شده: متریک قلم کادر متن را بزرگ‌تر از واقع می‌دهد.
+# هر دو با بزرگ‌نمایی ۳۶۰dpi بررسی و تأیید شدند که کاملا داخل کادرشان‌اند.
 KNOWN_OK = {
     ("parameter_overlap_concept", "\u2282"),
     ("pall_adapter_architecture", "Re\u216cU"),
@@ -23,7 +23,7 @@ def boxes(page):
         r = d["rect"]
         if r.width < 18 or r.height < 10:
             continue
-        # فقط مسیرهایی که واقعاً مستطیل‌اند (نه خط و منحنی)
+        # فقط مسیرهایی که واقعا مستطیل‌اند (نه خط و منحنی)
         kinds = {it[0] for it in d["items"]}
         if not kinds <= {"re", "l", "c"}:
             continue
@@ -35,7 +35,7 @@ def boxes(page):
     return out
 
 def overflow(page, tol=0.6):
-    """متنی که از کوچک‌ترین کادرِ دربرگیرنده‌اش بیرون زده."""
+    """متنی که از کوچک‌ترین کادر دربرگیرنده‌اش بیرون زده."""
     bs = sorted(boxes(page), key=lambda r: r.width * r.height)
     bad = []
     for blk in page.get_text("dict")["blocks"]:
@@ -47,7 +47,7 @@ def overflow(page, tol=0.6):
                 tb = fitz.Rect(sp["bbox"])
                 c = fitz.Point((tb.x0 + tb.x1) / 2, (tb.y0 + tb.y1) / 2)
                 # کادر میزبان: کوچک‌ترین کادری که مرکز متن را دربر دارد و
-                # دست‌کم دو برابر خودِ متن است (تا با پرکردنی‌های تزیینی اشتباه نشود)
+                # دست‌کم دو برابر خود متن است (تا با پرکردنی‌های تزیینی اشتباه نشود)
                 need = (tb.width * tb.height) * 2
                 host = next((r for r in bs
                              if r.contains(c) and r.width * r.height >= need), None)

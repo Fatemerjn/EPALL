@@ -8,20 +8,20 @@
     \begin{adjustbox}{max width=\textwidth,max totalheight=0.82\textheight,keepaspectratio}
     \begin{tabular}{p{3.3cm} p{3.0cm} p{1.6cm} p{4.4cm} p{3.1cm}}
     \toprule
-    \textbf{روش} & \textbf{مدل مشترک} & \textbf{حذف سطح وظیفه} & \textbf{مدیریت صریح هم‌پوشانی} & \textbf{رشد حالت مقیم} \\ \midrule
+    \textbf{روش} & \textbf{مدل مشترک} & \textbf{حذف سطح وظیفه} & \textbf{مدیریت مستقیم هم‌پوشانی} & \textbf{رشد حافظه‌ی موردنیاز} \\ \midrule
     \lr{EWC}~\cite{kirkpatrick2017overcoming} & بله & خیر & خیر (جریمه‌ی سراسری) & ثابت \\
     \lr{LwF}~\cite{li2017learning} & بله & خیر & خیر (تقطیر خروجی) & ثابت \\
     \lr{ER / DER++}~\cite{buzzega2020dark} & بله & خیر & خیر & فقط حافظه \\
     \mbox{\lr{GEM / A-GEM}}~\cite{lopezpaz2017gem} & بله & خیر & ضمنی، تصویر سراسری & فقط حافظه \\
-    \lr{PackNet}~\cite{mallya2018packnet} & بله & خیر & ماسک دارد، وزن منجمد & ماسک \\
-    \lr{WSN}~\cite{kang2022wsn} & بله & خیر & ماسک دارد، برای حذف به‌کار نمی‌رود & ماسک \\
+    \lr{PackNet}~\cite{mallya2018packnet} & بله & خیر & نقاب دارد، وزن منجمد & نقاب \\
+    \lr{WSN}~\cite{kang2022wsn} & بله & خیر & نقاب دارد، برای حذف به‌کار نمی‌رود & نقاب \\
     \lr{SSD}~\cite{foster2024ssd} & بله & بله & فقط میراکردن اهمیتی & ثابت \\
     \lr{SalUn}~\cite{fan2024salun} & بله & بله & انتخاب وزن برای \emph{تغییر} & ثابت \\
     \lr{CLPU}~\cite{liu2022clpu} & خیر & بله & به‌طور ساختاری لازم نیست & یک شبکه به‌ازای وظیفه \\
-    \lr{PALL}~\cite{ozdenizci2025pall} & بله & بله & ماسک ذخیره، مشترک‌ها بی‌رتبه & ماسک و پشتیبان \\
+    \lr{PALL}~\cite{ozdenizci2025pall} & بله & بله & نقاب ذخیره، مشترک‌ها بی‌رتبه & نقاب و پشتیبان \\
     \addlinespace[3pt]
-    \textbf{\lr{EPALL}} & بله & بله & \textbf{محافظت رتبه‌بندی‌شده‌ی مشترک} & ماسک و پشتیبان \\
-    \textbf{\mbox{\lr{PALL-Adapter}}} & بله & بله & ماسک نرم (ممیزی‌شده، بی‌اثر) & آداپتر به‌ازای وظیفه \\
+    \textbf{\lr{EPALL}} & بله & بله & \textbf{محافظت رتبه‌بندی‌شده‌ی مشترک} & نقاب و پشتیبان \\
+    \textbf{\mbox{\lr{PALL-Adapter}}} & بله & بله & نقاب نرم (ارزیابی‌شده، بی‌اثر) & لایه‌ی تطبیق به‌ازای وظیفه \\
     \bottomrule
     \end{tabular}
     \end{adjustbox}
