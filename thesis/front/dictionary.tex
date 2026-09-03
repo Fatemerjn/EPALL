@@ -4,7 +4,9 @@
 
 \chapter*{واژه‌نامه}
 \begin{multicols}{2}
-	\small
+	\footnotesize
+	\renewcommand{\baselinestretch}{1.15}\selectfont
+	\setlength{\parskip}{0.15em}
 	\interlinepenalty=10000
 	\dicalphabet{ا}
 	\dic{End-to-End}{آغاز تا پایان}
@@ -42,6 +44,7 @@
 	\dic{Loss Function}{تابع زیان}
 	\dic{Influence Function}{تابع نفوذ}
 	\dic{Knowledge Distillation}{تقطیر دانش}
+	\dic{Parameter-Efficient Fine-Tuning}{تنظیم کارآمد پیراسنجه‌ها}
 	\dic{Prefix-Tuning}{تنظیم پیشوند}
 	\dic{Prompt-Tuning}{تنظیم راهنمای ورودی}
 	\dic{Regularization}{منظم‌سازی}
@@ -51,8 +54,9 @@
 	\dicalphabet{ح}
 	\dic{Resident State}{حافظه‌ی موردنیاز در زمان اجرا}
 	\dic{Replay Buffer}{حافظه‌ی بازپخش}
-	\dic{Episodic Memory}{حافظه‌ی رویدادی}
-	\dic{Gradient Episodic Memory}{حافظه‌ی مبتنی بر شیب رویدادی}
+	\dic{Episodic Memory}{حافظه‌ی چندرویدادی}
+	\dic{Gradient Episodic Memory}{حافظه‌ی مبتنی بر شیب چندرویدادی}
+	\dic{Cumulative State}{حالت انباشته}
 	\dic{Right to be Forgotten}{حق فراموش‌شدن}
 	\dic{Certified Data Removal}{حذف داده‌ی گواهی‌شده}
 	\dic{Membership Inference Attack}{حمله‌ی استنتاج عضویت}
@@ -63,6 +67,7 @@
 	\dicalphabet{د}
 	\dic{Hard-Protected}{دارای حفاظت سخت}
 	\dic{Coordinate}{درایه‌ی وزن}
+	\dic{Likelihood}{درست‌نمایی}
 	\dic{Epoch}{دوره}
 	\dic{Forgetting Request}{درخواست فراموشی}
 	\dic{Request Schedule}{دنباله‌ی درخواست}
@@ -78,6 +83,7 @@
 
 	\dicalphabet{س}
 	\dic{Adapter}{لایه‌ی تطبیق}
+	\dic{Classification Head}{سر طبقه‌بندی}
 	\dic{Bottleneck Adapter}{لایه‌ی تطبیق گلوگاهی}
 	\dic{Shared Adapter}{لایه‌ی تطبیق مشترک}
 	\dic{Task-Specific Adapter}{لایه‌ی تطبیق مخصوص وظیفه}
@@ -106,9 +112,11 @@
 
 	\dicalphabet{گ}
 	\dic{Stochastic Gradient Descent}{شیب کاهشی تصادفی}
+	\dic{Backward Pass}{گذر پس‌رو}
 
 	\dicalphabet{ل}
 	\dic{Anchor}{لنگر}
+	\dic{Attention Layer}{لایه‌ی توجه}
 
 	\dicalphabet{م}
 	\dic{Vision Transformer}{مبدل بینایی}
@@ -138,13 +146,13 @@
 
 	\dicalphabet{و}
 	\dic{Calibration}{واسنجی}
+	\dic{Patch}{وصله}
 	\dic{Retained Task}{وظیفه‌ی نگه‌داری‌شده}
 
 	\dicalphabet{ی}
 	\dic{Continual Learning}{یادگیری پیوسته}
 	\dic{Lifelong Learning}{یادگیری مادام‌العمر}
 	\dic{Privacy-Aware Lifelong Learning}{یادگیری مادام‌العمر حریم‌خصوصی‌آگاه}
-	\dic{Parameter-Efficient Fine-Tuning}{یادگیری کم‌پیراسنجه}
 	\dic{Task-Incremental Learning}{یادگیری افزایشی وظیفه}
 	\dic{Domain-Incremental Learning}{یادگیری افزایشی دامنه}
 	\dic{Class-Incremental Learning}{یادگیری افزایشی کلاس}

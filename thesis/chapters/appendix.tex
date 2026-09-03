@@ -14,15 +14,17 @@
 
 \input{tables/res_hyper}
 
-\bigskip
+\smallskip
 \noindent
 \textbf{محیط اجرا.} همه‌ی اجراهای گزارش‌شده روی یک \lr{NVIDIA RTX 3070 Ti} با $8$ گیگابایت حافظه‌ی گرافیکی، دو پردازنده‌ی \lr{Xeon E5-2620 v4}، $31$ گیگابایت حافظه‌ی اصلی، \lr{Ubuntu 24.04.4}، \lr{Python 3.12.3} و \lr{PyTorch 2.5.1} انجام شده‌اند. برای بازتولید یک مجموعه نتیجه، گروه متناظر از برنامه‌ی \lr{\texttt{tools/run\_server\_experiments.sh}} اجرا می‌شود؛ برای نمونه \lr{\texttt{bash tools/run\_server\_experiments.sh g6\_standard}}. هر گروه پیش از اجرا با گزینه \lr{\texttt{--dry-run}} فرمان‌های دقیق خود را بدون اجرا چاپ می‌کند. هر مجموعه نتیجه زیر یک برچسب آزمایش مستقل ثبت می‌شود و نگاشت گروه‌ها، برچسب‌ها و تنظیمات در \lr{\texttt{README}} مخزن آمده است. برچسب محلی \lr{\texttt{thesis-final}} نسخه‌ی کنونی پایان‌نامه را نشان نمی‌دهد؛ بنابراین تا زمان تثبیت نسخه‌ی تحویلی، هیچ ادعای بازتولیدپذیری به آن برچسب وابسته نیست.
 
-\smallskip
 \noindent
 \textbf{دنباله‌های درخواست.} دنباله‌ها از پیش تولید و در پوشه‌ی \lr{\texttt{schedules/}} ذخیره شده‌اند تا همه‌ی روش‌ها در هر بذر دقیقا یک دنباله را ببینند. الگو به بذر وابسته است: در بذر $0$، دنباله‌های \lr{CIFAR-10} و \lr{CIFAR-100} به‌ترتیب \lr{T T T T F T F F} و \lr{T$\times$7 F T T F T F} هستند؛ در مقابل، دنباله‌ی \lr{CIFAR-100} بذر $5$ به‌صورت \lr{T$\times$10 F F F} است و پس از نخستین حذف آموزشی ندارد. درهم‌سازی \lr{SHA-256} فایل‌های بذر $0$ (شانزده نویسه‌ی نخست) چنین است:
 
-\begin{center}
-\lr{\texttt{cifar10\_t5\_f3\_fixed\_seed0.json}}: \lr{\texttt{904b860aa0d75436}} \\
-\lr{\texttt{cifar100\_t10\_f3\_seed0.json}}: \lr{\texttt{17ae55e7bf4d629f}}
-\end{center}
+\begingroup
+\small
+\setlength{\parskip}{0pt}
+\noindent\makebox[\textwidth][c]{\lr{\texttt{cifar10\_t5\_f3\_fixed\_seed0.json}}: \lr{\texttt{904b860aa0d75436}}}\par
+\vspace{-0.25\baselineskip}
+\noindent\makebox[\textwidth][c]{\lr{\texttt{cifar100\_t10\_f3\_seed0.json}}: \lr{\texttt{17ae55e7bf4d629f}}}\par
+\endgroup

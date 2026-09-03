@@ -8,7 +8,7 @@
 	\begin{center}
 		\textbf{Abstract}
 	\end{center}
-	\baselineskip=.76\baselineskip
+	\baselineskip=.74\baselineskip
 
 	Continual learning systems may need to unlearn specific information while retaining other tasks. In task-incremental selective forgetting, \emph{parameter overlap} makes this difficult: resetting or repairing weights for one task can damage the others. The Privacy-Aware Lifelong Learning (PALL) framework modularizes task knowledge with stored subnetworks, but at request time it does not distinguish shared coordinates by retained-task sensitivity.
 
@@ -18,6 +18,6 @@
 
 	Matched component controls narrow the mechanism claim, and these limits are reported explicitly: what the evidence supports is retention-sensitivity ranking under a fixed budget, whereas the explicit mask-intersection filter is redundant and the anchor term shows no measurable independent contribution. For PALL-Adapter, the controls attribute task suppression primarily to target-path reset rather than to the overlap-aware soft mask. In the membership-inference audit, the post-request distinguishability increase appears for EPALL but not for the original PALL baseline. No result establishes exact, certified, or storage-level removal, and all claims are empirical.
 
-	\medskip\noindent\textbf{Keywords}: Continual Learning, Machine Unlearning, Selective Forgetting, Parameter Overlap, Protected Subnetworks, Parameter-Efficient Fine-Tuning
+	\smallskip\noindent\textbf{Keywords}: Continual Learning, Machine Unlearning, Selective Forgetting, Parameter Overlap, Protected Subnetworks, Parameter-Efficient Fine-Tuning
 
 \end{latin}
